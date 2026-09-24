@@ -18,17 +18,9 @@ jobs:
 
       - run: npm ci
 
-      # continue-on-error, not removed: the codebase currently has ~308
-      # pre-existing lint errors (mostly `no-explicit-any` / unused-vars)
-      # from before ESLint was ever wired up here. Blocking CI on all of
-      # those on day one just makes CI red forever and trains everyone to
-      # ignore it. Lint still runs and is visible (⚠ on this step) so
-      # regressions are seen — it just doesn't fail the build until that
-      # backlog is paid down. Remove continue-on-error once `npm run lint`
-      # is clean.
+      # The pre-existing lint backlog has been cleared, so lint now blocks the build.
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Unit tests
         run: npm test

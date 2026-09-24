@@ -143,8 +143,8 @@ const saveGrades = async () => {
     await teacherStore.saveGrades(records);
     
     alert('Grades saved successfully!');
-  } catch (err: any) {
-    alert(err.message || 'Failed to save grades');
+  } catch (err) {
+    alert(getErrorMessage(err, 'Failed to save grades'));
   } finally {
     saving.value = false;
   }

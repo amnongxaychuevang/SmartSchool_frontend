@@ -3,6 +3,7 @@
 // useRuntimeConfig() must be called inside a Nuxt context (e.g., a component, composable, or plugin).
 
 import { API_ENDPOINTS } from './endpoints';
+import type { ApiResponse } from './types';
 
 // Access tokens are short-lived (15 min) by design — see backend LoginUseCase.
 // Deduped so concurrent 401s from several in-flight requests trigger only one
@@ -17,7 +18,7 @@ async function silentRefresh(): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
       try {
-        const res: any = await $fetch(API_ENDPOINTS.auth.refresh, {
+        const res = await $fetch<ApiResponse<{ token: string; refreshToken: string }>>(API_ENDPOINTS.auth.refresh, {
           baseURL: useRuntimeConfig().public.apiBaseUrl,
           method: 'POST',
           body: { refreshToken: rawRefreshToken },
@@ -27,7 +28,7 @@ async function silentRefresh(): Promise<boolean> {
         useCookie('auth_token', { maxAge: 60 * 30 }).value = res.data.token;
         useCookie('refresh_token', { maxAge: 60 * 60 * 24 * 30 }).value = res.data.refreshToken;
         return true;
-      } catch (err) {
+      } catch {
         // Refresh token itself is invalid/expired — clear both cookies so the
         // app treats this as a logged-out session rather than retrying forever.
         useCookie('auth_token').value = null;
@@ -46,7 +47,7 @@ export const useApiClient = () => {
   // Lazily create the $fetch instance when the function is invoked.
   return $fetch.create({
     baseURL: useRuntimeConfig().public.apiBaseUrl,
-    onRequest({ request, options }) {
+    onRequest({ options }) {
       // Retrieve the auth token from a cookie – this runs at request time, inside a Nuxt context.
       const token = useCookie('auth_token').value;
       if (token) {

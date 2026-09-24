@@ -90,70 +90,72 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-        <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Subject' : 'Add Subject' }}</h2>
-            <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-
-          <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Code</label>
-              <input v-model="modal.form.subjectCode" type="text" maxlength="20" class="modal-input font-mono" placeholder="MATH" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject Name (EN) *</label>
-              <input v-model="modal.form.subjectNameEn" required type="text" class="modal-input" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject Name (LO) *</label>
-              <input v-model="modal.form.subjectNameLo" required type="text" class="modal-input" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credits</label>
-              <input v-model.number="modal.form.credits" type="number" class="modal-input" step="0.5" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</label>
-              <select v-model="modal.form.isActive" class="modal-input">
-                <option :value="true">Active</option>
-                <option :value="false">Inactive</option>
-              </select>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
-              <button
-type="submit" :disabled="modal.saving"
-                class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <!-- Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
+          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Subject' : 'Add Subject' }}</h2>
+              <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                {{ modal.isEdit ? 'Update Subject' : 'Create Subject' }}
               </button>
             </div>
-          </form>
+
+            <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
+
+            <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Code</label>
+                <input v-model="modal.form.subjectCode" type="text" maxlength="20" class="modal-input font-mono" placeholder="MATH" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject Name (EN) *</label>
+                <input v-model="modal.form.subjectNameEn" required type="text" class="modal-input" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject Name (LO) *</label>
+                <input v-model="modal.form.subjectNameLo" required type="text" class="modal-input" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credits</label>
+                <input v-model.number="modal.form.credits" type="number" class="modal-input" step="0.5" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</label>
+                <select v-model="modal.form.isActive" class="modal-input">
+                  <option :value="true">Active</option>
+                  <option :value="false">Inactive</option>
+                </select>
+              </div>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
+                <button
+  type="submit" :disabled="modal.saving"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
+                  <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {{ modal.isEdit ? 'Update Subject' : 'Create Subject' }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
+import type { Subject } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAcademicsStore } from '../../../application/stores/academics';
 
@@ -208,13 +210,13 @@ const openCreateModal = () => {
   modal.open = true;
 };
 
-const openEditModal = (subject: any) => {
+const openEditModal = (subject: Subject) => {
   modal.isEdit = true;
   modal.subjectId = subject.subjectId;
   modal.form.subjectCode = subject.subjectCode ?? '';
   modal.form.subjectNameEn = subject.subjectNameEn;
   modal.form.subjectNameLo = subject.subjectNameLo;
-  modal.form.credits = subject.credits;
+  modal.form.credits = Number(subject.credits);
   modal.form.isActive = subject.isActive;
   modal.error = '';
   modal.open = true;
@@ -230,8 +232,8 @@ const handleSubmit = async () => {
       await academicsStore.createSubject(modal.form);
     }
     modal.open = false;
-  } catch (err: any) {
-    modal.error = err.message || 'Failed to save subject';
+  } catch (err) {
+    modal.error = getErrorMessage(err, 'Failed to save subject');
   } finally {
     modal.saving = false;
   }
@@ -241,8 +243,8 @@ const handleDelete = async (subjectId: number) => {
   if (confirm('Are you sure you want to delete this subject?')) {
     try {
       await academicsStore.deleteSubject(subjectId);
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete subject');
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to delete subject'));
     }
   }
 };

@@ -1,24 +1,29 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { parentRepository } from '../../infrastructure/api/ParentRepository';
+import type { ScheduleSlot } from '../../infrastructure/api/AcademicsRepository';
+import type { Student } from '../../domain/models/Student';
+import type { Grade } from '../../domain/models/Academics';
+import type { Wallet, SpendingLimit } from '../../domain/models/Finance';
+import type { Announcement, DailyAttendance, LeaveRequest } from '../../domain/models/School';
 
 export const useParentStore = defineStore('parent', () => {
-  const children = ref<any[]>([]);
+  const children = ref<Student[]>([]);
   const loadingChildren = ref(false);
 
-  const wallet = ref<any>(null);
+  const wallet = ref<Wallet | null>(null);
   const loadingWallet = ref(false);
 
-  const childAttendance = ref<any[]>([]);
+  const childAttendance = ref<DailyAttendance[]>([]);
   const loadingAttendance = ref(false);
 
-  const childGrades = ref<any[]>([]);
+  const childGrades = ref<Grade[]>([]);
   const loadingGrades = ref(false);
 
   async function fetchChildren() {
     loadingChildren.value = true;
     try {
-      const res: any = await parentRepository.getMyChildren();
+      const res = await parentRepository.getMyChildren();
       children.value = res.data || [];
     } catch (error) {
       console.error('Failed to fetch children', error);
@@ -31,7 +36,7 @@ export const useParentStore = defineStore('parent', () => {
   async function fetchChildWallet(studentId: number) {
     loadingWallet.value = true;
     try {
-      const res: any = await parentRepository.getChildWallet(studentId);
+      const res = await parentRepository.getChildWallet(studentId);
       wallet.value = res.data;
     } catch (error) {
       console.error('Failed to fetch child wallet', error);
@@ -44,7 +49,7 @@ export const useParentStore = defineStore('parent', () => {
   async function fetchChildAttendance(studentId: number) {
     loadingAttendance.value = true;
     try {
-      const res: any = await parentRepository.getChildAttendance(studentId);
+      const res = await parentRepository.getChildAttendance(studentId);
       childAttendance.value = res.data || [];
     } catch (error) {
       console.error('Failed to fetch child attendance', error);
@@ -57,7 +62,7 @@ export const useParentStore = defineStore('parent', () => {
   async function fetchChildGrades(studentId: number) {
     loadingGrades.value = true;
     try {
-      const res: any = await parentRepository.getChildGrades(studentId);
+      const res = await parentRepository.getChildGrades(studentId);
       childGrades.value = res.data || [];
     } catch (error) {
       console.error('Failed to fetch child grades', error);
@@ -71,22 +76,22 @@ export const useParentStore = defineStore('parent', () => {
     return parentRepository.requestTopUp({ amount, proofOfPayment });
   }
 
-  const announcements = ref<any[]>([]);
+  const announcements = ref<Announcement[]>([]);
   const loadingAnnouncements = ref(false);
 
-  const childSchedule = ref<any[]>([]);
+  const childSchedule = ref<ScheduleSlot[]>([]);
   const loadingSchedule = ref(false);
 
-  const leaveRequests = ref<any[]>([]);
+  const leaveRequests = ref<LeaveRequest[]>([]);
   const loadingLeaveRequests = ref(false);
 
-  const spendingLimits = ref<any>(null);
+  const spendingLimits = ref<SpendingLimit | null>(null);
   const loadingSpendingLimits = ref(false);
 
   async function fetchAnnouncements() {
     loadingAnnouncements.value = true;
     try {
-      const res: any = await parentRepository.getAnnouncements();
+      const res = await parentRepository.getAnnouncements();
       announcements.value = res.data || [];
     } catch (error) {
       console.error('Failed to fetch announcements', error);
@@ -99,7 +104,7 @@ export const useParentStore = defineStore('parent', () => {
   async function fetchChildSchedule(studentId: number) {
     loadingSchedule.value = true;
     try {
-      const res: any = await parentRepository.getChildSchedule(studentId);
+      const res = await parentRepository.getChildSchedule(studentId);
       childSchedule.value = res.data || [];
     } catch (error) {
       console.error('Failed to fetch schedule', error);
@@ -112,7 +117,7 @@ export const useParentStore = defineStore('parent', () => {
   async function fetchLeaveRequests(studentId: number) {
     loadingLeaveRequests.value = true;
     try {
-      const res: any = await parentRepository.getLeaveRequests(studentId);
+      const res = await parentRepository.getLeaveRequests(studentId);
       leaveRequests.value = res.data || [];
     } catch (error) {
       console.error('Failed to fetch leave requests', error);
@@ -122,14 +127,14 @@ export const useParentStore = defineStore('parent', () => {
     }
   }
 
-  async function createLeaveRequest(studentId: number, data: any) {
+  async function createLeaveRequest(studentId: number, data: Parameters<typeof parentRepository.createLeaveRequest>[1]) {
     return parentRepository.createLeaveRequest(studentId, data);
   }
 
   async function fetchSpendingLimits(studentId: number) {
     loadingSpendingLimits.value = true;
     try {
-      const res: any = await parentRepository.getSpendingLimits(studentId);
+      const res = await parentRepository.getSpendingLimits(studentId);
       spendingLimits.value = res.data;
     } catch (error) {
       console.error('Failed to fetch spending limits', error);
@@ -139,7 +144,7 @@ export const useParentStore = defineStore('parent', () => {
     }
   }
 
-  async function updateSpendingLimits(studentId: number, data: any) {
+  async function updateSpendingLimits(studentId: number, data: Parameters<typeof parentRepository.updateSpendingLimits>[1]) {
     return parentRepository.updateSpendingLimits(studentId, data);
   }
 

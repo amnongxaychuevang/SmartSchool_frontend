@@ -1,18 +1,23 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { teacherRepository, type AttendanceStatus } from '../../infrastructure/api/TeacherRepository';
+import type { ScheduleSlot } from '../../infrastructure/api/AcademicsRepository';
+import type { Student } from '../../domain/models/Student';
+import type { SchoolClass } from '../../domain/models/SchoolClass';
+import type { Payload } from '../../domain/models/Academics';
+import type { Announcement, LeaveRequest } from '../../domain/models/School';
 
 export const useTeacherStore = defineStore('teacher', () => {
-  const myClasses = ref<any[]>([]);
+  const myClasses = ref<SchoolClass[]>([]);
   const loadingClasses = ref(false);
 
-  const myStudents = ref<any[]>([]);
+  const myStudents = ref<Student[]>([]);
   const loadingStudents = ref(false);
 
   async function fetchMyClasses() {
     loadingClasses.value = true;
     try {
-      const res: any = await teacherRepository.getMyClasses();
+      const res = await teacherRepository.getMyClasses();
       myClasses.value = res.data?.classes || [];
     } catch (error) {
       console.error('Failed to fetch teacher classes', error);
@@ -25,7 +30,7 @@ export const useTeacherStore = defineStore('teacher', () => {
   async function fetchMyStudents(classId: number) {
     loadingStudents.value = true;
     try {
-      const res: any = await teacherRepository.getMyStudents(classId);
+      const res = await teacherRepository.getMyStudents(classId);
       // The API returns { students, total }, not a bare array.
       myStudents.value = res.data?.students ?? [];
     } catch (error) {
@@ -45,23 +50,23 @@ export const useTeacherStore = defineStore('teacher', () => {
     await teacherRepository.saveAttendance(classId, date, records);
   }
 
-  async function saveGrades(records: any[]) {
+  async function saveGrades(records: Payload[]) {
     await teacherRepository.saveGrades(records);
   }
 
-  const mySchedules = ref<any[]>([]);
+  const mySchedules = ref<ScheduleSlot[]>([]);
   const loadingSchedules = ref(false);
 
-  const announcements = ref<any[]>([]);
+  const announcements = ref<Announcement[]>([]);
   const loadingAnnouncements = ref(false);
 
-  const leaveRequests = ref<any[]>([]);
+  const leaveRequests = ref<LeaveRequest[]>([]);
   const loadingLeaveRequests = ref(false);
 
   async function fetchSchedules() {
     loadingSchedules.value = true;
     try {
-      const res: any = await teacherRepository.getSchedules();
+      const res = await teacherRepository.getSchedules();
       mySchedules.value = res.data || [];
     } catch (error) {
       console.error('Failed to fetch schedules', error);
@@ -73,8 +78,8 @@ export const useTeacherStore = defineStore('teacher', () => {
   async function fetchAnnouncements() {
     loadingAnnouncements.value = true;
     try {
-      const res: any = await teacherRepository.getAnnouncements();
-      announcements.value = res.data?.data || res.data || [];
+      const res = await teacherRepository.getAnnouncements();
+      announcements.value = res.data ?? [];
     } catch (error) {
       console.error('Failed to fetch announcements', error);
     } finally {
@@ -85,7 +90,7 @@ export const useTeacherStore = defineStore('teacher', () => {
   async function fetchLeaveRequests() {
     loadingLeaveRequests.value = true;
     try {
-      const res: any = await teacherRepository.getLeaveRequests();
+      const res = await teacherRepository.getLeaveRequests();
       leaveRequests.value = res.data?.requests || [];
     } catch (error) {
       console.error('Failed to fetch leave requests', error);

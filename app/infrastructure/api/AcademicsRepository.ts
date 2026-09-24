@@ -1,5 +1,7 @@
 import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
+import type { ApiResponse, Paged } from './types';
+import type { Subject, Grade, GradeType, Card, AppNotification, Payload } from '../../domain/models/Academics';
 
 export interface AcademicTerm {
   termId: number;
@@ -48,12 +50,12 @@ export const academicsRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.subjects.list}?${query}` : API_ENDPOINTS.subjects.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'subjects', Subject>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createSubject(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { subject: any } }>(API_ENDPOINTS.subjects.list, {
+  async createSubject(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ subject: Subject }>>(API_ENDPOINTS.subjects.list, {
       method: 'POST',
       body: payload
     });
@@ -61,8 +63,8 @@ export const academicsRepository = {
     return res.data.subject;
   },
 
-  async updateSubject(subjectId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { subject: any } }>(`${API_ENDPOINTS.subjects.list}/${subjectId}`, {
+  async updateSubject(subjectId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ subject: Subject }>>(`${API_ENDPOINTS.subjects.list}/${subjectId}`, {
       method: 'PUT',
       body: payload
     });
@@ -89,17 +91,17 @@ export const academicsRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.grades.list}?${query}` : API_ENDPOINTS.grades.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'grades', Grade>>>(url, { method: 'GET' });
     return res.data;
   },
 
   async getGradeTypes() {
-    const res = await useApiClient()<any>(API_ENDPOINTS.grades.types, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<{ gradeTypes: GradeType[] }>>(API_ENDPOINTS.grades.types, { method: 'GET' });
     return res.data;
   },
 
-  async createGrade(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { grade: any } }>(API_ENDPOINTS.grades.list, {
+  async createGrade(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ grade: Grade }>>(API_ENDPOINTS.grades.list, {
       method: 'POST',
       body: payload
     });
@@ -107,8 +109,8 @@ export const academicsRepository = {
     return res.data.grade;
   },
 
-  async updateGrade(gradeId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { grade: any } }>(`${API_ENDPOINTS.grades.list}/${gradeId}`, {
+  async updateGrade(gradeId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ grade: Grade }>>(`${API_ENDPOINTS.grades.list}/${gradeId}`, {
       method: 'PUT',
       body: payload
     });
@@ -133,12 +135,12 @@ export const academicsRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.cards.list}?${query}` : API_ENDPOINTS.cards.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'cards', Card>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createCard(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { card: any } }>(API_ENDPOINTS.cards.list, {
+  async createCard(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ card: Card }>>(API_ENDPOINTS.cards.list, {
       method: 'POST',
       body: payload
     });
@@ -146,8 +148,8 @@ export const academicsRepository = {
     return res.data.card;
   },
 
-  async updateCard(cardId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { card: any } }>(`${API_ENDPOINTS.cards.list}/${cardId}`, {
+  async updateCard(cardId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ card: Card }>>(`${API_ENDPOINTS.cards.list}/${cardId}`, {
       method: 'PUT',
       body: payload
     });
@@ -172,12 +174,12 @@ export const academicsRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.notifications.list}?${query}` : API_ENDPOINTS.notifications.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'notifications', AppNotification>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createNotification(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { notification: any } }>(API_ENDPOINTS.notifications.list, {
+  async createNotification(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ notification: AppNotification }>>(API_ENDPOINTS.notifications.list, {
       method: 'POST',
       body: payload
     });

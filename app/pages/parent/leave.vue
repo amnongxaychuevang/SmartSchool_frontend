@@ -9,7 +9,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         >
           <option value="">{{ $t('parentPortal.select_child') }}</option>
           <option v-for="child in parentStore.children" :key="child.studentId" :value="child.studentId">
-            {{ child.user && child.user.fullNameEn || `Student #${child.studentId}` }}
+            {{ ($i18n.locale === 'lo' ? child.fullNameLo : child.fullNameEn) || child.fullNameEn }}
           </option>
         </select>
       </div>
@@ -144,7 +144,7 @@ onMounted(async () => {
     await parentStore.fetchChildren();
   }
   if (parentStore.children.length === 1) {
-    selectedChildId.value = parentStore.children[0].studentId;
+    selectedChildId.value = parentStore.children[0]!.studentId;
     loadLeaves();
   }
 });

@@ -1,5 +1,11 @@
 import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
+import type { ApiResponse, Paged } from './types';
+import type { ScheduleSlot } from './AcademicsRepository';
+import type { Student } from '../../domain/models/Student';
+import type { SchoolClass } from '../../domain/models/SchoolClass';
+import type { Payload } from '../../domain/models/Academics';
+import type { Announcement, LeaveRequest } from '../../domain/models/School';
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 export interface DailyAttendanceRecord {
@@ -13,11 +19,11 @@ export interface DailyAttendanceRecord {
 export class TeacherRepository {
   async getMyClasses() {
     // Assuming backend filters by logged-in teacher role
-    return useApiClient()(API_ENDPOINTS.classes.list, { method: 'GET' });
+    return useApiClient()<ApiResponse<Paged<'classes', SchoolClass>>>(API_ENDPOINTS.classes.list, { method: 'GET' });
   }
 
   async getMyStudents(classId: number) {
-    return useApiClient()(`${API_ENDPOINTS.students.list}?classId=${classId}`, { method: 'GET' });
+    return useApiClient()<ApiResponse<Paged<'students', Student>>>(`${API_ENDPOINTS.students.list}?classId=${classId}`, { method: 'GET' });
   }
 
   async getDailyAttendance(classId: number, date: string) {
@@ -29,7 +35,7 @@ export class TeacherRepository {
     return useApiClient()(API_ENDPOINTS.attendance.daily, { method: 'PUT', body: { classId, date, records } });
   }
 
-  async saveGrades(records: any[]) {
+  async saveGrades(records: Payload[]) {
     const results = [];
     for (const record of records) {
       const res = await useApiClient()(API_ENDPOINTS.grades.list, { method: 'POST', body: record });
@@ -39,19 +45,19 @@ export class TeacherRepository {
   }
 
   async getSchedules() {
-    return useApiClient()(API_ENDPOINTS.schedules.list, { method: 'GET' });
+    return useApiClient()<ApiResponse<ScheduleSlot[]>>(API_ENDPOINTS.schedules.list, { method: 'GET' });
   }
 
   async getAnnouncements() {
-    return useApiClient()(API_ENDPOINTS.announcements.base, { method: 'GET' });
+    return useApiClient()<ApiResponse<Announcement[]>>(API_ENDPOINTS.announcements.base, { method: 'GET' });
   }
 
   async getLeaveRequests() {
-    return useApiClient()(API_ENDPOINTS.leaveRequests.list, { method: 'GET' });
+    return useApiClient()<ApiResponse<Paged<'requests', LeaveRequest>>>(API_ENDPOINTS.leaveRequests.list, { method: 'GET' });
   }
 
   async updateLeaveRequestStatus(leaveId: number, status: 'approved' | 'rejected') {
-    return useApiClient()(`${API_ENDPOINTS.leaveRequests.list}/${leaveId}/status`, { method: 'PUT', body: { status } });
+    return useApiClient()<ApiResponse<{ request: LeaveRequest }>>(`${API_ENDPOINTS.leaveRequests.list}/${leaveId}/status`, { method: 'PUT', body: { status } });
   }
 }
 

@@ -132,7 +132,7 @@
                 {{ locale === 'lo' ? grade.gradeType?.typeNameLo : grade.gradeType?.typeNameEn }}
               </td>
               <td class="px-6 py-3 text-right">
-                <span class="font-bold font-mono text-[13px]" :class="getScoreColor(grade.score, grade.maxScore)">
+                <span class="font-bold font-mono text-[13px]" :class="getScoreColor(Number(grade.score ?? 0), Number(grade.maxScore))">
                   {{ Number(grade.score).toFixed(1) }} <span class="text-slate-600 text-[10px]">/ {{ Number(grade.maxScore).toFixed(0) }}</span>
                 </span>
               </td>

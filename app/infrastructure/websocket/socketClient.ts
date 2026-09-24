@@ -25,10 +25,12 @@ export const useSocketClient = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- socket.io handlers are typed per event by the caller
   const on = (event: string, callback: (...args: any[]) => void) => {
     socket?.on(event, callback);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see on()
   const off = (event: string, callback?: (...args: any[]) => void) => {
     socket?.off(event, callback);
   };

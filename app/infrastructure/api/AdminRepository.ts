@@ -1,5 +1,12 @@
 import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
+import type { ApiResponse, Paged } from './types';
+import type { Payload } from '../../domain/models/Academics';
+import type { User } from '../../domain/models/User';
+import type { Teacher } from '../../domain/models/Teacher';
+import type { Parent } from '../../domain/models/Parent';
+import type { SchoolClass } from '../../domain/models/SchoolClass';
+import type { AuditLog, DashboardStats } from '../../domain/models/School';
 import type { Student, StudentPayload } from '../../domain/models/Student';
 
 interface StudentsResponse {
@@ -51,12 +58,12 @@ export const adminRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.users.list}?${query}` : API_ENDPOINTS.users.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'users', User>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createUser(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { user: any } }>(API_ENDPOINTS.users.list, {
+  async createUser(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ user: User }>>(API_ENDPOINTS.users.list, {
       method: 'POST',
       body: payload
     });
@@ -64,8 +71,8 @@ export const adminRepository = {
     return res.data.user;
   },
 
-  async updateUser(userId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { user: any } }>(`${API_ENDPOINTS.users.list}/${userId}`, {
+  async updateUser(userId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ user: User }>>(`${API_ENDPOINTS.users.list}/${userId}`, {
       method: 'PUT',
       body: payload
     });
@@ -80,12 +87,12 @@ export const adminRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.teachers.list}?${query}` : API_ENDPOINTS.teachers.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'teachers', Teacher>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createTeacher(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { teacher: any } }>(API_ENDPOINTS.teachers.list, {
+  async createTeacher(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ teacher: Teacher }>>(API_ENDPOINTS.teachers.list, {
       method: 'POST',
       body: payload
     });
@@ -93,8 +100,8 @@ export const adminRepository = {
     return res.data.teacher;
   },
 
-  async updateTeacher(teacherId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { teacher: any } }>(`${API_ENDPOINTS.teachers.list}/${teacherId}`, {
+  async updateTeacher(teacherId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ teacher: Teacher }>>(`${API_ENDPOINTS.teachers.list}/${teacherId}`, {
       method: 'PUT',
       body: payload
     });
@@ -109,12 +116,12 @@ export const adminRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.parents.list}?${query}` : API_ENDPOINTS.parents.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'parents', Parent>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createParent(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { parent: any } }>(API_ENDPOINTS.parents.list, {
+  async createParent(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ parent: Parent }>>(API_ENDPOINTS.parents.list, {
       method: 'POST',
       body: payload
     });
@@ -122,8 +129,8 @@ export const adminRepository = {
     return res.data.parent;
   },
 
-  async updateParent(parentId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { parent: any } }>(`${API_ENDPOINTS.parents.list}/${parentId}`, {
+  async updateParent(parentId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ parent: Parent }>>(`${API_ENDPOINTS.parents.list}/${parentId}`, {
       method: 'PUT',
       body: payload
     });
@@ -138,12 +145,12 @@ export const adminRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.classes.list}?${query}` : API_ENDPOINTS.classes.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'classes', SchoolClass>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createClass(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { class: any } }>(API_ENDPOINTS.classes.list, {
+  async createClass(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ class: SchoolClass }>>(API_ENDPOINTS.classes.list, {
       method: 'POST',
       body: payload
     });
@@ -151,8 +158,8 @@ export const adminRepository = {
     return res.data.class;
   },
 
-  async updateClass(classId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { class: any } }>(`${API_ENDPOINTS.classes.list}/${classId}`, {
+  async updateClass(classId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ class: SchoolClass }>>(`${API_ENDPOINTS.classes.list}/${classId}`, {
       method: 'PUT',
       body: payload
     });
@@ -169,7 +176,7 @@ export const adminRepository = {
   },
 
   async getDashboardStats() {
-    const res = await useApiClient()<any>(API_ENDPOINTS.dashboard.stats, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<DashboardStats>>(API_ENDPOINTS.dashboard.stats, { method: 'GET' });
     return res.data;
   },
 
@@ -183,7 +190,7 @@ export const adminRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.auditLogs.list}?${query}` : API_ENDPOINTS.auditLogs.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'logs', AuditLog>>>(url, { method: 'GET' });
     return res.data;
   },
 };

@@ -51,7 +51,7 @@
         <tbody class="divide-y divide-slate-800/60">
           <tr v-for="card in academicsStore.cards" :key="card.cardId" class="hover:bg-slate-800/40 transition-colors">
             <td class="px-6 py-4 text-sm font-mono text-teal-400">
-              {{ card.uid }}
+              {{ card.cardUid }}
             </td>
             <td class="px-6 py-4">
               <p class="text-sm font-medium text-white">{{ card.student?.fullNameEn }}</p>
@@ -62,14 +62,14 @@
 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
                 :class="{
                   'bg-teal-500/20 text-teal-400': card.status === 'active',
-                  'bg-slate-500/20 text-slate-400': card.status === 'inactive',
+                  'bg-slate-500/20 text-slate-400': card.status === 'deactivated',
                   'bg-red-500/20 text-red-400': card.status === 'lost',
                 }">
                 {{ card.status }}
               </span>
             </td>
             <td class="px-6 py-4 text-sm text-slate-400">
-              {{ new Date(card.issuedAt).toLocaleDateString() }}
+              {{ new Date(card.issuedDate).toLocaleDateString() }}
             </td>
             <td class="px-6 py-4">
               <div class="flex items-center justify-end gap-2">
@@ -98,63 +98,65 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium c
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-        <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Card' : 'Issue New Card' }}</h2>
-            <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-
-          <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Card UID *</label>
-              <input v-model="modal.form.uid" required type="text" class="modal-input" placeholder="e.g. 04:DF:3A:..." >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student ID *</label>
-              <input v-model.number="modal.form.studentId" required type="number" class="modal-input" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</label>
-              <select v-model="modal.form.status" class="modal-input">
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="lost">Lost</option>
-              </select>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
-              <button
-type="submit" :disabled="modal.saving"
-                class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <!-- Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
+          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Card' : 'Issue New Card' }}</h2>
+              <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                {{ modal.isEdit ? 'Update Card' : 'Issue Card' }}
               </button>
             </div>
-          </form>
+
+            <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
+
+            <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Card UID *</label>
+                <input v-model="modal.form.cardUid" :disabled="modal.isEdit" required type="text" class="modal-input" placeholder="e.g. 04:DF:3A:..." >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student ID *</label>
+                <input v-model.number="modal.form.studentId" required type="number" class="modal-input" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</label>
+                <select v-model="modal.form.status" class="modal-input">
+                  <option value="active">Active</option>
+                  <option value="deactivated">Deactivated</option>
+                  <option value="lost">Lost</option>
+                </select>
+              </div>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
+                <button
+  type="submit" :disabled="modal.saving"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
+                  <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {{ modal.isEdit ? 'Update Card' : 'Issue Card' }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
+import type { Card } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAcademicsStore } from '../../../application/stores/academics';
 
@@ -189,26 +191,27 @@ const modal = reactive({
   isEdit: false,
   cardId: null as number | null,
   form: {
-    uid: '',
-    studentId: '',
-    status: 'active'
+    // The API field is cardUid (the form sent `uid`, so creating a card always failed).
+    cardUid: '',
+    studentId: '' as number | '',
+    status: 'active' as Card['status']
   }
 });
 
 const openCreateModal = () => {
   modal.isEdit = false;
   modal.cardId = null;
-  modal.form.uid = '';
+  modal.form.cardUid = '';
   modal.form.studentId = '';
   modal.form.status = 'active';
   modal.error = '';
   modal.open = true;
 };
 
-const openEditModal = (card: any) => {
+const openEditModal = (card: Card) => {
   modal.isEdit = true;
   modal.cardId = card.cardId;
-  modal.form.uid = card.uid;
+  modal.form.cardUid = card.cardUid;
   modal.form.studentId = card.studentId;
   modal.form.status = card.status;
   modal.error = '';
@@ -225,8 +228,8 @@ const handleSubmit = async () => {
       await academicsStore.createCard(modal.form);
     }
     modal.open = false;
-  } catch (err: any) {
-    modal.error = err.message || 'Failed to save card';
+  } catch (err) {
+    modal.error = getErrorMessage(err, 'Failed to save card');
   } finally {
     modal.saving = false;
   }
@@ -236,8 +239,8 @@ const handleDelete = async (cardId: number) => {
   if (confirm('Are you sure you want to delete this card?')) {
     try {
       await academicsStore.deleteCard(cardId);
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete card');
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to delete card'));
     }
   }
 };

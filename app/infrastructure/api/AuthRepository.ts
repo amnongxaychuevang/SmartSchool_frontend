@@ -2,13 +2,15 @@ import type { IAuthRepository } from '../../domain/repositories/IAuthRepository'
 import type { User } from '../../domain/models/User';
 import { useApiClient } from './apiClient'; // Import the composable
 import { API_ENDPOINTS } from './endpoints';
+import type { ApiResponse } from './types';
+import { getErrorMessage } from '../../utils/errors';
 
 // Concrete HTTP implementation of the auth repository contract.
 // This is the ONLY file that knows about HTTP / $fetch / apiClient.
 export class AuthRepository implements IAuthRepository {
   async login(phoneOrEmail: string, password: string): Promise<{ token: string; refreshToken: string; user: User }> {
     const apiClient = useApiClient();
-    let res: any;
+    let res: ApiResponse<{ token: string; refreshToken: string; user: User }>;
     try {
       res = await apiClient<{ success: boolean; data: { token: string; refreshToken: string; user: User } }>(
         API_ENDPOINTS.auth.login,
@@ -17,12 +19,9 @@ export class AuthRepository implements IAuthRepository {
           body: { phoneOrEmail, password },
         }
       );
-    } catch (error: any) {
-      // Extract the backend error message if available
-      if (error.response?._data?.message) {
-        throw new Error(error.response._data.message);
-      }
-      throw error;
+    } catch (error) {
+      // Surface the backend's message (e.g. "Invalid credentials").
+      throw new Error(getErrorMessage(error, 'Login failed'), { cause: error });
     }
 
     if (!res.success) {
@@ -68,7 +67,7 @@ export class AuthRepository implements IAuthRepository {
     // here would otherwise surface as an unhandled promise rejection.
     const apiClient = useApiClient();
     try {
-      await apiClient<void>(API_ENDPOINTS.auth.logout, {
+      await apiClient<unknown>(API_ENDPOINTS.auth.logout, {
         method: 'POST',
         body: refreshToken ? { refreshToken } : {},
       });

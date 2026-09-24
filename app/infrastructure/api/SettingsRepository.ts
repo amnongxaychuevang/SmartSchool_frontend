@@ -1,11 +1,12 @@
 import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
+import type { SchoolInfo, AcademicSettings, PermissionsMap } from '../../application/stores/settings';
 
 export interface SettingsData {
-  schoolInfo?: Record<string, any>;
-  academicSettings?: Record<string, any>;
-  permissionsMap?: Record<string, any>;
-  [key: string]: any;
+  schoolInfo?: SchoolInfo;
+  academicSettings?: AcademicSettings;
+  permissionsMap?: PermissionsMap;
+  [key: string]: unknown;
 }
 
 export interface SettingsApiResponse {
@@ -19,7 +20,7 @@ export class SettingsRepository {
     return useApiClient()(API_ENDPOINTS.settings.list, { method: 'GET' }) as Promise<SettingsApiResponse>;
   }
 
-  async updateSettings(data: Record<string, any>): Promise<SettingsApiResponse> {
+  async updateSettings(data: Record<string, unknown>): Promise<SettingsApiResponse> {
     return useApiClient()(API_ENDPOINTS.settings.list, { method: 'PUT', body: data }) as Promise<SettingsApiResponse>;
   }
 }

@@ -1,5 +1,8 @@
 import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
+import type { ApiResponse, Paged } from './types';
+import type { Payload } from '../../domain/models/Academics';
+import type { Wallet, WalletTransaction, TopUpRequest, Shop, SpendingLimit } from '../../domain/models/Finance';
 
 export const financeRepository = {
   // Wallets
@@ -11,12 +14,12 @@ export const financeRepository = {
     if (params.status) query.set('status', params.status);
 
     const url = query.toString() ? `${API_ENDPOINTS.wallets.list}?${query}` : API_ENDPOINTS.wallets.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'wallets', Wallet>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async updateWalletStatus(walletId: number, status: string) {
-    const res = await useApiClient()<{ success: boolean; data: any }>(API_ENDPOINTS.wallets.status.replace(':id', String(walletId)), {
+  async updateWalletStatus(walletId: number, status: Wallet['status']) {
+    const res = await useApiClient()<ApiResponse<{ wallet: Wallet }>>(API_ENDPOINTS.wallets.status.replace(':id', String(walletId)), {
       method: 'PUT',
       body: { status }
     });
@@ -25,7 +28,7 @@ export const financeRepository = {
   },
 
   async topUpWalletAdmin(walletId: number, amount: number, notes?: string) {
-    const res = await useApiClient()<{ success: boolean; data: any }>(API_ENDPOINTS.wallets.topUp.replace(':id', String(walletId)), {
+    const res = await useApiClient()<ApiResponse<{ transaction: WalletTransaction }>>(API_ENDPOINTS.wallets.topUp.replace(':id', String(walletId)), {
       method: 'POST',
       body: { amount, notes }
     });
@@ -41,7 +44,7 @@ export const financeRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.topUps.requests}?${query}` : API_ENDPOINTS.topUps.requests;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'requests', TopUpRequest>>>(url, { method: 'GET' });
     return res.data;
   },
 
@@ -64,14 +67,14 @@ export const financeRepository = {
 
   // Spending Limits
   async getSpendingLimit(studentId: number) {
-    const res = await useApiClient()<{ success: boolean; data: any }>(API_ENDPOINTS.spendingLimits.student.replace(':studentId', String(studentId)), {
+    const res = await useApiClient()<ApiResponse<{ spendingLimit: SpendingLimit | null }>>(API_ENDPOINTS.spendingLimits.student.replace(':studentId', String(studentId)), {
       method: 'GET'
     });
     return res.data;
   },
 
   async updateSpendingLimit(studentId: number, payload: { dailyMax?: number | null; weeklyMax?: number | null }) {
-    const res = await useApiClient()<{ success: boolean; data: any }>(API_ENDPOINTS.spendingLimits.student.replace(':studentId', String(studentId)), {
+    const res = await useApiClient()<ApiResponse<{ spendingLimit: SpendingLimit }>>(API_ENDPOINTS.spendingLimits.student.replace(':studentId', String(studentId)), {
       method: 'PUT',
       body: payload
     });
@@ -87,12 +90,12 @@ export const financeRepository = {
     if (params.limit) query.set('limit', String(params.limit));
 
     const url = query.toString() ? `${API_ENDPOINTS.shops.list}?${query}` : API_ENDPOINTS.shops.list;
-    const res = await useApiClient()<any>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'shops', Shop>>>(url, { method: 'GET' });
     return res.data;
   },
 
-  async createShop(payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { shop: any } }>(API_ENDPOINTS.shops.list, {
+  async createShop(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ shop: Shop }>>(API_ENDPOINTS.shops.list, {
       method: 'POST',
       body: payload
     });
@@ -100,8 +103,8 @@ export const financeRepository = {
     return res.data.shop;
   },
 
-  async updateShop(shopId: number, payload: any) {
-    const res = await useApiClient()<{ success: boolean; data: { shop: any } }>(`${API_ENDPOINTS.shops.list}/${shopId}`, {
+  async updateShop(shopId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ shop: Shop }>>(`${API_ENDPOINTS.shops.list}/${shopId}`, {
       method: 'PUT',
       body: payload
     });

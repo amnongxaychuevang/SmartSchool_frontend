@@ -147,6 +147,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ApiResponse } from '../../../infrastructure/api/types';
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
@@ -199,7 +200,7 @@ const form = ref({
 const fetchAnnouncements = async () => {
   try {
     loading.value = true;
-    const res = await apiClient<any>(API_ENDPOINTS.announcements.base);
+    const res = await apiClient<ApiResponse<Announcement[]>>(API_ENDPOINTS.announcements.base);
     if (res?.success) {
       announcements.value = res.data;
     }
@@ -231,7 +232,7 @@ const closeModal = () => {
 const saveAnnouncement = async () => {
   try {
     saving.value = true;
-    const res = await apiClient<any>(API_ENDPOINTS.announcements.base, {
+    const res = await apiClient<ApiResponse<Announcement>>(API_ENDPOINTS.announcements.base, {
       method: 'POST',
       body: {
         ...form.value,

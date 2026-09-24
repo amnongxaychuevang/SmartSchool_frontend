@@ -107,6 +107,7 @@ v-model="form.password"
 </template>
 
 <script setup lang="ts">
+import type { Role } from '../../../../domain/models/School';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -114,14 +115,26 @@ const roleDropdownOpen = ref(false);
 
 const { locale } = useI18n();
 
+export interface UserForm {
+  fullNameEn: string;
+  fullNameLo: string;
+  email: string;
+  phoneNumber: string;
+  roleId: string | number;
+  password: string;
+  isActive: boolean;
+}
+
 defineProps<{
   open: boolean;
   mode: 'add' | 'edit';
   saving: boolean;
   error: string;
-  form: any;
-  dbRoles: any[];
+  dbRoles: Role[];
 }>();
+
+// Two-way bound with the parent (v-model:form), so editing fields here is allowed.
+const form = defineModel<UserForm>('form', { required: true });
 
 const emit = defineEmits(['update:open', 'submit']);
 </script>

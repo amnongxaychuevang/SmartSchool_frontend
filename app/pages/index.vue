@@ -181,7 +181,7 @@ import { useAuthStore } from '../application/stores/auth';
 
 definePageMeta({ layout: 'default' });
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 useHead({
   title: 'Smart School System',

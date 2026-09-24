@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref } from 'vue';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Notification Settings — Smart School Admin' });

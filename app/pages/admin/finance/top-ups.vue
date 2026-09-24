@@ -44,14 +44,14 @@
         <tbody class="divide-y divide-slate-800/60">
           <tr v-for="req in financeStore.topUpRequests" :key="req.requestId" class="hover:bg-slate-800/40 transition-colors">
             <td class="px-6 py-4 text-sm text-slate-300">
-              {{ new Date(req.createdAt).toLocaleString() }}
+              {{ new Date(req.requestedAt).toLocaleString() }}
             </td>
             <td class="px-6 py-4">
               <p class="text-sm font-medium text-white">{{ req.student?.fullNameEn || 'Unknown Student' }}</p>
-              <p class="text-xs text-slate-500">Parent: {{ req.parentUser?.fullNameEn || 'Unknown' }}</p>
+              <p class="text-xs text-slate-500">Parent: {{ req.parentRequester?.fullNameEn || 'Unknown' }}</p>
             </td>
             <td class="px-6 py-4 text-sm font-bold text-teal-400">
-              {{ new Intl.NumberFormat('lo-LA').format(req.amount) }}
+              {{ new Intl.NumberFormat('lo-LA').format(Number(req.amount)) }}
             </td>
             <td class="px-6 py-4">
               <span
@@ -99,51 +99,53 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium c
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Reject Modal -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="rejectModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="rejectModal.open = false"/>
-        <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-white">Reject Top-Up</h2>
-            <button class="text-slate-400 hover:text-white transition-colors" @click="rejectModal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          <div v-if="rejectModal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ rejectModal.error }}</div>
-
-          <form class="flex flex-col gap-4" @submit.prevent="handleRejectSubmit">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reason for Rejection</label>
-              <textarea v-model="rejectModal.form.reason" rows="3" class="modal-input" required placeholder="Provide a reason..."/>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="rejectModal.open = false">Cancel</button>
-              <button
-type="submit" :disabled="rejectModal.saving"
-                class="px-5 py-2 rounded-lg text-sm font-semibold bg-red-500 hover:bg-red-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                <svg v-if="rejectModal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <!-- Reject Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="rejectModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="rejectModal.open = false"/>
+          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-white">Reject Top-Up</h2>
+              <button class="text-slate-400 hover:text-white transition-colors" @click="rejectModal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                Reject Request
               </button>
             </div>
-          </form>
+
+            <div v-if="rejectModal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ rejectModal.error }}</div>
+
+            <form class="flex flex-col gap-4" @submit.prevent="handleRejectSubmit">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reason for Rejection</label>
+                <textarea v-model="rejectModal.form.reason" rows="3" class="modal-input" required placeholder="Provide a reason..."/>
+              </div>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="rejectModal.open = false">Cancel</button>
+                <button
+  type="submit" :disabled="rejectModal.saving"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-red-500 hover:bg-red-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
+                  <svg v-if="rejectModal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Reject Request
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
+import type { TopUpRequest } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useFinanceStore } from '../../../application/stores/finance';
 
@@ -171,8 +173,8 @@ const handleApprove = async (requestId: number) => {
   if (confirm('Are you sure you want to approve this top-up?')) {
     try {
       await financeStore.approveTopUpRequest(requestId);
-    } catch (err: any) {
-      alert(err.message || 'Failed to approve request');
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to approve request'));
     }
   }
 };
@@ -187,7 +189,7 @@ const rejectModal = reactive({
   }
 });
 
-const openRejectModal = (req: any) => {
+const openRejectModal = (req: TopUpRequest) => {
   rejectModal.requestId = req.requestId;
   rejectModal.form.reason = '';
   rejectModal.error = '';
@@ -201,8 +203,8 @@ const handleRejectSubmit = async () => {
   try {
     await financeStore.rejectTopUpRequest(rejectModal.requestId, rejectModal.form.reason);
     rejectModal.open = false;
-  } catch (err: any) {
-    rejectModal.error = err.message || 'Failed to reject request';
+  } catch (err) {
+    rejectModal.error = getErrorMessage(err, 'Failed to reject request');
   } finally {
     rejectModal.saving = false;
   }

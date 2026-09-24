@@ -106,78 +106,80 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-        <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Grade' : 'Add Grade' }}</h2>
-            <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-
-          <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-            <div class="grid grid-cols-2 gap-4">
-              <div class="flex flex-col gap-1.5 col-span-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student ID *</label>
-                <input v-model.number="modal.form.studentId" required type="number" class="modal-input" >
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject *</label>
-                <select v-model.number="modal.form.subjectId" required class="modal-input">
-                  <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">{{ s.subjectNameEn }}</option>
-                </select>
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Class *</label>
-                <select v-model.number="modal.form.classId" required class="modal-input">
-                  <option v-for="c in adminStore.classes" :key="c.classId" :value="c.classId">{{ c.classNameEn }}</option>
-                </select>
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Grade Type *</label>
-                <select v-model.number="modal.form.gradeTypeId" required class="modal-input">
-                  <option :value="0" disabled>—</option>
-                  <option v-for="gt in academicsStore.gradeTypes" :key="gt.typeId" :value="gt.typeId">
-                    {{ locale === 'lo' ? gt.typeNameLo : gt.typeNameEn }}
-                  </option>
-                </select>
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score *</label>
-                <input v-model.number="modal.form.score" required type="number" class="modal-input" step="0.01" >
-              </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
-              <button
-type="submit" :disabled="modal.saving"
-                class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <!-- Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
+          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Grade' : 'Add Grade' }}</h2>
+              <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                {{ modal.isEdit ? 'Update Grade' : 'Save Grade' }}
               </button>
             </div>
-          </form>
+
+            <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
+
+            <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5 col-span-2">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student ID *</label>
+                  <input v-model.number="modal.form.studentId" required type="number" class="modal-input" >
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject *</label>
+                  <select v-model.number="modal.form.subjectId" required class="modal-input">
+                    <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">{{ s.subjectNameEn }}</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Class *</label>
+                  <select v-model.number="modal.form.classId" required class="modal-input">
+                    <option v-for="c in adminStore.classes" :key="c.classId" :value="c.classId">{{ c.classNameEn }}</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Grade Type *</label>
+                  <select v-model.number="modal.form.gradeTypeId" required class="modal-input">
+                    <option :value="0" disabled>—</option>
+                    <option v-for="gt in academicsStore.gradeTypes" :key="gt.typeId" :value="gt.typeId">
+                      {{ locale === 'lo' ? gt.typeNameLo : gt.typeNameEn }}
+                    </option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score *</label>
+                  <input v-model.number="modal.form.score" required type="number" class="modal-input" step="0.01" >
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
+                <button
+  type="submit" :disabled="modal.saving"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
+                  <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {{ modal.isEdit ? 'Update Grade' : 'Save Grade' }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
+import type { Grade } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAcademicsStore } from '../../../application/stores/academics';
 import { useAdminStore } from '../../../application/stores/admin';
@@ -196,7 +198,7 @@ const totalPages = computed(() => Math.ceil(academicsStore.gradesTotal / 50));
 
 onMounted(() => {
   academicsStore.fetchSubjects({ limit: 100 });
-  adminStore.fetchClasses({ limit: 100 });
+  adminStore.fetchClasses();
   academicsStore.fetchGrades();
   academicsStore.fetchGradeTypes();
 });
@@ -224,9 +226,9 @@ const modal = reactive({
   isEdit: false,
   gradeId: null as number | null,
   form: {
-    studentId: '',
-    subjectId: '',
-    classId: '',
+    studentId: '' as number | '',
+    subjectId: '' as number | '',
+    classId: '' as number | '',
     gradeTypeId: 0,
     score: 0
   }
@@ -244,14 +246,14 @@ const openCreateModal = () => {
   modal.open = true;
 };
 
-const openEditModal = (grade: any) => {
+const openEditModal = (grade: Grade) => {
   modal.isEdit = true;
   modal.gradeId = grade.gradeId;
   modal.form.studentId = grade.studentId;
   modal.form.subjectId = grade.subjectId;
   modal.form.classId = grade.classId;
   modal.form.gradeTypeId = grade.gradeTypeId ?? 0;
-  modal.form.score = grade.score;
+  modal.form.score = Number(grade.score ?? 0);
   modal.error = '';
   modal.open = true;
 };
@@ -266,8 +268,8 @@ const handleSubmit = async () => {
       await academicsStore.createGrade(modal.form);
     }
     modal.open = false;
-  } catch (err: any) {
-    modal.error = err.message || 'Failed to save grade';
+  } catch (err) {
+    modal.error = getErrorMessage(err, 'Failed to save grade');
   } finally {
     modal.saving = false;
   }
@@ -277,8 +279,8 @@ const handleDelete = async (gradeId: number) => {
   if (confirm('Are you sure you want to delete this grade?')) {
     try {
       await academicsStore.deleteGrade(gradeId);
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete grade');
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to delete grade'));
     }
   }
 };

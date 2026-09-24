@@ -103,30 +103,31 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
     </div>
 
     <!-- Pagination -->
-    <Pagination
+    <PaginationBar
       :current-page="adminStore.teachersPage"
       :total-pages="totalPages"
       @update:page="changePage"
     />
+
+
+
+
+    <!-- ── ADD / EDIT TEACHER MODAL ── -->
+    <TeacherFormModal
+      v-model:open="teacherModal.open"
+      v-model:form="teacherModal.form"
+      :mode="teacherModal.mode"
+      :saving="teacherModal.saving"
+      :error="teacherModal.error"
+      @submit="handleTeacherSubmit"
+    />
   </div>
-
-
-
-  <!-- ── ADD / EDIT TEACHER MODAL ── -->
-  <TeacherFormModal
-    v-model:open="teacherModal.open"
-    :mode="teacherModal.mode"
-    :saving="teacherModal.saving"
-    :error="teacherModal.error"
-    :form="teacherModal.form"
-    @submit="handleTeacherSubmit"
-  />
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import TeacherFormModal from './modal/TeacherFormModal.vue';
-import Pagination from '../../../components/Pagination.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { Teacher } from '../../../domain/models/Teacher';
 
@@ -173,7 +174,8 @@ const emptyTeacherForm = () => ({
   qualification: '',
   hireDate: '',
   salary: null as number | null,
-  address: ''
+  address: '',
+  notes: ''
 });
 
 const teacherModal = reactive({
@@ -208,7 +210,8 @@ const openEditModal = (teacher: Teacher) => {
     qualification: teacher.qualification ?? '',
     hireDate: formatDate(teacher.hireDate),
     salary: teacher.salary ? Number(teacher.salary) : null,
-    address: teacher.address ?? ''
+    address: teacher.address ?? '',
+    notes: teacher.notes ?? ''
   };
   teacherModal.error = '';
   teacherModal.open = true;
@@ -218,7 +221,7 @@ const handleTeacherSubmit = async () => {
   teacherModal.saving = true;
   teacherModal.error = '';
   try {
-    const payload: any = { ...teacherModal.form };
+    const payload: Record<string, unknown> = { ...teacherModal.form };
     // Don't send empty fields or empty password on edit
     if (teacherModal.mode === 'edit' && !payload.password) {
       delete payload.password;
@@ -235,8 +238,8 @@ const handleTeacherSubmit = async () => {
       await adminStore.updateTeacher(teacherModal.teacherId, payload);
     }
     teacherModal.open = false;
-  } catch (err: any) {
-    teacherModal.error = err.message || 'Failed to save teacher';
+  } catch (err) {
+    teacherModal.error = getErrorMessage(err, 'Failed to save teacher');
   } finally {
     teacherModal.saving = false;
   }

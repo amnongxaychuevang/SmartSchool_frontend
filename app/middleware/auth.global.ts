@@ -1,6 +1,6 @@
 import { useAuthStore } from '../application/stores/auth';
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const authStore = useAuthStore();
 
   // On first load, if we have a token but no user, try to fetch the user

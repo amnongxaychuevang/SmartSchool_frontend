@@ -165,7 +165,7 @@ class="bg-pink-500 h-full flex items-center justify-center text-[10px] font-bold
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useAdminStore } from '~/application/stores/admin';
 
 definePageMeta({ layout: 'admin' });

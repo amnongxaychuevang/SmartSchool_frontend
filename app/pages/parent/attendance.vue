@@ -9,7 +9,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         >
           <option value="">{{ $t('parentPortal.select_child') }}</option>
           <option v-for="child in parentStore.children" :key="child.studentId" :value="child.studentId">
-            {{ child.user?.fullNameEn || `Student #${child.studentId}` }}
+            {{ ($i18n.locale === 'lo' ? child.fullNameLo : child.fullNameEn) || child.fullNameEn }}
           </option>
         </select>
       </div>
@@ -32,13 +32,12 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr v-for="att in parentStore.childAttendance" :key="att.id" class="hover:bg-slate-800/40 transition-colors">
-            <td class="px-6 py-4 text-sm text-white">{{ new Date(att.date).toLocaleDateString() }}</td>
+            <td class="px-6 py-4 text-sm text-white">{{ att.date.slice(0, 10) }}</td>
             <td class="px-6 py-4">
-              <span
-class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize"
-                :class="att.status === 'present' ? 'bg-teal-500/20 text-teal-400' : 'bg-red-500/20 text-red-400'">
-                {{ att.status }}
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" :class="STATUS_CLASS[att.status]">
+                {{ $t(`teacherPortal.${att.status}`) }}
               </span>
+              <span v-if="att.firstCheckIn" class="ml-2 text-xs text-slate-500">{{ checkInTime(att.firstCheckIn) }}</span>
             </td>
           </tr>
         </tbody>
@@ -58,12 +57,20 @@ definePageMeta({ layout: 'parent' });
 useHead({ title: computed(() => `${t('parentPortal.childs_attendance')} — ${t('parentPortal.title')}`) });
 
 const parentStore = useParentStore();
+
+const STATUS_CLASS = {
+  present: 'bg-teal-500/20 text-teal-400',
+  late: 'bg-amber-500/20 text-amber-400',
+  excused: 'bg-blue-500/20 text-blue-400',
+  absent: 'bg-red-500/20 text-red-400',
+} as const;
+const checkInTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 const selectedChildId = ref<number | ''>('');
 
 onMounted(async () => {
   await parentStore.fetchChildren();
   if (parentStore.children.length > 0) {
-    selectedChildId.value = parentStore.children[0].studentId;
+    selectedChildId.value = parentStore.children[0]!.studentId;
     loadAttendance();
   }
 });

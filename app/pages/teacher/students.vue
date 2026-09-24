@@ -12,7 +12,7 @@
         <div class="flex flex-col gap-1">
           <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ locale === 'lo' ? student.fullNameLo : student.fullNameEn }}</h3>
           <p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('teacherPortal.code') }} {{ student.studentCode }}</p>
-          <div v-if="student.parentStudents?.length > 0" class="mt-2">
+          <div v-if="(student.parentStudents?.length ?? 0) > 0" class="mt-2">
             <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">{{ $t('teacherPortal.parents') }}</p>
             <div v-for="ps in student.parentStudents" :key="ps.parentUserId" class="text-xs text-slate-500 dark:text-slate-400">
               {{ locale === 'lo' ? ps.parent.fullNameLo : ps.parent.fullNameEn }} ({{ ps.parent.phoneNumber }})
@@ -25,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+import type { ApiResponse, Paged } from '../../infrastructure/api/types';
+import type { Student } from '../../domain/models/Student';
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useApiClient } from '../../infrastructure/api/apiClient';
@@ -35,13 +37,13 @@ definePageMeta({ layout: 'teacher' });
 const { t, locale } = useI18n();
 useHead({ title: computed(() => `${t('teacherPortal.students_directory')} — Teacher Portal`) });
 
-const students = ref<any[]>([]);
+const students = ref<Student[]>([]);
 const loading = ref(false);
 
 const fetchStudents = async () => {
   loading.value = true;
   try {
-    const res: any = await useApiClient()(API_ENDPOINTS.students.list, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<Paged<'students', Student>>>(API_ENDPOINTS.students.list, { method: 'GET' });
     students.value = res.data?.students || [];
   } catch (error) {
     console.error('Failed to fetch students', error);

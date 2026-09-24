@@ -58,6 +58,6 @@ onMounted(async () => {
 
 const totalStudentsCount = computed(() => {
   // A rough estimate: sum of capacities or just a placeholder
-  return teacherStore.myClasses.reduce((acc, c) => acc + (c.capacity || 0), 0);
+  return teacherStore.myClasses.reduce((acc, c) => acc + (c._count?.classStudents ?? 0), 0);
 });
 </script>

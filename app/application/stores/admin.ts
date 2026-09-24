@@ -1,17 +1,20 @@
 import { defineStore } from 'pinia';
 import { adminRepository } from '../../infrastructure/api/AdminRepository';
-import { dashboardRepository } from '../../infrastructure/api/DashboardRepository';
+import type { Payload } from '../../domain/models/Academics';
+import type { AuditLog, DashboardStats } from '../../domain/models/School';
+import type { SettingsData } from '../../infrastructure/api/SettingsRepository';
 import { settingsRepository } from '../../infrastructure/api/SettingsRepository';
 import type { Student, StudentPayload } from '../../domain/models/Student';
 import type { SchoolClass } from '../../domain/models/SchoolClass';
 import type { User } from '../../domain/models/User';
 import type { Teacher } from '../../domain/models/Teacher';
 import type { Parent } from '../../domain/models/Parent';
+import { getErrorMessage } from '../../utils/errors';
 
 export const useAdminStore = defineStore('admin', {
   state: () => ({
     // Dashboard
-    stats: null as any,
+    stats: null as DashboardStats | null,
     statsLoading: false,
 
     // Students
@@ -53,11 +56,11 @@ export const useAdminStore = defineStore('admin', {
     // Genders
 
     // Settings
-    settings: null as any,
+    settings: null as SettingsData | null,
     settingsLoading: false,
 
     // Audit logs
-    auditLogs: [] as any[],
+    auditLogs: [] as AuditLog[],
     auditLogsTotal: 0,
     auditLogsPage: 1,
     auditLogsFilters: { userId: '', entityType: '', action: '' } as { userId: string; entityType: string; action: string },
@@ -71,22 +74,22 @@ export const useAdminStore = defineStore('admin', {
       this.settingsLoading = true;
       try {
         const res = await settingsRepository.getSettings();
-        this.settings = res.data;
-      } catch (err: any) {
-        this.error = err.message;
+        this.settings = res.data ?? null;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.settingsLoading = false;
       }
     },
 
-    async updateSettings(payload: any) {
+    async updateSettings(payload: Payload) {
       this.settingsLoading = true;
       try {
         const res = await settingsRepository.updateSettings(payload);
-        this.settings = res.data;
+        this.settings = res.data ?? null;
         return res.data;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       } finally {
         this.settingsLoading = false;
@@ -97,8 +100,8 @@ export const useAdminStore = defineStore('admin', {
       this.statsLoading = true;
       try {
         this.stats = await adminRepository.getDashboardStats();
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.statsLoading = false;
       }
@@ -112,8 +115,8 @@ export const useAdminStore = defineStore('admin', {
         const res = await adminRepository.getStudents({ search: this.studentsSearch, page: this.studentsPage, limit: 15 });
         this.students = res.students;
         this.studentsTotal = res.total;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.studentsLoading = false;
       }
@@ -125,8 +128,8 @@ export const useAdminStore = defineStore('admin', {
         this.students.unshift(newStudent);
         this.studentsTotal += 1;
         return newStudent;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
@@ -139,8 +142,8 @@ export const useAdminStore = defineStore('admin', {
           this.students[idx] = updatedStudent;
         }
         return updatedStudent;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
@@ -154,26 +157,26 @@ export const useAdminStore = defineStore('admin', {
         const res = await adminRepository.getUsers({ role: this.usersRoleFilter, search: this.usersSearch, page: this.usersPage, limit: 15 });
         this.users = res.users;
         this.usersTotal = res.total;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.usersLoading = false;
       }
     },
 
-    async createUser(payload: any) {
+    async createUser(payload: Payload) {
       try {
         const newUser = await adminRepository.createUser(payload);
         this.users.unshift(newUser);
         this.usersTotal += 1;
         return newUser;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
 
-    async updateUser(userId: number, payload: any) {
+    async updateUser(userId: number, payload: Payload) {
       try {
         const updatedUser = await adminRepository.updateUser(userId, payload);
         const idx = this.users.findIndex(u => u.userId === userId);
@@ -181,8 +184,8 @@ export const useAdminStore = defineStore('admin', {
           this.users[idx] = updatedUser;
         }
         return updatedUser;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
@@ -196,26 +199,26 @@ export const useAdminStore = defineStore('admin', {
         const res = await adminRepository.getTeachers({ search: this.teachersSearch, page: this.teachersPage, limit: 15 });
         this.teachers = res.teachers;
         this.teachersTotal = res.total;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.teachersLoading = false;
       }
     },
 
-    async createTeacher(payload: any) {
+    async createTeacher(payload: Payload) {
       try {
         const newTeacher = await adminRepository.createTeacher(payload);
         this.teachers.unshift(newTeacher);
         this.teachersTotal += 1;
         return newTeacher;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
 
-    async updateTeacher(teacherId: number, payload: any) {
+    async updateTeacher(teacherId: number, payload: Payload) {
       try {
         const updatedTeacher = await adminRepository.updateTeacher(teacherId, payload);
         const idx = this.teachers.findIndex(t => t.teacherId === teacherId);
@@ -223,8 +226,8 @@ export const useAdminStore = defineStore('admin', {
           this.teachers[idx] = updatedTeacher;
         }
         return updatedTeacher;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
@@ -238,26 +241,26 @@ export const useAdminStore = defineStore('admin', {
         const res = await adminRepository.getParents({ search: this.parentsSearch, page: this.parentsPage, limit: 15 });
         this.parents = res.parents;
         this.parentsTotal = res.total;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.parentsLoading = false;
       }
     },
 
-    async createParent(payload: any) {
+    async createParent(payload: Payload) {
       try {
         const newParent = await adminRepository.createParent(payload);
         this.parents.unshift(newParent);
         this.parentsTotal += 1;
         return newParent;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
 
-    async updateParent(parentId: number, payload: any) {
+    async updateParent(parentId: number, payload: Payload) {
       try {
         const updatedParent = await adminRepository.updateParent(parentId, payload);
         const idx = this.parents.findIndex(p => p.parentId === parentId);
@@ -265,8 +268,8 @@ export const useAdminStore = defineStore('admin', {
           this.parents[idx] = updatedParent;
         }
         return updatedParent;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
@@ -279,26 +282,26 @@ export const useAdminStore = defineStore('admin', {
         const res = await adminRepository.getClasses({ search: this.classesSearch, page: this.classesPage, limit: 15 });
         this.classes = res.classes;
         this.classesTotal = res.total;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.classesLoading = false;
       }
     },
 
-    async createClass(payload: any) {
+    async createClass(payload: Payload) {
       try {
         const newClass = await adminRepository.createClass(payload);
         this.classes.unshift(newClass);
         this.classesTotal += 1;
         return newClass;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
 
-    async updateClass(classId: number, payload: any) {
+    async updateClass(classId: number, payload: Payload) {
       try {
         const updatedClass = await adminRepository.updateClass(classId, payload);
         const idx = this.classes.findIndex(c => c.classId === classId);
@@ -306,8 +309,8 @@ export const useAdminStore = defineStore('admin', {
           this.classes[idx] = updatedClass;
         }
         return updatedClass;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
@@ -317,8 +320,8 @@ export const useAdminStore = defineStore('admin', {
         await adminRepository.deleteClass(classId);
         this.classes = this.classes.filter(c => c.classId !== classId);
         this.classesTotal -= 1;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       }
     },
@@ -339,8 +342,8 @@ export const useAdminStore = defineStore('admin', {
         });
         this.auditLogs = res.logs;
         this.auditLogsTotal = res.total;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
       } finally {
         this.auditLogsLoading = false;
       }

@@ -43,7 +43,7 @@
               fill="transparent"
               class="cursor-pointer"
               tabindex="0"
-              :aria-label="`${cat}, ${s.label}: ${valuePrefix}${formatValue(s.data[ci])}`"
+              :aria-label="`${cat}, ${s.label}: ${valuePrefix}${formatValue(s.data[ci] ?? 0)}`"
               @mouseenter="hovered = { ci, si }"
               @focus="hovered = { ci, si }"
               @blur="hovered = null"
@@ -59,8 +59,8 @@
         class="pointer-events-none absolute top-1 -translate-x-1/2 rounded-lg bg-slate-950/95 border border-slate-700/60 px-2.5 py-1.5 text-xs shadow-lg whitespace-nowrap z-10"
         :style="{ left: `${categoryCenterXPercent(hovered.ci)}%` }"
       >
-        <p class="text-slate-400">{{ categories[hovered.ci] }} · {{ series[hovered.si].label }}</p>
-        <p class="font-semibold text-white">{{ valuePrefix }}{{ formatValue(series[hovered.si].data[hovered.ci]) }}</p>
+        <p class="text-slate-400">{{ categories[hovered.ci] }} · {{ series[hovered.si]?.label }}</p>
+        <p class="font-semibold text-white">{{ valuePrefix }}{{ formatValue(series[hovered.si]?.data[hovered.ci] ?? 0) }}</p>
       </div>
     </div>
   </div>
@@ -117,7 +117,7 @@ const yTicks = computed(() => {
   // For a small max (e.g. maxValue=1), the 0.5 step rounds to the same
   // integer as an adjacent tick ("1" shown twice) — drop the duplicate
   // rather than show a repeated, meaningless label.
-  const deduped = ticks.filter((t, i) => i === 0 || t.value !== ticks[i - 1].value);
+  const deduped = ticks.filter((t, i) => i === 0 || t.value !== ticks[i - 1]?.value);
   return deduped.map((t) => ({ ...t, label: formatValue(t.value) }));
 });
 
@@ -175,7 +175,7 @@ function barPath(ci: number, si: number) {
 
 const ariaSummary = computed(() => {
   const parts = props.categories.map((cat, ci) =>
-    `${cat}: ${props.series.map((s) => `${s.label} ${formatValue(s.data[ci])}`).join(', ')}`
+    `${cat}: ${props.series.map((s) => `${s.label} ${formatValue(s.data[ci] ?? 0)}`).join(', ')}`
   );
   return parts.join('; ');
 });

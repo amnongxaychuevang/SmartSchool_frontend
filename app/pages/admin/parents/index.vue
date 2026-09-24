@@ -113,247 +113,248 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
         class="px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         @click="changePage(adminStore.parentsPage + 1)">Next →</button>
     </div>
-  </div>
 
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="parentModal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="parentModal.open = false"/>
-        <div class="relative glass-panel w-full max-w-4xl flex flex-col p-0 overflow-hidden">
-          <div class="p-6 flex items-center justify-between border-b border-slate-800/50 bg-slate-900/20">
-            <div>
-              <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {{ parentModal.mode === 'add' ? $t('parents.add_parent') : $t('parents.edit_parent') }}
-              </h2>
-              <p class="text-xs text-slate-400 mt-1">Provide credential and profile details for this parent.</p>
+
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="parentModal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="parentModal.open = false"/>
+          <div class="relative glass-panel w-full max-w-4xl flex flex-col p-0 overflow-hidden">
+            <div class="p-6 flex items-center justify-between border-b border-slate-800/50 bg-slate-900/20">
+              <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {{ parentModal.mode === 'add' ? $t('parents.add_parent') : $t('parents.edit_parent') }}
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Provide credential and profile details for this parent.</p>
+              </div>
+              <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" @click="parentModal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
-            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" @click="parentModal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
 
-          <div v-if="parentModal.error" class="m-6 mb-0 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ parentModal.error }}</div>
+            <div v-if="parentModal.error" class="m-6 mb-0 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ parentModal.error }}</div>
 
-          <form class="flex flex-col" @submit.prevent="handleParentSubmit">
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-6 scrollbar-thin">
+            <form class="flex flex-col" @submit.prevent="handleParentSubmit">
+              <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-6 scrollbar-thin">
               
-              <!-- Column 1: Account Credentials -->
-              <div class="flex flex-col gap-4 bg-slate-800/20 border border-slate-700/50 p-5 rounded-2xl">
-                <div class="flex items-center gap-2 pb-2 border-b border-slate-700/50">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Account Credentials</h3>
-                </div>
-
-                <!-- Full Name EN -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    {{ $t('users.full_name_en') }} <span class="text-teal-400">*</span>
-                  </label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </span>
-                    <input v-model="parentModal.form.fullNameEn" required type="text" class="input-field pl-10" placeholder="e.g. Jane Doe" >
+                <!-- Column 1: Account Credentials -->
+                <div class="flex flex-col gap-4 bg-slate-800/20 border border-slate-700/50 p-5 rounded-2xl">
+                  <div class="flex items-center gap-2 pb-2 border-b border-slate-700/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Account Credentials</h3>
                   </div>
-                </div>
 
-                <!-- Full Name LO -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    {{ $t('users.full_name_lo') }} <span class="text-teal-400">*</span>
-                  </label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </span>
-                    <input v-model="parentModal.form.fullNameLo" required type="text" class="input-field pl-10" placeholder="ຕົວຢ່າງ: ນາງ ສົມດີ" >
-                  </div>
-                </div>
-
-                <!-- Email -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    {{ $t('users.email') }}
-                  </label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </span>
-                    <input v-model="parentModal.form.email" type="email" autocomplete="email" class="input-field pl-10" placeholder="e.g. jane@example.com" >
-                  </div>
-                </div>
-
-                <!-- Phone -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    {{ $t('users.phone') }} <span class="text-teal-400">*</span>
-                  </label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                    </span>
-                    <input v-model="parentModal.form.phoneNumber" required type="text" autocomplete="tel" class="input-field pl-10" placeholder="e.g. +856 20 ..." >
-                  </div>
-                </div>
-
-                <!-- Password -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    {{ $t('users.password') }}{{ parentModal.mode === 'add' ? ' *' : '' }}
-                  </label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </span>
-                    <input
-v-model="parentModal.form.password"
-                      :required="parentModal.mode === 'add'"
-                      type="password"
-                      autocomplete="new-password"
-                      :placeholder="parentModal.mode === 'edit' ? $t('users.password_placeholder') : '••••••••'"
-                      class="input-field pl-10" >
-                  </div>
-                </div>
-
-                <!-- Status Switch Row -->
-                <div class="flex items-center justify-between p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl mt-2">
-                  <div class="flex flex-col gap-1">
-                    <span class="text-xs font-semibold text-white uppercase tracking-wider">{{ $t('common.status') }}</span>
-                    <span class="text-xs text-slate-400">Toggle parent's login status</span>
-                  </div>
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input v-model="parentModal.form.isActive" type="checkbox" class="sr-only peer" >
-                    <div class="w-10 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:bg-teal-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"/>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Column 2: Parent Profile Details -->
-              <div class="flex flex-col gap-4 bg-slate-800/20 border border-slate-700/50 p-5 rounded-2xl">
-                <div class="flex items-center gap-2 pb-2 border-b border-slate-700/50">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1" />
-                  </svg>
-                  <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Parent Profile Details</h3>
-                </div>
-
-                <!-- Occupation EN & LO -->
-                <div class="grid grid-cols-2 gap-3">
+                  <!-- Full Name EN -->
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      {{ $t('parents.occupation') }}
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {{ $t('users.full_name_en') }} <span class="text-teal-400">*</span>
                     </label>
                     <div class="relative">
                       <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.occupation" type="text" placeholder="e.g. ຊາວນາ / Engineer" class="input-field pl-10" >
+                      <input v-model="parentModal.form.fullNameEn" required type="text" class="input-field pl-10" placeholder="e.g. Jane Doe" >
                     </div>
                   </div>
 
-                </div>
-
-                <!-- Emergency Contact & Line ID -->
-                <div class="grid grid-cols-2 gap-3">
+                  <!-- Full Name LO -->
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      {{ $t('parents.emergency_contact') }}
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {{ $t('users.full_name_lo') }} <span class="text-teal-400">*</span>
                     </label>
                     <div class="relative">
                       <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.emergencyContact" type="text" placeholder="e.g. +85620..." class="input-field pl-10" >
+                      <input v-model="parentModal.form.fullNameLo" required type="text" class="input-field pl-10" placeholder="ຕົວຢ່າງ: ນາງ ສົມດີ" >
                     </div>
                   </div>
 
+                  <!-- Email -->
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Line ID</label>
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {{ $t('users.email') }}
+                    </label>
                     <div class="relative">
                       <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.lineId" type="text" placeholder="e.g. mylineid" class="input-field pl-10" >
+                      <input v-model="parentModal.form.email" type="email" autocomplete="email" class="input-field pl-10" placeholder="e.g. jane@example.com" >
                     </div>
                   </div>
-                </div>
 
-                <!-- National ID -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    {{ $t('parents.national_id') }}
-                  </label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                      </svg>
-                    </span>
-                    <input v-model="parentModal.form.nationalId" type="text" placeholder="e.g. N-12345" class="input-field pl-10" >
+                  <!-- Phone -->
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {{ $t('users.phone') }} <span class="text-teal-400">*</span>
+                    </label>
+                    <div class="relative">
+                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                      </span>
+                      <input v-model="parentModal.form.phoneNumber" required type="text" autocomplete="tel" class="input-field pl-10" placeholder="e.g. +856 20 ..." >
+                    </div>
+                  </div>
+
+                  <!-- Password -->
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {{ $t('users.password') }}{{ parentModal.mode === 'add' ? ' *' : '' }}
+                    </label>
+                    <div class="relative">
+                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </span>
+                      <input
+  v-model="parentModal.form.password"
+                        :required="parentModal.mode === 'add'"
+                        type="password"
+                        autocomplete="new-password"
+                        :placeholder="parentModal.mode === 'edit' ? $t('users.password_placeholder') : '••••••••'"
+                        class="input-field pl-10" >
+                    </div>
+                  </div>
+
+                  <!-- Status Switch Row -->
+                  <div class="flex items-center justify-between p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl mt-2">
+                    <div class="flex flex-col gap-1">
+                      <span class="text-xs font-semibold text-white uppercase tracking-wider">{{ $t('common.status') }}</span>
+                      <span class="text-xs text-slate-400">Toggle parent's login status</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input v-model="parentModal.form.isActive" type="checkbox" class="sr-only peer" >
+                      <div class="w-10 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:bg-teal-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"/>
+                    </label>
                   </div>
                 </div>
 
-                <!-- Address -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.address') }}</label>
-                  <div class="relative">
-                    <span class="absolute top-3 left-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </span>
-                    <textarea v-model="parentModal.form.address" rows="2" class="input-field pl-10 resize-none pt-2" placeholder="ບ້ານ, ເມືອງ, ແຂວງ"/>
+                <!-- Column 2: Parent Profile Details -->
+                <div class="flex flex-col gap-4 bg-slate-800/20 border border-slate-700/50 p-5 rounded-2xl">
+                  <div class="flex items-center gap-2 pb-2 border-b border-slate-700/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1" />
+                    </svg>
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Parent Profile Details</h3>
                   </div>
+
+                  <!-- Occupation EN & LO -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                      <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        {{ $t('parents.occupation') }}
+                      </label>
+                      <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01" />
+                          </svg>
+                        </span>
+                        <input v-model="parentModal.form.occupation" type="text" placeholder="e.g. ຊາວນາ / Engineer" class="input-field pl-10" >
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- Emergency Contact & Line ID -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                      <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        {{ $t('parents.emergency_contact') }}
+                      </label>
+                      <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        </span>
+                        <input v-model="parentModal.form.emergencyContact" type="text" placeholder="e.g. +85620..." class="input-field pl-10" >
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                      <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Line ID</label>
+                      <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                        </span>
+                        <input v-model="parentModal.form.lineId" type="text" placeholder="e.g. mylineid" class="input-field pl-10" >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- National ID -->
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      {{ $t('parents.national_id') }}
+                    </label>
+                    <div class="relative">
+                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                      </span>
+                      <input v-model="parentModal.form.nationalId" type="text" placeholder="e.g. N-12345" class="input-field pl-10" >
+                    </div>
+                  </div>
+
+                  <!-- Address -->
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.address') }}</label>
+                    <div class="relative">
+                      <span class="absolute top-3 left-3 flex items-center pointer-events-none text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </span>
+                      <textarea v-model="parentModal.form.address" rows="2" class="input-field pl-10 resize-none pt-2" placeholder="ບ້ານ, ເມືອງ, ແຂວງ"/>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
 
-            </div>
-
-            <div class="p-6 pt-4 border-t border-slate-800/50 flex items-center justify-end gap-3 bg-slate-900/20">
-              <button type="button" class="btn-ghost" @click="parentModal.open = false">
-                {{ $t('common.cancel') }}
-              </button>
-              <button type="submit" :disabled="parentModal.saving" class="btn-primary flex items-center gap-2">
-                <svg v-if="parentModal.saving" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                <span v-else>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <div class="p-6 pt-4 border-t border-slate-800/50 flex items-center justify-end gap-3 bg-slate-900/20">
+                <button type="button" class="btn-ghost" @click="parentModal.open = false">
+                  {{ $t('common.cancel') }}
+                </button>
+                <button type="submit" :disabled="parentModal.saving" class="btn-primary flex items-center gap-2">
+                  <svg v-if="parentModal.saving" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
-                </span>
-                {{ parentModal.saving ? $t('common.saving') : $t('common.save') }}
-              </button>
-            </div>
-          </form>
+                  <span v-else>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  {{ parentModal.saving ? $t('common.saving') : $t('common.save') }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -442,7 +443,7 @@ const handleParentSubmit = async () => {
   parentModal.saving = true;
   parentModal.error = '';
   try {
-    const payload: any = { ...parentModal.form };
+    const payload: Record<string, unknown> = { ...parentModal.form };
     // Don't send empty fields or empty password on edit
     if (parentModal.mode === 'edit' && !payload.password) {
       delete payload.password;
@@ -454,8 +455,8 @@ const handleParentSubmit = async () => {
       await adminStore.updateParent(parentModal.parentId, payload);
     }
     parentModal.open = false;
-  } catch (err: any) {
-    parentModal.error = err.message || 'Failed to save parent';
+  } catch (err) {
+    parentModal.error = getErrorMessage(err, 'Failed to save parent');
   } finally {
     parentModal.saving = false;
   }

@@ -170,6 +170,8 @@ v-if="scanResult" :class="['glass-panel p-5 border flex flex-col sm:flex-row ite
 </template>
 
 <script setup lang="ts">
+import type { ApiResponse } from '../../../infrastructure/api/types';
+import type { ScanResult } from '../../../domain/models/School';
 import { ref, onMounted } from 'vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
@@ -187,7 +189,7 @@ const scanType = ref<'check_in' | 'check_out'>('check_in');
 const selectedStudentId = ref<number | null>(null);
 const cardUid = ref('');
 const scanning = ref(false);
-const scanResult = ref<any>(null);
+const scanResult = ref<{ success: boolean; studentName: string; studentCode: string; gateLocation: string; logType?: 'check_in' | 'check_out'; time: string } | null>(null);
 
 onMounted(() => {
   adminStore.fetchStudents({ page: 1 });
@@ -235,7 +237,7 @@ const triggerCardScan = async () => {
 
     // Call actual backend express endpoint
     // Note: The API /attendance/scan expects: { cardUid, gateLocation }
-    const res = await apiClient<any>(API_ENDPOINTS.attendance.scan, {
+    const res = await apiClient<ApiResponse<ScanResult>>(API_ENDPOINTS.attendance.scan, {
       method: 'POST',
       body: {
         cardUid: cardUid.value,
@@ -251,13 +253,13 @@ const triggerCardScan = async () => {
         studentName,
         studentCode,
         gateLocation: gateLocation.value,
-        logType: scanType.value, // Bind local selector for visualization
+        logType: res.data.logType, // what the server recorded (check-in or check-out)
         time: new Date().toISOString()
       };
     } else {
       throw new Error('Scan failed on server');
     }
-  } catch (err: any) {
+  } catch (err) {
     console.error('Scan Error:', err);
     scanResult.value = {
       success: false,

@@ -150,8 +150,8 @@ const saveAttendance = async () => {
 
     await teacherStore.saveAttendance(Number(selectedClass.value), attendanceDate.value, records);
     alert('Attendance saved successfully!');
-  } catch (err: any) {
-    alert(err.message || 'Failed to save attendance');
+  } catch (err) {
+    alert(getErrorMessage(err, 'Failed to save attendance'));
   } finally {
     saving.value = false;
   }

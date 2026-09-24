@@ -153,7 +153,7 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     </div>
 
     <!-- Pagination -->
-    <Pagination
+    <PaginationBar
       :current-page="adminStore.studentsPage"
       :total-pages="totalPages"
       @update:page="changePage"

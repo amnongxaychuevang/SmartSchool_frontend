@@ -111,7 +111,7 @@ class="w-8 h-8 rounded-lg flex items-center justify-center text-pink-300 font-bo
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, resolveComponent } from 'vue';
+import { ref, computed, resolveComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../application/stores/auth';
 import LangSwitch from '../components/LangSwitch.vue';

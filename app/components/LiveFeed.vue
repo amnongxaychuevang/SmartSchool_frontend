@@ -51,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ScanResult } from '../domain/models/School';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useSocketClient } from '../infrastructure/websocket/socketClient';
@@ -84,11 +85,11 @@ onMounted(() => {
   on('connect', () => { isConnected.value = true; });
   on('disconnect', () => { isConnected.value = false; });
 
-  on('live-feed-update', (data: any) => {
+  on('live-feed-update', (data: ScanResult & { studentName?: string; gateLocation?: string }) => {
     // Unshift new log to the top
     logs.value.unshift({
       id: Math.random().toString(36).substring(7),
-      studentId: data.studentId || t('admin.unknown'),
+      studentId: data.studentId ? String(data.studentId) : t('admin.unknown'),
       studentName: data.studentName || t('admin.student_name'), // ideally sent from backend
       type: data.logType,
       gate: data.gateLocation || t('admin.main_gate'),

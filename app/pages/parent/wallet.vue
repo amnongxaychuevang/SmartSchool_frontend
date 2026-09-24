@@ -9,7 +9,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         >
           <option value="">{{ $t('parentPortal.select_child') }}</option>
           <option v-for="child in parentStore.children" :key="child.studentId" :value="child.studentId">
-            {{ child.user?.fullNameEn || `Student #${child.studentId}` }}
+            {{ ($i18n.locale === 'lo' ? child.fullNameLo : child.fullNameEn) || child.fullNameEn }}
           </option>
         </select>
       </div>
@@ -72,73 +72,74 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
     <div v-else class="glass-panel p-12 text-center text-slate-500 rounded-2xl">
       {{ $t('parentPortal.please_select_child') }}
     </div>
+
+
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="topUpModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="topUpModal.open = false"/>
+          <div class="relative glass-panel rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h2 class="text-xl font-bold text-white">{{ $t('parentPortal.request_top_up') }}</h2>
+              <button class="text-slate-400 hover:text-white" @click="topUpModal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          
+            <form class="flex flex-col gap-4" @submit.prevent="handleTopUp">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.amount') }}</label>
+                <input v-model.number="topUpModal.form.amount" type="number" required min="1000" step="1000" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="e.g. 50000" >
+              </div>
+            
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.proof_of_payment') }}</label>
+                <input v-model="topUpModal.form.proofOfPayment" type="text" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="Transaction Ref or Image URL" >
+              </div>
+            
+              <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors" @click="topUpModal.open = false">{{ $t('common.cancel') }}</button>
+                <button type="submit" :disabled="topUpModal.saving" class="px-4 py-2 rounded-lg text-sm font-semibold bg-pink-500 hover:bg-pink-400 text-white transition-colors disabled:opacity-50">
+                  {{ topUpModal.saving ? $t('common.saving') : $t('parentPortal.submit_request') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="limitsModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="limitsModal.open = false"/>
+          <div class="relative glass-panel rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h2 class="text-xl font-bold text-white">{{ $t('parentPortal.spending_limits') }}</h2>
+              <button class="text-slate-400 hover:text-white" @click="limitsModal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          
+            <form class="flex flex-col gap-4" @submit.prevent="handleSaveLimits">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.daily_max') }}</label>
+                <input v-model.number="limitsModal.form.dailyMax" type="number" min="0" step="1000" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="e.g. 50000" >
+                <span class="text-xs text-slate-500">{{ $t('parentPortal.no_limit') }}: {{ limitsModal.form.dailyMax ? '' : '✓' }}</span>
+              </div>
+            
+              <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors" @click="limitsModal.open = false">{{ $t('common.cancel') }}</button>
+                <button type="submit" :disabled="limitsModal.saving" class="px-4 py-2 rounded-lg text-sm font-semibold bg-pink-500 hover:bg-pink-400 text-white transition-colors disabled:opacity-50">
+                  {{ limitsModal.saving ? $t('common.saving') : $t('parentPortal.save_limits') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
-
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="topUpModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="topUpModal.open = false"/>
-        <div class="relative glass-panel rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-5">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-            <h2 class="text-xl font-bold text-white">{{ $t('parentPortal.request_top_up') }}</h2>
-            <button class="text-slate-400 hover:text-white" @click="topUpModal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-          
-          <form class="flex flex-col gap-4" @submit.prevent="handleTopUp">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.amount') }}</label>
-              <input v-model.number="topUpModal.form.amount" type="number" required min="1000" step="1000" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="e.g. 50000" >
-            </div>
-            
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.proof_of_payment') }}</label>
-              <input v-model="topUpModal.form.proofOfPayment" type="text" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="Transaction Ref or Image URL" >
-            </div>
-            
-            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors" @click="topUpModal.open = false">{{ $t('common.cancel') }}</button>
-              <button type="submit" :disabled="topUpModal.saving" class="px-4 py-2 rounded-lg text-sm font-semibold bg-pink-500 hover:bg-pink-400 text-white transition-colors disabled:opacity-50">
-                {{ topUpModal.saving ? $t('common.saving') : $t('parentPortal.submit_request') }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
-
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="limitsModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="limitsModal.open = false"/>
-        <div class="relative glass-panel rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-5">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-            <h2 class="text-xl font-bold text-white">{{ $t('parentPortal.spending_limits') }}</h2>
-            <button class="text-slate-400 hover:text-white" @click="limitsModal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-          
-          <form class="flex flex-col gap-4" @submit.prevent="handleSaveLimits">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.daily_max') }}</label>
-              <input v-model.number="limitsModal.form.dailyMax" type="number" min="0" step="1000" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="e.g. 50000" >
-              <span class="text-xs text-slate-500">{{ $t('parentPortal.no_limit') }}: {{ limitsModal.form.dailyMax ? '' : '✓' }}</span>
-            </div>
-            
-            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors" @click="limitsModal.open = false">{{ $t('common.cancel') }}</button>
-              <button type="submit" :disabled="limitsModal.saving" class="px-4 py-2 rounded-lg text-sm font-semibold bg-pink-500 hover:bg-pink-400 text-white transition-colors disabled:opacity-50">
-                {{ limitsModal.saving ? $t('common.saving') : $t('parentPortal.save_limits') }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -174,7 +175,7 @@ const limitsModal = reactive({
 onMounted(async () => {
   await parentStore.fetchChildren();
   if (parentStore.children.length > 0) {
-    selectedChildId.value = parentStore.children[0].studentId;
+    selectedChildId.value = parentStore.children[0]!.studentId;
     loadWallet();
   }
 });
@@ -211,8 +212,8 @@ const handleSaveLimits = async () => {
     limitsModal.open = false;
     alert(t('parentPortal.limits_updated'));
     await parentStore.fetchSpendingLimits(Number(selectedChildId.value));
-  } catch (err: any) {
-    alert(err.message || 'Failed to update limits');
+  } catch (err) {
+    alert(getErrorMessage(err, 'Failed to update limits'));
   } finally {
     limitsModal.saving = false;
   }
@@ -230,8 +231,8 @@ const handleTopUp = async () => {
     topUpModal.form.proofOfPayment = '';
     // Optionally reload wallet if it updates pending state
     loadWallet();
-  } catch (err: any) {
-    alert(err.message || 'Failed to request top up');
+  } catch (err) {
+    alert(getErrorMessage(err, 'Failed to request top up'));
   } finally {
     topUpModal.saving = false;
   }

@@ -42,9 +42,8 @@
         <thead>
           <tr class="border-b border-slate-800">
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Shop Name</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Owner User ID</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Location</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Balance (₭)</th>
+                        <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Location</th>
+            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Status</th>
             <th class="text-right text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Actions</th>
           </tr>
         </thead>
@@ -54,14 +53,13 @@
               <p class="text-sm font-medium text-white">{{ shop.shopNameEn }}</p>
               <p class="text-xs text-slate-500">{{ shop.shopNameLo }}</p>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-300">
-              {{ shop.ownerUserId }}
-            </td>
             <td class="px-6 py-4 text-sm text-slate-400">
-              {{ shop.locationInfo }}
+              {{ shop.locationLo || shop.locationEn || '—' }}
             </td>
-            <td class="px-6 py-4 text-sm font-medium text-teal-400">
-              {{ new Intl.NumberFormat('lo-LA').format(shop.balance) }}
+            <td class="px-6 py-4">
+              <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium" :class="shop.isActive ? 'bg-teal-500/20 text-teal-400' : 'bg-slate-500/20 text-slate-400'">
+                {{ shop.isActive ? $t('common.active') : $t('common.inactive') }}
+              </span>
             </td>
             <td class="px-6 py-4">
               <div class="flex items-center justify-end gap-2">
@@ -90,63 +88,69 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-        <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Shop' : 'Add Shop' }}</h2>
-            <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-
-          <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Owner User ID *</label>
-              <input v-model.number="modal.form.ownerUserId" required type="number" class="modal-input" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Shop Name (EN) *</label>
-              <input v-model="modal.form.shopNameEn" required type="text" class="modal-input" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Shop Name (LO) *</label>
-              <input v-model="modal.form.shopNameLo" required type="text" class="modal-input" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Location Info</label>
-              <input v-model="modal.form.locationInfo" type="text" class="modal-input" >
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
-              <button
-type="submit" :disabled="modal.saving"
-                class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <!-- Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
+          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Shop' : 'Add Shop' }}</h2>
+              <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                {{ modal.isEdit ? 'Update Shop' : 'Create Shop' }}
               </button>
             </div>
-          </form>
+
+            <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
+
+            <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Shop Name (EN) *</label>
+                <input v-model="modal.form.shopNameEn" required type="text" class="modal-input" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Shop Name (LO) *</label>
+                <input v-model="modal.form.shopNameLo" required type="text" class="modal-input" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Location (EN)</label>
+                <input v-model="modal.form.locationEn" type="text" maxlength="100" class="modal-input" placeholder="Canteen, building A" >
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Location (LO)</label>
+                <input v-model="modal.form.locationLo" type="text" maxlength="100" class="modal-input" placeholder="ໂຮງອາຫານ, ຕຶກ A" >
+              </div>
+              <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                <input v-model="modal.form.isActive" type="checkbox" class="accent-teal-500" >
+                {{ $t('common.active') }}
+              </label>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
+                <button
+  type="submit" :disabled="modal.saving"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
+                  <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {{ modal.isEdit ? 'Update Shop' : 'Create Shop' }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
+import type { Shop } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useFinanceStore } from '../../../application/stores/finance';
 
@@ -181,31 +185,34 @@ const modal = reactive({
   isEdit: false,
   shopId: null as number | null,
   form: {
-    ownerUserId: '',
     shopNameEn: '',
     shopNameLo: '',
-    locationInfo: ''
+    locationEn: '',
+    locationLo: '',
+    isActive: true
   }
 });
 
 const openCreateModal = () => {
   modal.isEdit = false;
   modal.shopId = null;
-  modal.form.ownerUserId = '';
   modal.form.shopNameEn = '';
   modal.form.shopNameLo = '';
-  modal.form.locationInfo = '';
+  modal.form.locationEn = '';
+  modal.form.locationLo = '';
+  modal.form.isActive = true;
   modal.error = '';
   modal.open = true;
 };
 
-const openEditModal = (shop: any) => {
+const openEditModal = (shop: Shop) => {
   modal.isEdit = true;
   modal.shopId = shop.shopId;
-  modal.form.ownerUserId = shop.ownerUserId;
   modal.form.shopNameEn = shop.shopNameEn;
   modal.form.shopNameLo = shop.shopNameLo;
-  modal.form.locationInfo = shop.locationInfo;
+  modal.form.locationEn = shop.locationEn ?? '';
+  modal.form.locationLo = shop.locationLo ?? '';
+  modal.form.isActive = shop.isActive;
   modal.error = '';
   modal.open = true;
 };
@@ -220,8 +227,8 @@ const handleSubmit = async () => {
       await financeStore.createShop(modal.form);
     }
     modal.open = false;
-  } catch (err: any) {
-    modal.error = err.message || 'Failed to save shop';
+  } catch (err) {
+    modal.error = getErrorMessage(err, 'Failed to save shop');
   } finally {
     modal.saving = false;
   }
@@ -231,8 +238,8 @@ const handleDelete = async (shopId: number) => {
   if (confirm('Are you sure you want to delete this shop?')) {
     try {
       await financeStore.deleteShop(shopId);
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete shop');
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to delete shop'));
     }
   }
 };

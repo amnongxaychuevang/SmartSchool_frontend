@@ -3,6 +3,7 @@ import type { User } from '../../domain/models/User';
 import { LoginUseCase } from '../use-cases/auth/LoginUseCase';
 import { FetchMeUseCase } from '../use-cases/auth/FetchMeUseCase';
 import { authRepository } from '../../infrastructure/api/AuthRepository';
+import { getErrorMessage } from '../../utils/errors';
 
 // Wire use cases with the concrete repository implementation.
 // In tests, you can swap authRepository with a mock.
@@ -40,7 +41,7 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         await this.fetchUser();
-      } catch (e) {
+      } catch {
         // If fetching fails, clear auth state safely.
         this.logout();
       }
@@ -60,8 +61,8 @@ export const useAuthStore = defineStore('auth', {
         useCookie('refresh_token', { maxAge: 60 * 60 * 24 * 30 }).value = refreshToken;
 
         return user;
-      } catch (err: any) {
-        this.error = err.message;
+      } catch (err) {
+        this.error = getErrorMessage(err);
         throw err;
       } finally {
         this.loading = false;
@@ -96,8 +97,8 @@ export const useAuthStore = defineStore('auth', {
       try {
         this.user = await fetchMeUseCase.execute();
         return this.user;
-      } catch (err: any) {
-        console.error('Failed to fetch user:', err.message);
+      } catch (err) {
+        console.error('Failed to fetch user:', getErrorMessage(err));
         this.logout(); // Token likely expired or invalid
       } finally {
         this.loading = false;
@@ -121,7 +122,9 @@ export const useAuthStore = defineStore('auth', {
         try {
           localStorage.removeItem('auth_token')
           sessionStorage.clear()
-        } catch {}
+        } catch {
+          // Storage can be unavailable (private mode, blocked site data) — nothing to clear then.
+        }
       }
     },
   },

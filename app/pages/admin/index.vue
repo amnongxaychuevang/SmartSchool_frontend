@@ -321,6 +321,8 @@
 </template>
 
 <script setup lang="ts">
+import type { TopUpRequest } from '../../domain/models/Finance';
+import type { AuditLog } from '../../domain/models/School';
 import { ref, onMounted, computed } from "vue";
 import { useAdminStore } from "../../application/stores/admin";
 import { financeRepository } from "../../infrastructure/api/FinanceRepository";
@@ -479,21 +481,6 @@ const quickLinks = [
     icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
   },
 ];
-
-interface TopUpRequest {
-  requestId: string;
-  student?: { fullNameEn: string };
-  method: string;
-  amount: number;
-}
-
-interface AuditLog {
-  auditId: string;
-  user?: { fullNameEn: string };
-  action: string;
-  entityType: string;
-  createdAt: string;
-}
 
 const pendingTopUps = ref<TopUpRequest[]>([]);
 const pendingTopUpsLoading = ref(false);

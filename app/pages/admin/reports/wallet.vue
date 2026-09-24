@@ -152,7 +152,7 @@ v-model="searchQuery" type="text" :placeholder="locale === 'lo' ? 'ຄົ້ນ�
                 </span>
               </td>
               <td class="px-6 py-3 text-right text-slate-500 font-mono text-[11px]">
-                {{ new Date(wallet.updatedAt).toLocaleDateString() }}
+                {{ wallet.updatedAt ? new Date(wallet.updatedAt).toLocaleDateString() : '—' }}
               </td>
             </tr>
             <tr v-if="filteredWallets.length === 0 && !financeStore.walletsLoading">

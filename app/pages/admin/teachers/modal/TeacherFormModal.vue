@@ -227,13 +227,31 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['dot-indicator', active
 <script setup lang="ts">
 import { ref } from 'vue';
 
+export interface TeacherForm {
+  fullNameEn: string;
+  fullNameLo: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  isActive: boolean;
+  employeeCode: string;
+  specialization: string;
+  qualification: string;
+  hireDate: string;
+  salary: number | null;
+  address: string;
+  notes: string;
+}
+
 defineProps<{
   open: boolean;
   mode: 'add' | 'edit';
   saving: boolean;
   error: string;
-  form: any;
 }>();
+
+// Two-way bound with the parent (v-model:form), so editing fields here is allowed.
+const form = defineModel<TeacherForm>('form', { required: true });
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void;

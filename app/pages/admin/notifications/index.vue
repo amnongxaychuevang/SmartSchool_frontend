@@ -38,25 +38,25 @@
       <table v-else class="w-full">
         <thead>
           <tr class="border-b border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Title</th>
+            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Type</th>
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Message</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">User ID</th>
+            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Recipient</th>
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Date</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr v-for="notif in academicsStore.notifications" :key="notif.notificationId" class="hover:bg-slate-800/40 transition-colors">
             <td class="px-6 py-4 text-sm font-medium text-white">
-              {{ notif.title }}
+              {{ notif.type.replace('_', ' ') }} · {{ notif.channel }}
             </td>
             <td class="px-6 py-4 text-sm text-slate-300">
-              {{ notif.message }}
+              {{ $i18n.locale === 'lo' ? notif.messageLo : notif.messageEn }}
             </td>
             <td class="px-6 py-4 text-sm text-slate-400">
-              {{ notif.userId }}
+              {{ notif.recipient?.fullNameEn ?? `#${notif.recipientUserId}` }}
             </td>
             <td class="px-6 py-4 text-sm text-slate-400">
-              {{ new Date(notif.createdAt).toLocaleString() }}
+              {{ new Date(notif.sentAt).toLocaleString() }}
             </td>
           </tr>
         </tbody>
@@ -71,67 +71,75 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-        <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-white">Send Notification</h2>
-            <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-
-          <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target User ID *</label>
-              <input v-model.number="modal.form.userId" required type="number" class="modal-input" placeholder="User ID to receive this" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Title *</label>
-              <input v-model="modal.form.title" required type="text" class="modal-input" >
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Message *</label>
-              <textarea v-model="modal.form.message" required rows="3" class="modal-input"/>
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Type</label>
-              <select v-model="modal.form.type" class="modal-input">
-                <option value="system">System</option>
-                <option value="attendance">Attendance</option>
-                <option value="wallet">Wallet</option>
-              </select>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-              <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
-              <button
-type="submit" :disabled="modal.saving"
-                class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <!-- Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
+          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-white">Send Notification</h2>
+              <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                Send Message
               </button>
             </div>
-          </form>
+
+            <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
+
+            <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Recipient user ID *</label>
+                <input v-model.number="modal.form.recipientUserId" required type="number" min="1" class="modal-input" placeholder="User ID to receive this" >
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Type</label>
+                  <select v-model="modal.form.type" class="modal-input">
+                    <option v-for="t in NOTIFICATION_TYPES" :key="t" :value="t">{{ t.replace('_', ' ') }}</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Channel</label>
+                  <select v-model="modal.form.channel" class="modal-input">
+                    <option v-for="c in CHANNELS" :key="c" :value="c">{{ c.replace('_', ' ') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Message (LO) *</label>
+                <textarea v-model="modal.form.messageLo" required rows="3" class="modal-input"/>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Message (EN) *</label>
+                <textarea v-model="modal.form.messageEn" required rows="3" class="modal-input"/>
+              </div>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
+                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
+                <button
+  type="submit" :disabled="modal.saving"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
+                  <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Send Message
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
+import type { AppNotification } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAcademicsStore } from '../../../application/stores/academics';
 
@@ -159,23 +167,26 @@ const changePage = (page: number) => {
   academicsStore.fetchNotifications({ search: searchInput.value, page });
 };
 
+// Must match the API's enums (the old form sent title/message/'system', which it rejects).
+const NOTIFICATION_TYPES: AppNotification['type'][] = ['general', 'absence', 'grade', 'transaction', 'check_in', 'check_out'];
+const CHANNELS: AppNotification['channel'][] = ['app_push', 'sms', 'telegram', 'line', 'email'];
+const emptyForm = () => ({
+  recipientUserId: '' as number | '',
+  type: 'general' as AppNotification['type'],
+  channel: 'app_push' as AppNotification['channel'],
+  messageLo: '',
+  messageEn: '',
+});
+
 const modal = reactive({
   open: false,
   saving: false,
   error: '',
-  form: {
-    userId: '',
-    title: '',
-    message: '',
-    type: 'system'
-  }
+  form: emptyForm()
 });
 
 const openCreateModal = () => {
-  modal.form.userId = '';
-  modal.form.title = '';
-  modal.form.message = '';
-  modal.form.type = 'system';
+  modal.form = emptyForm();
   modal.error = '';
   modal.open = true;
 };
@@ -186,8 +197,8 @@ const handleSubmit = async () => {
   try {
     await academicsStore.createNotification(modal.form);
     modal.open = false;
-  } catch (err: any) {
-    modal.error = err.message || 'Failed to send notification';
+  } catch (err) {
+    modal.error = getErrorMessage(err, 'Failed to send notification');
   } finally {
     modal.saving = false;
   }

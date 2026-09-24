@@ -91,7 +91,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibo
               <div class="flex items-center gap-3">
                 <div
 class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                  :class="roleColors[(user.role as any)?.code || (user.role as string)]?.bg ?? 'bg-slate-500/20 text-slate-400'">
+                  :class="roleColors[roleCode(user)]?.bg ?? 'bg-slate-500/20 text-slate-400'">
                   {{ (locale === 'lo' ? (user.fullNameLo || user.fullNameEn) : (user.fullNameEn || user.fullNameLo))?.[0] ?? '?' }}
                 </div>
                 <div>
@@ -110,8 +110,8 @@ class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold s
             <td class="px-6 py-4">
               <span
 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
-                :class="roleColors[(user.role as any)?.code || (user.role as string)]?.badge ?? 'bg-slate-500/20 text-slate-400'">
-                {{ locale === 'lo' ? (user.role as any)?.nameLo || user.role : (user.role as any)?.nameEn || user.role }}
+                :class="roleColors[roleCode(user)]?.badge ?? 'bg-slate-500/20 text-slate-400'">
+                {{ roleName(user) }}
               </span>
             </td>
             <td class="px-6 py-4 text-xs text-slate-500 hidden sm:table-cell">
@@ -156,23 +156,24 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
     </div>
 
     <!-- Pagination -->
-    <Pagination
+    <PaginationBar
       :current-page="adminStore.usersPage"
       :total-pages="totalPages"
       @update:page="changePage"
     />
-  </div>
 
-  <!-- ── ADD / EDIT USER MODAL ── -->
-  <UserFormModal
-    v-model:open="userModal.open"
-    :mode="userModal.mode"
-    :saving="userModal.saving"
-    :error="userModal.error"
-    :form="userModal.form"
-    :db-roles="dbRoles"
-    @submit="handleUserSubmit"
-  />
+
+    <!-- ── ADD / EDIT USER MODAL ── -->
+    <UserFormModal
+      v-model:open="userModal.open"
+      v-model:form="userModal.form"
+      :mode="userModal.mode"
+      :saving="userModal.saving"
+      :error="userModal.error"
+      :db-roles="dbRoles"
+      @submit="handleUserSubmit"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -180,6 +181,8 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import UserFormModal from './modals/UserFormModal.vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { User } from '../../../domain/models/User';
+import type { Role } from '../../../domain/models/School';
+import type { ApiResponse } from '../../../infrastructure/api/types';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 
@@ -194,7 +197,12 @@ const roleDropdownOpen = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 const apiClient = useApiClient();
-const dbRoles = ref<any[]>([]);
+const dbRoles = ref<Role[]>([]);
+
+// The users list embeds the role object; the logged-in user carries just the code.
+const roleCode = (u: User) => (typeof u.role === 'string' ? u.role : u.role.code);
+const roleName = (u: User) =>
+  typeof u.role === 'string' ? u.role : (locale.value === 'lo' ? u.role.nameLo : u.role.nameEn) || u.role.code;
 
 const roles = computed(() => {
   const list = dbRoles.value.map(r => ({ value: r.code, label: locale.value === 'lo' ? r.nameLo : r.nameEn }));
@@ -203,7 +211,7 @@ const roles = computed(() => {
 
 const fetchRoles = async () => {
   try {
-    const res = await apiClient<any>(API_ENDPOINTS.roles.list);
+    const res = await apiClient<ApiResponse<Role[]>>(API_ENDPOINTS.roles.list);
     if (res?.success) {
       dbRoles.value = res.data;
     }
@@ -288,7 +296,7 @@ const openEditModal = (user: User) => {
     fullNameLo: user.fullNameLo ?? '',
     email: user.email ?? '',
     phoneNumber: user.phoneNumber ?? '',
-    roleId: (user.role as any)?.roleId ?? '',
+    roleId: typeof user.role === 'object' ? user.role.roleId : '',
     password: '',
     isActive: user.isActive ?? true
   };
@@ -300,7 +308,7 @@ const handleUserSubmit = async () => {
   userModal.saving = true;
   userModal.error = '';
   try {
-    const payload: any = { ...userModal.form };
+    const payload: Record<string, unknown> = { ...userModal.form };
     // Don't send empty password on edit
     if (userModal.mode === 'edit' && !payload.password) {
       delete payload.password;
@@ -311,8 +319,8 @@ const handleUserSubmit = async () => {
       await adminStore.updateUser(userModal.userId, payload);
     }
     userModal.open = false;
-  } catch (err: any) {
-    userModal.error = err.message || 'Failed to save user';
+  } catch (err) {
+    userModal.error = getErrorMessage(err, 'Failed to save user');
   } finally {
     userModal.saving = false;
   }
