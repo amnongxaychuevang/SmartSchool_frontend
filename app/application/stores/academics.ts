@@ -13,7 +13,7 @@ export const useAcademicsStore = defineStore('academics', {
     gradesTotal: 0,
     gradesPage: 1,
     gradesLoading: false,
-    gradeTypes: [] as string[],
+    gradeTypes: [] as { typeId: number; typeNameEn: string; typeNameLo: string }[],
 
     cards: [] as any[],
     cardsTotal: 0,
@@ -98,7 +98,8 @@ export const useAcademicsStore = defineStore('academics', {
     async fetchGradeTypes() {
       try {
         const res = await academicsRepository.getGradeTypes();
-        this.gradeTypes = res.types;
+        // The API returns { gradeTypes } (reading res.types left the list always empty).
+        this.gradeTypes = res.gradeTypes ?? [];
       } catch (err: any) {
         this.error = err.message;
       }

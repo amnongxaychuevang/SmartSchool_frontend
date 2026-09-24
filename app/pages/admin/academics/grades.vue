@@ -71,8 +71,8 @@
             <td class="px-6 py-4 text-sm text-slate-300">
               {{ grade.subject?.subjectNameEn }}
             </td>
-            <td class="px-6 py-4 text-sm text-slate-300 capitalize">
-              {{ grade.gradeType }}
+            <td class="px-6 py-4 text-sm text-slate-300">
+              {{ grade.gradeType ? (locale === 'lo' ? grade.gradeType.typeNameLo : grade.gradeType.typeNameEn) : '—' }}
             </td>
             <td class="px-6 py-4">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
@@ -145,7 +145,12 @@
               </div>
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Grade Type *</label>
-                <input v-model="modal.form.gradeType" required type="text" class="modal-input" placeholder="midterm, final..." >
+                <select v-model.number="modal.form.gradeTypeId" required class="modal-input">
+                  <option :value="0" disabled>—</option>
+                  <option v-for="gt in academicsStore.gradeTypes" :key="gt.typeId" :value="gt.typeId">
+                    {{ locale === 'lo' ? gt.typeNameLo : gt.typeNameEn }}
+                  </option>
+                </select>
               </div>
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score *</label>
@@ -182,6 +187,7 @@ useHead({ title: 'Grades — Smart School Admin' });
 
 const academicsStore = useAcademicsStore();
 const adminStore = useAdminStore();
+const { locale } = useI18n();
 
 const classFilter = ref('');
 const subjectFilter = ref('');
@@ -192,6 +198,7 @@ onMounted(() => {
   academicsStore.fetchSubjects({ limit: 100 });
   adminStore.fetchClasses({ limit: 100 });
   academicsStore.fetchGrades();
+  academicsStore.fetchGradeTypes();
 });
 
 const handleFilter = () => {
@@ -220,9 +227,8 @@ const modal = reactive({
     studentId: '',
     subjectId: '',
     classId: '',
-    gradeType: 'final',
-    score: 0,
-    academicYear: '2023-2024'
+    gradeTypeId: 0,
+    score: 0
   }
 });
 
@@ -232,7 +238,7 @@ const openCreateModal = () => {
   modal.form.studentId = '';
   modal.form.subjectId = '';
   modal.form.classId = '';
-  modal.form.gradeType = 'final';
+  modal.form.gradeTypeId = 0;
   modal.form.score = 0;
   modal.error = '';
   modal.open = true;
@@ -244,9 +250,8 @@ const openEditModal = (grade: any) => {
   modal.form.studentId = grade.studentId;
   modal.form.subjectId = grade.subjectId;
   modal.form.classId = grade.classId;
-  modal.form.gradeType = grade.gradeType;
+  modal.form.gradeTypeId = grade.gradeTypeId ?? 0;
   modal.form.score = grade.score;
-  modal.form.academicYear = grade.academicYear;
   modal.error = '';
   modal.open = true;
 };
