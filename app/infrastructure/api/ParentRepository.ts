@@ -30,7 +30,7 @@ export class ParentRepository {
     return useApiClient()(`/parents/me/children/${studentId}/leave-requests`, { method: 'GET' });
   }
 
-  async createLeaveRequest(studentId: number, data: { startDate: string, endDate: string, reasonEn?: string, reasonLo?: string, documentUrl?: string }) {
+  async createLeaveRequest(studentId: number, data: { startDate: string, endDate: string, reason?: string, documentUrl?: string }) {
     return useApiClient()(`/parents/me/children/${studentId}/leave-requests`, { method: 'POST', body: data });
   }
 

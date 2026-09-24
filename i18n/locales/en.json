@@ -39,7 +39,10 @@
     "announcements": "Announcements",
     "wallet": "Wallet",
     "auditLogs": "Audit Log",
-    "logout": "Logout"
+    "logout": "Logout",
+    "classSubjects": "Class Subjects",
+    "subjects": "Subjects",
+    "academicTerms": "Academic Terms"
   },
   "common": {
     "refresh": "Refresh",
@@ -62,6 +65,9 @@
     "all": "All",
     "active": "Active",
     "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivate_confirm": "Deactivate \"{name}\"? They will no longer be able to log in. Their records are kept and you can reactivate them later.",
     "status": "Status",
     "gender": "Gender",
     "class": "Class",
@@ -70,7 +76,9 @@
     "name": "Name",
     "actions": "Actions",
     "delete_confirm_title": "Confirm Delete",
-    "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "address": "Address",
+    "notes": "Notes"
   },
   "admin": {
     "dashboard": "Admin Dashboard",
@@ -84,6 +92,19 @@
     "manage_students": "Manage Students",
     "manage_users": "Manage Users",
     "manage_classes": "Manage Classes",
+    "manage_teachers": "Manage Teachers",
+    "manage_parents": "Manage Parents",
+    "manage_wallet": "Wallet & Finance",
+    "manage_attendance": "Attendance",
+    "manage_audit_logs": "Audit Log",
+    "manage_reports": "Reports",
+    "attendance_trend": "Attendance — Last 7 Days",
+    "wallet_trend": "Wallet Transactions — Last 7 Days",
+    "pending_topups": "Pending Top-Up Requests",
+    "recent_activity": "Recent Activity",
+    "view_all": "View all",
+    "no_pending_topups": "No pending requests",
+    "no_recent_activity": "No recent activity",
     "total_teachers": "Total Teachers",
     "total_classes": "Total Classes",
     "total_parents": "Total Parents",
@@ -110,6 +131,7 @@
     "everyone": "Everyone",
     "teachers_only": "Teachers Only",
     "parents_only": "Parents Only",
+    "class_only": "One Class",
     "expiry_date": "Expiry Date (Optional)",
     "publish_announcement": "Publish Announcement"
   },
@@ -124,8 +146,9 @@
     "student_code": "Student Code",
     "full_name_en": "Full Name (English)",
     "full_name_lo": "Full Name (Lao)",
-    "delete_confirm_title": "Delete Student",
-    "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivate_confirm": "Deactivate \"{name}\"? Their records are kept and you can reactivate them later."
   },
   "classes": {
     "title": "Classes",
@@ -373,5 +396,10 @@
     "save_grades": "Save Grades",
     "score": "Score",
     "select_class_subject_to_enter": "Select a class and subject to enter grades."
+  },
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
   }
 }

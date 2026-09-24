@@ -26,7 +26,7 @@
             ]" 
             @click="statusDropdownOpen = !statusDropdownOpen">
             <span class="flex items-center gap-2">
-              {{ statusFilter === '' ? $t('common.all') : (statusFilter === 'active' ? $t('common.active') : (statusFilter === 'graduated' ? $t('students.graduated') : $t('students.transferred'))) }}
+              {{ statusFilter === '' ? $t('common.all') : statusLabel(statusFilter) }}
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform" :class="[statusDropdownOpen ? 'rotate-180' : '', statusFilter === '' ? 'text-slate-400' : 'text-teal-400']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
           </button>
@@ -41,25 +41,13 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
                 {{ $t('common.all') }}
               </button>
               <button
-class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
-                :class="statusFilter === 'active' ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
-                @click="statusFilter = 'active'; handleFilter(); statusDropdownOpen = false">
-                <div class="w-1.5 h-1.5 rounded-full" :class="statusFilter === 'active' ? 'bg-teal-500' : 'bg-transparent'"/>
-                {{ $t('common.active') }}
-              </button>
-              <button
-class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
-                :class="statusFilter === 'graduated' ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
-                @click="statusFilter = 'graduated'; handleFilter(); statusDropdownOpen = false">
-                <div class="w-1.5 h-1.5 rounded-full" :class="statusFilter === 'graduated' ? 'bg-teal-500' : 'bg-transparent'"/>
-                {{ $t('students.graduated') }}
-              </button>
-              <button
-class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
-                :class="statusFilter === 'transferred' ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
-                @click="statusFilter = 'transferred'; handleFilter(); statusDropdownOpen = false">
-                <div class="w-1.5 h-1.5 rounded-full" :class="statusFilter === 'transferred' ? 'bg-teal-500' : 'bg-transparent'"/>
-                {{ $t('students.transferred') }}
+                v-for="status in STATUS_OPTIONS"
+                :key="status"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
+                :class="statusFilter === status ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
+                @click="statusFilter = status; handleFilter(); statusDropdownOpen = false">
+                <div class="w-1.5 h-1.5 rounded-full" :class="statusFilter === status ? 'bg-teal-500' : 'bg-transparent'"/>
+                {{ statusLabel(status) }}
               </button>
             </div>
           </Transition>
@@ -79,9 +67,7 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
       <!-- Loading -->
-      <div v-if="adminStore.studentsLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="adminStore.studentsLoading" />
 
       <!-- Empty -->
       <div v-else-if="adminStore.students.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
@@ -95,8 +81,8 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
       <table v-else class="w-full">
         <thead>
           <tr class="border-b border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('nav.students') }}</th>
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.code') }}</th>
+            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.name') }}</th>
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3 hidden md:table-cell">{{ $t('common.class') }}</th>
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3 hidden sm:table-cell">{{ $t('common.gender') }}</th>
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.status') }}</th>
@@ -107,22 +93,19 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
           <tr
 v-for="student in adminStore.students" :key="student.studentId"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="px-6 py-4 text-sm text-slate-300 font-mono">{{ student.studentCode }}</td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-sm font-bold shrink-0">
-                  {{ student.fullNameEn[0] }}
+                  {{ studentName(student)[0] }}
                 </div>
-                <div>
-                  <p class="text-sm font-medium text-white">{{ student.fullNameEn }}</p>
-                  <p class="text-xs text-slate-500">{{ student.fullNameLo }}</p>
-                </div>
+                <p class="text-sm font-medium text-white">{{ studentName(student) }}</p>
               </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-300 font-mono">{{ student.studentCode }}</td>
             <td class="px-6 py-4 text-sm text-slate-400 hidden md:table-cell">
-              {{ student.classStudents?.[0]?.class?.classNameEn ?? '—' }}
+              {{ currentClassName(student) }}
             </td>
-            <td class="px-6 py-4 text-sm text-slate-400 capitalize hidden sm:table-cell">{{ student.gender ?? '—' }}</td>
+            <td class="px-6 py-4 text-sm text-slate-400 capitalize hidden sm:table-cell">{{ student.gender ? $t(`gender.${student.gender}`) : '—' }}</td>
             <td class="px-6 py-4">
               <span
 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -130,8 +113,9 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                   'bg-teal-500/20 text-teal-400': student.status === 'active',
                   'bg-blue-500/20 text-blue-400': student.status === 'graduated',
                   'bg-slate-500/20 text-slate-400': student.status === 'transferred',
+                  'bg-red-500/20 text-red-400': student.status === 'inactive',
                 }">
-                {{ student.status === 'active' ? $t('common.active') : (student.status === 'graduated' ? $t('students.graduated') : $t('students.transferred')) }}
+                {{ statusLabel(student.status) }}
               </span>
             </td>
             <td class="px-6 py-4">
@@ -146,14 +130,19 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <!-- Delete -->
+                <!-- Deactivate / reactivate (students are never deleted) -->
                 <button
-                  class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                  :title="$t('common.delete')"
-                  @click="openDeleteModal(student)"
+                  :disabled="togglingId === student.studentId"
+                  class="p-1.5 rounded-lg text-slate-400 transition-all disabled:opacity-40"
+                  :class="student.status === 'inactive' ? 'hover:text-teal-400 hover:bg-teal-500/10' : 'hover:text-red-400 hover:bg-red-500/10'"
+                  :title="student.status === 'inactive' ? $t('students.reactivate') : $t('students.deactivate')"
+                  @click="toggleActive(student)"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <svg v-if="student.status === 'inactive'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                   </svg>
                 </button>
               </div>
@@ -164,24 +153,13 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex items-center justify-center gap-2">
-      <button
-:disabled="adminStore.studentsPage <= 1"
-        class="px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        @click="changePage(adminStore.studentsPage - 1)">
-        ← {{ $t('common.back') }}
-      </button>
-      <span class="text-sm text-slate-400">{{ adminStore.studentsPage }} / {{ totalPages }}</span>
-      <button
-:disabled="adminStore.studentsPage >= totalPages"
-        class="px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        @click="changePage(adminStore.studentsPage + 1)">
-        → Next
-      </button>
-    </div>
-  </div>
+    <Pagination
+      :current-page="adminStore.studentsPage"
+      :total-pages="totalPages"
+      @update:page="changePage"
+    />
 
-  <!-- ── EDIT MODAL ── -->
+    <!-- ── EDIT MODAL ── -->
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="editModal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -205,9 +183,7 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.status') }}</label>
                 <select v-model="editModal.form.status" class="input-field cursor-pointer">
-                  <option value="active">{{ $t('common.active') }}</option>
-                  <option value="graduated">{{ $t('students.graduated') }}</option>
-                  <option value="transferred">{{ $t('students.transferred') }}</option>
+                  <option v-for="status in STATUS_OPTIONS" :key="status" :value="status">{{ statusLabel(status) }}</option>
                 </select>
               </div>
               <div class="flex flex-col gap-2">
@@ -222,9 +198,7 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.gender') }}</label>
                 <select v-model="editModal.form.gender" class="input-field cursor-pointer">
                   <option value="">—</option>
-                  <option v-for="g in adminStore.genders" :key="g.code" :value="g.code">
-                    {{ locale === 'lo' ? g.nameLo : g.nameEn }}
-                  </option>
+                  <option v-for="g in GENDERS" :key="g" :value="g">{{ $t(`gender.${g}`) }}</option>
                 </select>
               </div>
             </div>
@@ -249,63 +223,54 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
       </div>
     </Transition>
   </Teleport>
-
-  <!-- ── DELETE CONFIRM MODAL ── -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="deleteModal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="deleteModal.open = false"/>
-        <div class="relative glass-panel w-full max-w-sm p-6 flex flex-col gap-6">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <div class="flex flex-col gap-1 pt-1">
-              <h2 class="text-lg font-bold text-white">{{ $t('students.delete_confirm_title') }}</h2>
-              <p class="text-sm text-slate-400">{{ $t('students.delete_confirm_msg', { name: deleteModal.student?.fullNameEn }) }}</p>
-            </div>
-          </div>
-          <div v-if="deleteModal.error" class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ deleteModal.error }}</div>
-          <div class="flex items-center justify-end gap-3 pt-2">
-            <button class="btn-ghost" @click="deleteModal.open = false">{{ $t('common.cancel') }}</button>
-            <button
-:disabled="deleteModal.deleting" class="px-5 py-2 rounded-xl text-sm font-semibold bg-red-500 hover:bg-red-400 text-white transition-all shadow-[0_4px_15px_rgba(239,68,68,0.3)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.4)] disabled:opacity-60 flex items-center gap-2"
-              @click="handleDelete">
-              <svg v-if="deleteModal.deleting" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
-              {{ deleteModal.deleting ? $t('common.deleting') : $t('common.delete') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { Student } from '../../../domain/models/Student';
+import { GENDERS } from '../../../domain/models/Gender';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Students — Smart School Admin' });
 
 const adminStore = useAdminStore();
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const searchInput = ref('');
 const statusFilter = ref('');
 const statusDropdownOpen = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout>;
 
+// Name in the current UI language, falling back to the other one if empty.
+const studentName = (student: Student) =>
+  locale.value === 'lo'
+    ? student.fullNameLo || student.fullNameEn
+    : student.fullNameEn || student.fullNameLo;
+
+const STATUS_OPTIONS: Student['status'][] = ['active', 'inactive', 'graduated', 'transferred'];
+
+const statusLabel = (status: string) => {
+  switch (status) {
+    case 'active': return t('common.active');
+    case 'inactive': return t('common.inactive');
+    case 'graduated': return t('students.graduated');
+    case 'transferred': return t('students.transferred');
+    default: return status;
+  }
+};
+
+// The API returns only the current academic year's class (at most one).
+const currentClassName = (student: Student) => {
+  const cls = student.classStudents?.[0]?.class;
+  if (!cls) return '—';
+  return (locale.value === 'lo' ? cls.classNameLo : cls.classNameEn) || cls.classNameEn || '—';
+};
+
 const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / 15));
 
 onMounted(() => {
   adminStore.fetchStudents();
-  adminStore.fetchGenders();
 });
 
 const handleSearch = () => {
@@ -334,7 +299,7 @@ const editModal = reactive({
     fullNameEn: '',
     fullNameLo: '',
     gender: '',
-    status: 'active'
+    status: 'active' as Student['status']
   }
 });
 
@@ -356,38 +321,28 @@ const handleEditSubmit = async () => {
   try {
     await adminStore.updateStudent(editModal.studentId, { ...editModal.form });
     editModal.open = false;
-  } catch (err: any) {
-    editModal.error = err.message || 'Failed to update student';
+  } catch (err) {
+    editModal.error = (err instanceof Error && err.message) || 'Failed to update student';
   } finally {
     editModal.saving = false;
   }
 };
 
-// ── Delete Modal ──
-const deleteModal = reactive({
-  open: false,
-  deleting: false,
-  error: '',
-  student: null as Student | null
-});
+// ── Deactivate / reactivate ──
+// Students are never deleted (their wallet, grades and attendance history must stay);
+// admins switch them to "inactive" instead.
+const togglingId = ref<number | null>(null);
 
-const openDeleteModal = (student: Student) => {
-  deleteModal.student = student;
-  deleteModal.error = '';
-  deleteModal.open = true;
-};
-
-const handleDelete = async () => {
-  if (!deleteModal.student) return;
-  deleteModal.deleting = true;
-  deleteModal.error = '';
+const toggleActive = async (student: Student) => {
+  const next = student.status === 'inactive' ? 'active' : 'inactive';
+  if (next === 'inactive' && !confirm(t('students.deactivate_confirm', { name: studentName(student) }))) return;
+  togglingId.value = student.studentId;
   try {
-    await adminStore.deleteStudent(deleteModal.student.studentId);
-    deleteModal.open = false;
-  } catch (err: any) {
-    deleteModal.error = err.message || 'Failed to delete student';
+    await adminStore.updateStudent(student.studentId, { status: next });
+  } catch (err) {
+    alert((err instanceof Error && err.message) || 'Failed to update student status');
   } finally {
-    deleteModal.deleting = false;
+    togglingId.value = null;
   }
 };
 </script>

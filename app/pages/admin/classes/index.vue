@@ -25,9 +25,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
     </div>
 
     <!-- Cards Grid -->
-    <div v-if="adminStore.classesLoading" class="flex items-center justify-center py-20">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-    </div>
+    <LoadingSpinner v-if="adminStore.classesLoading" />
 
     <div v-else-if="adminStore.classes.length === 0" class="glass-panel flex flex-col items-center justify-center py-20 text-slate-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

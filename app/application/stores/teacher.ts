@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { teacherRepository } from '../../infrastructure/api/TeacherRepository';
+import { teacherRepository, type AttendanceStatus } from '../../infrastructure/api/TeacherRepository';
 
 export const useTeacherStore = defineStore('teacher', () => {
   const myClasses = ref<any[]>([]);
@@ -26,7 +26,8 @@ export const useTeacherStore = defineStore('teacher', () => {
     loadingStudents.value = true;
     try {
       const res: any = await teacherRepository.getMyStudents(classId);
-      myStudents.value = res.data || [];
+      // The API returns { students, total }, not a bare array.
+      myStudents.value = res.data?.students ?? [];
     } catch (error) {
       console.error('Failed to fetch students', error);
       throw error;
@@ -35,8 +36,13 @@ export const useTeacherStore = defineStore('teacher', () => {
     }
   }
 
-  async function saveAttendance(records: any[]) {
-    await teacherRepository.saveAttendance(records);
+  async function getDailyAttendance(classId: number, date: string) {
+    const res = await teacherRepository.getDailyAttendance(classId, date);
+    return res.data.records;
+  }
+
+  async function saveAttendance(classId: number, date: string, records: { studentId: number; status: AttendanceStatus; note?: string }[]) {
+    await teacherRepository.saveAttendance(classId, date, records);
   }
 
   async function saveGrades(records: any[]) {
@@ -101,6 +107,7 @@ export const useTeacherStore = defineStore('teacher', () => {
     loadingStudents,
     fetchMyStudents,
     saveAttendance,
+    getDailyAttendance,
     saveGrades,
     mySchedules,
     loadingSchedules,

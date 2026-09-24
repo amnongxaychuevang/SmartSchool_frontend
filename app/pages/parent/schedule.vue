@@ -16,9 +16,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
     </div>
 
     <!-- Loading State -->
-    <div v-if="parentStore.loadingSchedule" class="glass-panel p-12 flex justify-center rounded-2xl">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"/>
-    </div>
+    <LoadingSpinner v-if="parentStore.loadingSchedule" color="indigo" padding="p-12" class="glass-panel rounded-2xl" />
 
     <!-- Content -->
     <template v-else-if="selectedChildId">

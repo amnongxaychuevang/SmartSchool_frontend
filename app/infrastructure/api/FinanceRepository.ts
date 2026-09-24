@@ -70,7 +70,7 @@ export const financeRepository = {
     return res.data;
   },
 
-  async updateSpendingLimit(studentId: number, payload: { dailyLimit?: number; weeklyLimit?: number }) {
+  async updateSpendingLimit(studentId: number, payload: { dailyMax?: number | null; weeklyMax?: number | null }) {
     const res = await useApiClient()<{ success: boolean; data: any }>(API_ENDPOINTS.spendingLimits.student.replace(':studentId', String(studentId)), {
       method: 'PUT',
       body: payload

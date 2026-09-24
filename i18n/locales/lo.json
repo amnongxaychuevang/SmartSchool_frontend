@@ -39,7 +39,10 @@
     "announcements": "ປະກາດຂ່າວສານ",
     "wallet": "ກະເປົາເງິນ",
     "auditLogs": "ບັນທຶກການໃຊ້ງານ",
-    "logout": "ອອກຈາກລະບົບ"
+    "logout": "ອອກຈາກລະບົບ",
+    "classSubjects": "ວິຊາຂອງຫ້ອງ",
+    "subjects": "ວິຊາຮຽນ",
+    "academicTerms": "ພາກຮຽນ"
   },
   "common": {
     "refresh": "ໂຫຼດຄືນ",
@@ -61,7 +64,10 @@
     "welcome_user": "ຍິນດີຕ້ອນຮັບ",
     "all": "ທັງໝົດ",
     "active": "ເປີດໃຊ້ງານ",
-    "inactive": "ປິດຕ້ອງການ",
+    "inactive": "ປິດໃຊ້ງານ",
+    "deactivate": "ປິດໃຊ້ງານ",
+    "reactivate": "ເປີດໃຊ້ງານຄືນ",
+    "deactivate_confirm": "ປິດໃຊ້ງານ \"{name}\"? ບັນຊີນີ້ຈະເຂົ້າລະບົບບໍ່ໄດ້. ຂໍ້ມູນທັງໝົດຈະຍັງຄົງຢູ່ ແລະສາມາດເປີດໃຊ້ງານຄືນໄດ້ພາຍຫຼັງ.",
     "status": "ສະຖານະ",
     "gender": "ເພດ",
     "class": "ຫ້ອງຮຽນ",
@@ -70,7 +76,9 @@
     "name": "ຊື່",
     "actions": "ການດຳເນີນການ",
     "delete_confirm_title": "ຢືນຢັນການລຶບ",
-    "delete_confirm_msg": "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບ \"{name}\"? ການດຳເນີນການນີ້ບໍ່ສາມາດຍ້ອນກັບໄດ້."
+    "delete_confirm_msg": "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບ \"{name}\"? ການດຳເນີນການນີ້ບໍ່ສາມາດຍ້ອນກັບໄດ້.",
+    "address": "ທີ່ຢູ່",
+    "notes": "ໝາຍເຫດ"
   },
   "admin": {
     "dashboard": "ໜ້າຫຼັກຜູ້ດູແລລະບົບ",
@@ -84,6 +92,19 @@
     "manage_students": "ຈັດການນັກຮຽນ",
     "manage_users": "ຈັດການຜູ້ໃຊ້",
     "manage_classes": "ຈັດການຫ້ອງຮຽນ",
+    "manage_teachers": "ຈັດການຄູສອນ",
+    "manage_parents": "ຈັດການຜູ້ປົກຄອງ",
+    "manage_wallet": "ກະເປົາເງິນ & ການເງິນ",
+    "manage_attendance": "ການເຂົ້າຮຽນ",
+    "manage_audit_logs": "ບັນທຶກການໃຊ້ງານ",
+    "manage_reports": "ລາຍງານ",
+    "attendance_trend": "ການເຂົ້າຮຽນ — 7 ມື້ຫຼ້າສຸດ",
+    "wallet_trend": "ທຸລະກຳກະເປົາເງິນ — 7 ມື້ຫຼ້າສຸດ",
+    "pending_topups": "ການຂໍເຕີມເງິນທີ່ລໍຖ້າ",
+    "recent_activity": "ກິດຈະກຳຫຼ້າສຸດ",
+    "view_all": "ເບິ່ງທັງໝົດ",
+    "no_pending_topups": "ບໍ່ມີການຂໍເຕີມເງິນທີ່ລໍຖ້າ",
+    "no_recent_activity": "ບໍ່ມີກິດຈະກຳຫຼ້າສຸດ",
     "total_teachers": "ຈຳນວນຄູສອນທັງໝົດ",
     "total_classes": "ຈຳນວນຫ້ອງຮຽນທັງໝົດ",
     "total_parents": "ຈຳນວນຜູ້ປົກຄອງທັງໝົດ",
@@ -110,6 +131,7 @@
     "everyone": "ທຸກຄົນ",
     "teachers_only": "ສະເພາະຄູສອນ",
     "parents_only": "ສະເພາະຜູ້ປົກຄອງ",
+    "class_only": "ສະເພາະຫ້ອງຮຽນ",
     "expiry_date": "ວັນໝົດອາຍຸ (ທາງເລືອກ)",
     "publish_announcement": "ເຜີຍແຜ່ແຈ້ງການ"
   },
@@ -124,8 +146,9 @@
     "student_code": "ລະຫັດນັກຮຽນ",
     "full_name_en": "ຊື່ເຕັມ (ພາສາອັງກິດ)",
     "full_name_lo": "ຊື່ເຕັມ (ພາສາລາວ)",
-    "delete_confirm_title": "ລຶບນັກຮຽນ",
-    "delete_confirm_msg": "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບ \"{name}\"? ການດຳເນີນການນີ້ບໍ່ສາມາດຍ້ອນກັບໄດ້."
+    "deactivate": "ປິດໃຊ້ງານ",
+    "reactivate": "ເປີດໃຊ້ງານຄືນ",
+    "deactivate_confirm": "ປິດໃຊ້ງານ \"{name}\"? ຂໍ້ມູນທັງໝົດຈະຍັງຄົງຢູ່ ແລະສາມາດເປີດໃຊ້ງານຄືນໄດ້ພາຍຫຼັງ."
   },
   "classes": {
     "title": "ຫ້ອງຮຽນ",
@@ -373,5 +396,10 @@
     "save_grades": "ບັນທຶກຄະແນນ",
     "score": "ຄະແນນ",
     "select_class_subject_to_enter": "ເລືອກຫ້ອງຮຽນ ແລະ ວິຊາເພື່ອປ້ອນຄະແນນ."
+  },
+  "gender": {
+    "male": "ຊາຍ",
+    "female": "ຍິງ",
+    "other": "ອື່ນໆ"
   }
 }

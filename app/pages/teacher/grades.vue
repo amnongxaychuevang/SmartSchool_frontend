@@ -10,7 +10,7 @@
             @change="loadStudents"
           >
             <option value="">{{ $t('teacherPortal.select_a_class') }}</option>
-            <option v-for="c in teacherStore.myClasses" :key="c.classId" :value="c.classId">
+            <option v-for="c in myClasses" :key="c.classId" :value="c.classId">
               {{ locale === 'lo' ? c.classNameLo : c.classNameEn }}
             </option>
           </select>
@@ -22,8 +22,8 @@
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300 text-sm rounded-lg pl-3 pr-10 py-2.5 focus:outline-none focus:border-amber-500 appearance-none w-full"
           >
             <option value="">{{ $t('teacherPortal.select_a_subject') }}</option>
-            <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">
-              {{ locale === 'lo' ? s.subjectNameLo : s.subjectNameEn }}
+            <option v-for="cs in subjectsForClass" :key="cs.id" :value="cs.id">
+              {{ locale === 'lo' ? cs.subject.subjectNameLo : cs.subject.subjectNameEn }}
             </option>
           </select>
           <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -44,9 +44,7 @@
         </button>
       </div>
 
-      <div v-if="teacherStore.loadingStudents" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500"/>
-      </div>
+      <LoadingSpinner v-if="teacherStore.loadingStudents" color="amber" />
       
       <div v-else-if="students.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <p>{{ $t('teacherPortal.no_students_in_class') }}</p>
@@ -89,7 +87,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTeacherStore } from '../../application/stores/teacher';
-import { useAcademicsStore } from '../../application/stores/academics';
+import { academicsRepository, type ClassSubject } from '../../infrastructure/api/AcademicsRepository';
 
 definePageMeta({ layout: 'teacher' });
 
@@ -97,9 +95,18 @@ const { t, locale } = useI18n();
 useHead({ title: computed(() => `${t('teacherPortal.student_grades')} — Teacher Portal`) });
 
 const teacherStore = useTeacherStore();
-const academicsStore = useAcademicsStore();
 const selectedClass = ref('');
+// Holds the ClassSubject id (class + subject + term), not a bare subject id.
 const selectedSubject = ref('');
+
+// What this teacher teaches in the active term (the API only returns their own).
+const myClassSubjects = ref<ClassSubject[]>([]);
+const myClasses = computed(() => {
+  const byId = new Map(myClassSubjects.value.map(cs => [cs.classId, cs.class]));
+  return [...byId.values()];
+});
+const subjectsForClass = computed(() =>
+  myClassSubjects.value.filter(cs => cs.classId === Number(selectedClass.value)));
 const saving = ref(false);
 
 const gradesMap = ref<Record<number, number>>({});
@@ -107,13 +114,12 @@ const gradesMap = ref<Record<number, number>>({});
 const students = computed(() => teacherStore.myStudents);
 
 onMounted(async () => {
-  await Promise.all([
-    teacherStore.fetchMyClasses(),
-    academicsStore.fetchSubjects({ limit: 100 })
-  ]);
+  const all = await academicsRepository.getClassSubjects();
+  myClassSubjects.value = all.filter(cs => cs.term.status === 'active');
 });
 
 const loadStudents = async () => {
+  selectedSubject.value = '';
   if (!selectedClass.value) return;
   await teacherStore.fetchMyStudents(Number(selectedClass.value));
   
@@ -130,10 +136,7 @@ const saveGrades = async () => {
   try {
     const records = Object.keys(gradesMap.value).map(studentId => ({
       studentId: Number(studentId),
-      classId: Number(selectedClass.value),
-      subjectId: Number(selectedSubject.value),
-      academicYear: '2023-2024',
-      gradeType: 'final',
+      classSubjectId: Number(selectedSubject.value),
       score: gradesMap.value[Number(studentId)]
     }));
 

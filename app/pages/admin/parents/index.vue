@@ -26,9 +26,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
 
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
-      <div v-if="adminStore.parentsLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="adminStore.parentsLoading" />
       <div v-else-if="adminStore.parents.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -59,7 +57,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-300">{{ parent.occupationEn ?? '—' }}</td>
+            <td class="px-6 py-4 text-sm text-slate-300">{{ parent.occupation ?? '—' }}</td>
             <td class="px-6 py-4 text-sm text-slate-400 hidden md:table-cell">{{ parent.nationalId ?? '—' }}</td>
             <td class="px-6 py-4 hidden sm:table-cell">
               <p class="text-sm text-slate-300">{{ parent.user?.email ?? '—' }}</p>
@@ -82,12 +80,18 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
+                <!-- Deactivate / reactivate (accounts are never deleted) -->
                 <button
-class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                  :title="$t('common.delete')"
-                  @click="openDeleteModal(parent)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  :disabled="togglingId === parent.parentId"
+                  class="p-1.5 rounded-lg text-slate-400 transition-all disabled:opacity-40"
+                  :class="parent.user?.isActive ? 'hover:text-red-400 hover:bg-red-500/10' : 'hover:text-teal-400 hover:bg-teal-500/10'"
+                  :title="parent.user?.isActive ? $t('common.deactivate') : $t('common.reactivate')"
+                  @click="toggleActive(parent)">
+                  <svg v-if="parent.user?.isActive" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
               </div>
@@ -252,7 +256,7 @@ v-model="parentModal.form.password"
                 <div class="grid grid-cols-2 gap-3">
                   <div class="flex flex-col gap-1.5">
                     <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      {{ $t('parents.occupation') }} (EN)
+                      {{ $t('parents.occupation') }}
                     </label>
                     <div class="relative">
                       <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -260,23 +264,10 @@ v-model="parentModal.form.password"
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.occupationEn" type="text" placeholder="e.g. Engineer" class="input-field pl-10" >
+                      <input v-model="parentModal.form.occupation" type="text" placeholder="e.g. ຊາວນາ / Engineer" class="input-field pl-10" >
                     </div>
                   </div>
 
-                  <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      {{ $t('parents.occupation') }} (LO)
-                    </label>
-                    <div class="relative">
-                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01" />
-                        </svg>
-                      </span>
-                      <input v-model="parentModal.form.occupationLo" type="text" placeholder="ຕົວຢ່າງ: ວິສະວະກອນ" class="input-field pl-10" >
-                    </div>
-                  </div>
                 </div>
 
                 <!-- Emergency Contact & Line ID -->
@@ -323,9 +314,9 @@ v-model="parentModal.form.password"
                   </div>
                 </div>
 
-                <!-- Address EN -->
+                <!-- Address -->
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Address (EN)</label>
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.address') }}</label>
                   <div class="relative">
                     <span class="absolute top-3 left-3 flex items-center pointer-events-none text-slate-500">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -333,23 +324,10 @@ v-model="parentModal.form.password"
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                     </span>
-                    <textarea v-model="parentModal.form.addressEn" rows="2" class="input-field pl-10 resize-none pt-2" placeholder="e.g. Vientiane, Laos"/>
+                    <textarea v-model="parentModal.form.address" rows="2" class="input-field pl-10 resize-none pt-2" placeholder="ບ້ານ, ເມືອງ, ແຂວງ"/>
                   </div>
                 </div>
 
-                <!-- Address LO -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Address (LO)</label>
-                  <div class="relative">
-                    <span class="absolute top-3 left-3 flex items-center pointer-events-none text-slate-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </span>
-                    <textarea v-model="parentModal.form.addressLo" rows="2" class="input-field pl-10 resize-none pt-2" placeholder="ຕົວຢ່າງ: ນະຄອນຫຼວງວຽງຈັນ, ສປປ ລາວ"/>
-                  </div>
-                </div>
               </div>
 
             </div>
@@ -376,41 +354,6 @@ v-model="parentModal.form.password"
       </div>
     </Transition>
   </Teleport>
-
-  <!-- ── DELETE CONFIRM MODAL ── -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="deleteModal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="deleteModal.open = false"/>
-        <div class="relative glass-panel w-full max-w-sm p-6 flex flex-col gap-6">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <div class="flex flex-col gap-1 pt-1">
-              <h2 class="text-lg font-bold text-white">{{ $t('parents.delete_confirm_title') }}</h2>
-              <p class="text-sm text-slate-400">{{ $t('parents.delete_confirm_msg', { name: deleteModal.parent?.user?.fullNameEn }) }}</p>
-            </div>
-          </div>
-          <div v-if="deleteModal.error" class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ deleteModal.error }}</div>
-          <div class="flex items-center justify-end gap-3 pt-2">
-            <button class="btn-ghost" @click="deleteModal.open = false">{{ $t('common.cancel') }}</button>
-            <button
-:disabled="deleteModal.deleting" class="px-5 py-2 rounded-xl text-sm font-semibold bg-red-500 hover:bg-red-400 text-white transition-all shadow-[0_4px_15px_rgba(239,68,68,0.3)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.4)] disabled:opacity-60 flex items-center gap-2"
-              @click="handleDelete">
-              <svg v-if="deleteModal.deleting" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
-              {{ deleteModal.deleting ? $t('common.deleting') : $t('common.delete') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -422,6 +365,7 @@ definePageMeta({ layout: 'admin' });
 useHead({ title: 'Parents — Smart School Admin' });
 
 const adminStore = useAdminStore();
+const { locale, t } = useI18n();
 const searchInput = ref('');
 let searchTimeout: ReturnType<typeof setTimeout>;
 
@@ -450,13 +394,11 @@ const emptyParentForm = () => ({
   phoneNumber: '',
   password: '',
   isActive: true,
-  occupationEn: '',
-  occupationLo: '',
+  occupation: '',
   emergencyContact: '',
   lineId: '',
   nationalId: '',
-  addressEn: '',
-  addressLo: ''
+  address: ''
 });
 
 const parentModal = reactive({
@@ -486,13 +428,11 @@ const openEditModal = (parent: Parent) => {
     phoneNumber: parent.user?.phoneNumber ?? '',
     password: '',
     isActive: parent.user?.isActive ?? true,
-    occupationEn: parent.occupationEn ?? '',
-    occupationLo: parent.occupationLo ?? '',
+    occupation: parent.occupation ?? '',
     emergencyContact: parent.emergencyContact ?? '',
     lineId: parent.lineId ?? '',
     nationalId: parent.nationalId ?? '',
-    addressEn: parent.addressEn ?? '',
-    addressLo: parent.addressLo ?? ''
+    address: parent.address ?? ''
   };
   parentModal.error = '';
   parentModal.open = true;
@@ -521,31 +461,21 @@ const handleParentSubmit = async () => {
   }
 };
 
-// ── Delete Modal ──
-const deleteModal = reactive({
-  open: false,
-  deleting: false,
-  error: '',
-  parent: null as Parent | null
-});
+// ── Deactivate / reactivate ──
+// Accounts are never deleted: their top-up, leave and audit history must stay.
+const togglingId = ref<number | null>(null);
 
-const openDeleteModal = (parent: Parent) => {
-  deleteModal.parent = parent;
-  deleteModal.error = '';
-  deleteModal.open = true;
-};
-
-const handleDelete = async () => {
-  if (!deleteModal.parent) return;
-  deleteModal.deleting = true;
-  deleteModal.error = '';
+const toggleActive = async (u: Parent) => {
+  const makeActive = !u.user?.isActive;
+  const name = (locale.value === 'lo' ? u.user?.fullNameLo : u.user?.fullNameEn) || u.user?.fullNameEn || '';
+  if (!makeActive && !confirm(t('common.deactivate_confirm', { name }))) return;
+  togglingId.value = u.parentId;
   try {
-    await adminStore.deleteParent(deleteModal.parent.parentId);
-    deleteModal.open = false;
-  } catch (err: any) {
-    deleteModal.error = err.message || 'Failed to delete parent';
+    await adminStore.updateParent(u.parentId, { isActive: makeActive });
+  } catch (err) {
+    alert((err instanceof Error && err.message) || 'Failed to update status');
   } finally {
-    deleteModal.deleting = false;
+    togglingId.value = null;
   }
 };
 </script>

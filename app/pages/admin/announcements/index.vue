@@ -18,9 +18,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center p-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-    </div>
+    <LoadingSpinner v-if="loading" padding="p-12" />
 
     <!-- Empty State -->
     <div v-else-if="announcements.length === 0" class="glass-panel p-16 flex flex-col items-center justify-center text-center">
@@ -39,7 +37,7 @@
         <div class="flex justify-between items-start gap-3">
           <h3 class="text-white font-semibold line-clamp-2">{{ locale === 'lo' ? item.titleLo : item.titleEn }}</h3>
           <span class="badge-teal shrink-0">
-            {{ $t(`admin.${item.targetAudience === 'all' ? 'everyone' : item.targetAudience + '_only'}`) }}
+            {{ audienceLabel(item) }}
           </span>
         </div>
         <p class="text-sm text-slate-400 line-clamp-3 flex-1 leading-relaxed">{{ locale === 'lo' ? item.contentLo : item.contentEn }}</p>
@@ -105,6 +103,16 @@
                     <option value="all">{{ $t('admin.everyone') }}</option>
                     <option value="teachers">{{ $t('admin.teachers_only') }}</option>
                     <option value="parents">{{ $t('admin.parents_only') }}</option>
+                    <option value="class">{{ $t('admin.class_only') }}</option>
+                  </select>
+                </div>
+                <div v-if="form.targetAudience === 'class'" class="flex flex-col gap-2">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.class') }} *</label>
+                  <select v-model="form.classId" required class="input-field cursor-pointer">
+                    <option :value="null" disabled>—</option>
+                    <option v-for="cls in adminStore.classes" :key="cls.classId" :value="cls.classId">
+                      {{ locale === 'lo' ? cls.classNameLo : cls.classNameEn }} ({{ cls.academicYear }})
+                    </option>
                   </select>
                 </div>
                 <div class="flex flex-col gap-2">
@@ -143,12 +151,14 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
+import { useAdminStore } from '../../../application/stores/admin';
 
 definePageMeta({
   layout: 'admin'
 });
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
+const adminStore = useAdminStore();
 const apiClient = useApiClient();
 interface Announcement {
   announcementId: string | number;
@@ -156,12 +166,22 @@ interface Announcement {
   titleEn: string;
   contentLo: string;
   contentEn: string;
-  targetAudience: string;
+  targetAudience: 'all' | 'teachers' | 'parents' | 'class';
+  classId?: number | null;
+  class?: { classNameEn: string; classNameLo: string } | null;
   publishDate: string;
   expiryDate?: string;
 }
 
 const announcements = ref<Announcement[]>([]);
+
+const audienceLabel = (item: Announcement) => {
+  if (item.targetAudience === 'class') {
+    const name = item.class && (locale.value === 'lo' ? item.class.classNameLo : item.class.classNameEn);
+    return name ? `${t('common.class')}: ${name}` : t('admin.class_only');
+  }
+  return t(item.targetAudience === 'all' ? 'admin.everyone' : `admin.${item.targetAudience}_only`);
+};
 const loading = ref(true);
 const saving = ref(false);
 const showModal = ref(false);
@@ -171,7 +191,8 @@ const form = ref({
   titleEn: '',
   contentLo: '',
   contentEn: '',
-  targetAudience: 'all',
+  targetAudience: 'all' as Announcement['targetAudience'],
+  classId: null as number | null,
   expiryDate: ''
 });
 
@@ -196,8 +217,10 @@ const openCreateModal = () => {
     contentLo: '',
     contentEn: '',
     targetAudience: 'all',
+    classId: null,
     expiryDate: ''
   };
+  if (adminStore.classes.length === 0) adminStore.fetchClasses();
   showModal.value = true;
 };
 
@@ -208,7 +231,15 @@ const closeModal = () => {
 const saveAnnouncement = async () => {
   try {
     saving.value = true;
-    const res = await apiClient<any>(API_ENDPOINTS.announcements.base, { method: 'POST', body: form.value });
+    const res = await apiClient<any>(API_ENDPOINTS.announcements.base, {
+      method: 'POST',
+      body: {
+        ...form.value,
+        classId: form.value.targetAudience === 'class' ? form.value.classId : undefined,
+        // An empty date input would fail validation; omit it for "no expiry".
+        expiryDate: form.value.expiryDate || undefined,
+      },
+    });
     if (res?.success) {
       closeModal();
       await fetchAnnouncements();

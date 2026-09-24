@@ -37,9 +37,7 @@
         </button>
       </div>
 
-      <div v-if="teacherStore.loadingStudents" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500"/>
-      </div>
+      <LoadingSpinner v-if="teacherStore.loadingStudents" color="amber" />
       
       <div v-else-if="students.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <p>{{ $t('teacherPortal.no_students_in_class') }}</p>
@@ -91,6 +89,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useTeacherStore } from '../../application/stores/teacher';
+import type { AttendanceStatus } from '../../infrastructure/api/TeacherRepository';
 
 definePageMeta({ layout: 'teacher' });
 
@@ -100,10 +99,15 @@ useHead({ title: computed(() => `${t('teacherPortal.class_attendance')} — Teac
 const route = useRoute();
 const teacherStore = useTeacherStore();
 const selectedClass = ref('');
-const attendanceDate = ref(new Date().toISOString().split('T')[0]);
+// Local calendar date (toISOString() would give yesterday's date before 07:00 in Laos).
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const attendanceDate = ref(today());
 const saving = ref(false);
 
-const attendanceMap = ref<Record<number, string>>({});
+const attendanceMap = ref<Record<number, AttendanceStatus>>({});
 
 const students = computed(() => teacherStore.myStudents);
 
@@ -118,27 +122,33 @@ onMounted(async () => {
 const loadStudents = async () => {
   if (!selectedClass.value) return;
   await teacherStore.fetchMyStudents(Number(selectedClass.value));
-  
-  // Initialize attendance map
+  await loadAttendance();
+};
+
+// Pre-fill with what's already recorded for the day (card taps, approved leave,
+// earlier saves); students with no record default to present.
+const loadAttendance = async () => {
+  if (!selectedClass.value) return;
+  const records = await teacherStore.getDailyAttendance(Number(selectedClass.value), attendanceDate.value);
+  const byStudent = new Map(records.map(r => [r.studentId, r.status]));
   attendanceMap.value = {};
   teacherStore.myStudents.forEach(s => {
-    attendanceMap.value[s.studentId] = 'present';
+    attendanceMap.value[s.studentId] = byStudent.get(s.studentId) ?? 'present';
   });
 };
+
+watch(attendanceDate, loadAttendance);
 
 const saveAttendance = async () => {
   if (!selectedClass.value) return;
   saving.value = true;
   try {
-    const records = Object.keys(attendanceMap.value).map(studentId => ({
+    const records = Object.entries(attendanceMap.value).map(([studentId, status]) => ({
       studentId: Number(studentId),
-      classId: Number(selectedClass.value),
-      date: attendanceDate.value,
-      status: attendanceMap.value[Number(studentId)],
-      reason: ''
+      status,
     }));
 
-    await teacherStore.saveAttendance(records);
+    await teacherStore.saveAttendance(Number(selectedClass.value), attendanceDate.value, records);
     alert('Attendance saved successfully!');
   } catch (err: any) {
     alert(err.message || 'Failed to save attendance');

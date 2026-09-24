@@ -14,12 +14,15 @@
     <div class="flex-1 overflow-y-auto space-y-3">
       <transition-group name="list" tag="div">
         <div
-v-for="log in logs" :key="log.id" class="p-3 rounded-lg border flex items-center gap-4 transition-all"
-             :class="log.type === 'check_in' ? 'bg-teal-900/20 border-teal-500/30' : 'bg-orange-900/20 border-orange-500/30'">
-          
+          v-for="log in logs"
+          :key="log.id"
+          class="p-3 rounded-lg border flex items-center gap-4 transition-all"
+          :class="log.type === 'check_in' ? 'bg-teal-900/20 border-teal-500/30' : 'bg-orange-900/20 border-orange-500/30'"
+        >
           <div
-class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-               :class="log.type === 'check_in' ? 'bg-teal-500/20 text-teal-400' : 'bg-orange-500/20 text-orange-400'">
+            class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+            :class="log.type === 'check_in' ? 'bg-teal-500/20 text-teal-400' : 'bg-orange-500/20 text-orange-400'"
+          >
             <!-- Icon placeholder -->
             <svg v-if="log.type === 'check_in'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -62,8 +65,8 @@ interface AttendanceLog {
 }
 
 const { t } = useI18n();
-const { connect, disconnect, on, off } = useSocketClient();
-const isConnected = ref(false);
+const { socket, connect, disconnect, on, off } = useSocketClient();
+const isConnected = ref(socket?.connected ?? false);
 const logs = ref<AttendanceLog[]>([]);
 
 const formatTime = (date: Date) => {
@@ -72,7 +75,14 @@ const formatTime = (date: Date) => {
 
 onMounted(() => {
   connect();
-  isConnected.value = true; // In a real app, bind this to actual socket 'connect'/'disconnect' events
+  // The socket client is a module-level singleton — if it was already
+  // connected from an earlier mount of this component (e.g. navigating
+  // away and back), the 'connect' event below won't fire again, so seed
+  // the initial state from its current status too.
+  isConnected.value = socket?.connected ?? false;
+
+  on('connect', () => { isConnected.value = true; });
+  on('disconnect', () => { isConnected.value = false; });
 
   on('live-feed-update', (data: any) => {
     // Unshift new log to the top
@@ -84,22 +94,17 @@ onMounted(() => {
       gate: data.gateLocation || t('admin.main_gate'),
       time: new Date(data.time)
     });
-    
+
     // Keep only last 50 logs in memory to prevent overflow
     if (logs.value.length > 50) {
       logs.value.pop();
     }
   });
-  
-  // Add some demo data for previewing UI
-  setTimeout(() => {
-    logs.value.unshift({
-      id: 'demo1', studentId: 'STD-001', studentName: 'Somsack Keovong', type: 'check_in', gate: t('admin.main_gate'), time: new Date()
-    });
-  }, 1000);
 });
 
 onUnmounted(() => {
+  off('connect');
+  off('disconnect');
   off('live-feed-update');
   disconnect();
 });

@@ -18,9 +18,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
       </button>
     </div>
 
-    <div v-if="parentStore.loadingWallet" class="flex items-center justify-center py-20">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500"/>
-    </div>
+    <LoadingSpinner v-if="parentStore.loadingWallet" color="pink" />
     
     <template v-else-if="parentStore.wallet">
       <div class="glass-panel p-6 rounded-2xl flex flex-col gap-4">

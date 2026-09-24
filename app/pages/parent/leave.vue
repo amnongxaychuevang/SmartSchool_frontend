@@ -9,7 +9,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         >
           <option value="">{{ $t('parentPortal.select_child') }}</option>
           <option v-for="child in parentStore.children" :key="child.studentId" :value="child.studentId">
-            {{ child.user?.fullNameEn || `Student #${child.studentId}` }}
+            {{ child.user && child.user.fullNameEn || `Student #${child.studentId}` }}
           </option>
         </select>
       </div>
@@ -19,9 +19,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
     </div>
 
     <!-- Loading State -->
-    <div v-if="parentStore.loadingLeaveRequests" class="glass-panel p-12 flex justify-center rounded-2xl">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"/>
-    </div>
+    <LoadingSpinner v-if="parentStore.loadingLeaveRequests" padding="p-12" class="glass-panel rounded-2xl" />
 
     <!-- Content -->
     <template v-else-if="selectedChildId">
@@ -46,7 +44,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
                 {{ new Date(leave.startDate).toLocaleDateString() }} - {{ new Date(leave.endDate).toLocaleDateString() }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-300">
-                {{ locale === 'lo' ? (leave.reasonLo || leave.reasonEn) : (leave.reasonEn || leave.reasonLo) }}
+                {{ leave.reason }}
                 <div v-if="leave.documentUrl" class="mt-1">
                   <a :href="leave.documentUrl" target="_blank" class="text-xs text-teal-400 hover:underline">View Document</a>
                 </div>
@@ -71,9 +69,8 @@ class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cap
     <div v-else class="glass-panel p-12 text-center text-slate-500 rounded-2xl">
       {{ $t('parentPortal.please_select_child') }}
     </div>
-  </div>
 
-  <!-- Leave Request Modal -->
+    <!-- Leave Request Modal -->
   <div v-if="leaveModal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="leaveModal.open = false"/>
     <div class="relative glass-panel rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-5">
@@ -115,6 +112,7 @@ class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cap
       </form>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -122,7 +120,7 @@ import { ref, onMounted, reactive, computed } from 'vue';
 import { useParentStore } from '../../application/stores/parent';
 import { useI18n } from 'vue-i18n';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 definePageMeta({ layout: 'parent' });
 useHead({ title: computed(() => `${t('parentPortal.leave_requests')} — ${t('parentPortal.title')}`) });
@@ -164,15 +162,14 @@ const submitLeaveRequest = async () => {
     const data = {
       startDate: leaveModal.form.startDate,
       endDate: leaveModal.form.endDate,
-      reasonEn: leaveModal.form.reason,
-      reasonLo: leaveModal.form.reason,
+      reason: leaveModal.form.reason,
       documentUrl: leaveModal.form.documentUrl
     };
     await parentStore.createLeaveRequest(selectedChildId.value as number, data);
     leaveModal.open = false;
     leaveModal.form = { startDate: '', endDate: '', reason: '', documentUrl: '' };
     loadLeaves();
-  } catch (error) {
+  } catch {
     alert('Failed to submit leave request');
   } finally {
     leaveModal.saving = false;

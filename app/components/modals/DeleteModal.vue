@@ -15,7 +15,7 @@
                 {{ title || $t('users.delete_confirm_title') }}
               </h2>
               <p class="delete-modal-msg text-sm leading-relaxed">
-                {{ message || $t('users.delete_confirm_msg', { name: user?.fullNameEn }) }}
+                {{ message || $t('users.delete_confirm_msg', { name: user && user.fullNameEn }) }}
               </p>
             </div>
           </div>
@@ -44,6 +44,11 @@
 </template>
 
 <script setup lang="ts">
+interface User {
+  fullNameEn: string;
+  [key: string]: unknown;
+}
+
 withDefaults(
   defineProps<{
     open: boolean;
@@ -51,13 +56,13 @@ withDefaults(
     error?: string;
     title?: string;
     message?: string;
-    user?: any;
+    user?: User;
   }>(),
   {
     error: '',
     title: '',
     message: '',
-    user: null,
+    user: undefined,
   }
 );
 

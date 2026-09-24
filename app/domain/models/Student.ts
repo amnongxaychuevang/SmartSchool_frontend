@@ -7,7 +7,7 @@ export interface Student {
   dateOfBirth?: string;
   gender?: string;
   photoUrl?: string;
-  status: 'active' | 'graduated' | 'transferred';
+  status: 'active' | 'inactive' | 'graduated' | 'transferred';
   classStudents?: { class: { classNameEn: string; classNameLo: string } }[];
 }
 

@@ -27,9 +27,7 @@
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
       <!-- Loading -->
-      <div v-if="academicsStore.subjectsLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="academicsStore.subjectsLoading" />
 
       <!-- Empty -->
       <div v-else-if="academicsStore.subjects.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
@@ -52,7 +50,7 @@
         <tbody class="divide-y divide-slate-800/60">
           <tr v-for="subject in academicsStore.subjects" :key="subject.subjectId" class="hover:bg-slate-800/40 transition-colors">
             <td class="px-6 py-4">
-              <p class="text-sm font-medium text-white">{{ subject.subjectNameEn }}</p>
+              <p class="text-sm font-medium text-white"><span v-if="subject.subjectCode" class="font-mono text-slate-500 mr-2">{{ subject.subjectCode }}</span>{{ subject.subjectNameEn }}</p>
               <p class="text-xs text-slate-500">{{ subject.subjectNameLo }}</p>
             </td>
             <td class="px-6 py-4 text-sm text-slate-300">
@@ -112,6 +110,10 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
           <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
 
           <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Code</label>
+              <input v-model="modal.form.subjectCode" type="text" maxlength="20" class="modal-input font-mono" placeholder="MATH" >
+            </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject Name (EN) *</label>
               <input v-model="modal.form.subjectNameEn" required type="text" class="modal-input" >
@@ -186,6 +188,7 @@ const modal = reactive({
   isEdit: false,
   subjectId: null as number | null,
   form: {
+    subjectCode: '',
     subjectNameEn: '',
     subjectNameLo: '',
     credits: 0,
@@ -196,6 +199,7 @@ const modal = reactive({
 const openCreateModal = () => {
   modal.isEdit = false;
   modal.subjectId = null;
+  modal.form.subjectCode = '';
   modal.form.subjectNameEn = '';
   modal.form.subjectNameLo = '';
   modal.form.credits = 0;
@@ -207,6 +211,7 @@ const openCreateModal = () => {
 const openEditModal = (subject: any) => {
   modal.isEdit = true;
   modal.subjectId = subject.subjectId;
+  modal.form.subjectCode = subject.subjectCode ?? '';
   modal.form.subjectNameEn = subject.subjectNameEn;
   modal.form.subjectNameLo = subject.subjectNameLo;
   modal.form.credits = subject.credits;

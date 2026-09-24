@@ -136,21 +136,12 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="field-group">
-                      <label class="field-label">{{ $t('teachers.qualification') }} <span class="lang-badge">EN</span></label>
+                      <label class="field-label">{{ $t('teachers.qualification') }}</label>
                       <div class="input-wrap">
                         <span class="input-icon">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055" /></svg>
                         </span>
-                        <input v-model="form.qualificationEn" type="text" class="field-input" placeholder="Bachelor of Education" >
-                      </div>
-                    </div>
-                    <div class="field-group">
-                      <label class="field-label">{{ $t('teachers.qualification') }} <span class="lang-badge lang-badge--lo">LO</span></label>
-                      <div class="input-wrap">
-                        <span class="input-icon">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055" /></svg>
-                        </span>
-                        <input v-model="form.qualificationLo" type="text" class="field-input" placeholder="àº›àº°àº¥àº´àº™àºàº²àº•àºµ àºªàº¶àºàºªàº²àºªàº²àº”" >
+                        <input v-model="form.qualification" type="text" class="field-input" placeholder="Bachelor of Education" >
                       </div>
                     </div>
                   </div>
@@ -181,31 +172,18 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
               <Transition name="tab-fade" mode="out-in">
                 <div v-if="activeTab === 'location'" key="location" class="flex flex-col gap-4">
                   <div class="field-group">
-                    <label class="field-label">Address <span class="lang-badge">EN</span></label>
+                    <label class="field-label">{{ $t('common.address') }}</label>
                     <div class="input-wrap">
                       <span class="input-icon input-icon--top">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                       </span>
-                      <textarea v-model="form.addressEn" rows="3" class="field-input field-input--textarea" placeholder="e.g. Vientiane, Laos"/>
-                    </div>
-                  </div>
-                  <div class="field-group">
-                    <label class="field-label">Address <span class="lang-badge lang-badge--lo">LO</span></label>
-                    <div class="input-wrap">
-                      <span class="input-icon input-icon--top">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                      </span>
-                      <textarea v-model="form.addressLo" rows="3" class="field-input field-input--textarea" placeholder="àº•àº»àº§àº¢à»ˆàº²àº‡: àº™àº°àº„àº­àº™àº«àº¼àº§àº‡àº§àº½àº‡àºˆàº±àº™, àºªàº›àº› àº¥àº²àº§"/>
+                      <textarea v-model="form.address" rows="3" class="field-input field-input--textarea" placeholder="ບ້ານ, ເມືອງ, ແຂວງ"/>
                     </div>
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="field-group">
-                      <label class="field-label">Notes <span class="lang-badge">EN</span></label>
-                      <textarea v-model="form.notesEn" rows="2" class="field-input field-input--textarea field-input--no-icon" placeholder="Additional notes..."/>
-                    </div>
-                    <div class="field-group">
-                      <label class="field-label">Notes <span class="lang-badge lang-badge--lo">LO</span></label>
-                      <textarea v-model="form.notesLo" rows="2" class="field-input field-input--textarea field-input--no-icon" placeholder="à»àº²àºà»€àº«àº”à»€àºžàºµà»ˆàº¡à»€àº•àºµàº¡..."/>
+                      <label class="field-label">{{ $t('common.notes') }}</label>
+                      <textarea v-model="form.notes" rows="2" class="field-input field-input--textarea field-input--no-icon" placeholder="Additional notes..."/>
                     </div>
                   </div>
                 </div>

@@ -140,7 +140,7 @@ v-model="searchQuery" type="text" :placeholder="locale === 'lo' ? 'ຄົ້ນ�
                 </span>
               </td>
               <td class="px-6 py-3 text-right text-slate-400 font-mono">
-                {{ wallet.dailyLimit ? Number(wallet.dailyLimit).toLocaleString() : '∞' }}
+                {{ wallet.student?.spendingLimit?.dailyMax ? Number(wallet.student.spendingLimit.dailyMax).toLocaleString() : '∞' }}
               </td>
               <td class="px-6 py-3 text-center">
                 <span

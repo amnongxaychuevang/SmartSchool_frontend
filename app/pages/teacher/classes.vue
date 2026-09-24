@@ -5,9 +5,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-if="teacherStore.loadingClasses" class="col-span-full py-12 flex justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500"/>
-      </div>
+      <LoadingSpinner v-if="teacherStore.loadingClasses" color="amber" padding="py-12" class="col-span-full" />
       <div v-else-if="teacherStore.myClasses.length === 0" class="col-span-full py-12 flex flex-col items-center justify-center text-slate-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />

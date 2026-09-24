@@ -213,6 +213,16 @@ const navItems: NavItem[] = [
   { to: '/admin/parents',    key: 'nav.parents',    icon: resolveComponent('IconParents') },
   { to: '/admin/classes',    key: 'nav.classes',    icon: resolveComponent('IconClasses') },
   { to: '/admin/attendance', key: 'nav.attendance', icon: resolveComponent('IconAttendance') },
+  {
+    key: 'nav.academic',
+    icon: resolveComponent('IconClasses'),
+    children: [
+      { to: '/admin/academics/class-subjects', key: 'nav.classSubjects' },
+      { to: '/admin/academics/subjects',       key: 'nav.subjects' },
+      { to: '/admin/academics/grades',         key: 'nav.grades' },
+      { to: '/admin/settings/academic-terms',  key: 'nav.academicTerms' },
+    ]
+  },
   
    { 
     key: 'nav.settings',  
@@ -245,6 +255,7 @@ const navItems: NavItem[] = [
 const openMenus = reactive<Record<string, boolean>>({
   'nav.reports': false,
   'nav.settings': false,
+  'nav.academic': false,
 });
 
 const toggleMenu = (key: string) => {

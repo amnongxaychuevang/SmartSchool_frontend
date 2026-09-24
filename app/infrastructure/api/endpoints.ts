@@ -25,12 +25,10 @@ export const API_ENDPOINTS = {
   classes: {
     list: '/classes',
   },
-  genders: {
-    list: '/genders',
-  },
   attendance: {
     base: '/attendance',
     scan: '/attendance/scan',
+    daily: '/attendance/daily',
   },
   wallets: {
     list: '/wallets',
@@ -49,6 +47,12 @@ export const API_ENDPOINTS = {
   },
   subjects: {
     list: '/subjects'
+  },
+  classSubjects: {
+    list: '/class-subjects'
+  },
+  academicTerms: {
+    list: '/academic-terms'
   },
   grades: {
     list: '/grades',

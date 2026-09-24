@@ -30,9 +30,7 @@
 
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
-      <div v-if="adminStore.auditLogsLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="adminStore.auditLogsLoading" />
 
       <div v-else-if="adminStore.auditLogs.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <p>No audit log entries found.</p>

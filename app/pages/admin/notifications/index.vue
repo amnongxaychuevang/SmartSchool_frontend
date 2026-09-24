@@ -27,9 +27,7 @@
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
       <!-- Loading -->
-      <div v-if="academicsStore.notificationsLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="academicsStore.notificationsLoading" />
 
       <!-- Empty -->
       <div v-else-if="academicsStore.notifications.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">

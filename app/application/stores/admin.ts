@@ -51,8 +51,6 @@ export const useAdminStore = defineStore('admin', {
     classesLoading: false,
 
     // Genders
-    genders: [] as { id: number; code: string; nameEn: string; nameLo: string }[],
-    gendersLoading: false,
 
     // Settings
     settings: null as any,
@@ -147,17 +145,6 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async deleteStudent(studentId: number) {
-      try {
-        await adminRepository.deleteStudent(studentId);
-        this.students = this.students.filter(s => s.studentId !== studentId);
-        this.studentsTotal -= 1;
-      } catch (err: any) {
-        this.error = err.message;
-        throw err;
-      }
-    },
-
     async fetchUsers(params?: { role?: string; search?: string; page?: number }) {
       this.usersLoading = true;
       if (params?.role !== undefined) this.usersRoleFilter = params.role;
@@ -194,17 +181,6 @@ export const useAdminStore = defineStore('admin', {
           this.users[idx] = updatedUser;
         }
         return updatedUser;
-      } catch (err: any) {
-        this.error = err.message;
-        throw err;
-      }
-    },
-
-    async deleteUser(userId: number) {
-      try {
-        await adminRepository.deleteUser(userId);
-        this.users = this.users.filter(u => u.userId !== userId);
-        this.usersTotal -= 1;
       } catch (err: any) {
         this.error = err.message;
         throw err;
@@ -253,17 +229,6 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async deleteTeacher(teacherId: number) {
-      try {
-        await adminRepository.deleteTeacher(teacherId);
-        this.teachers = this.teachers.filter(t => t.teacherId !== teacherId);
-        this.teachersTotal -= 1;
-      } catch (err: any) {
-        this.error = err.message;
-        throw err;
-      }
-    },
-
     // Parents
     async fetchParents(params?: { search?: string; page?: number }) {
       this.parentsLoading = true;
@@ -300,17 +265,6 @@ export const useAdminStore = defineStore('admin', {
           this.parents[idx] = updatedParent;
         }
         return updatedParent;
-      } catch (err: any) {
-        this.error = err.message;
-        throw err;
-      }
-    },
-
-    async deleteParent(parentId: number) {
-      try {
-        await adminRepository.deleteParent(parentId);
-        this.parents = this.parents.filter(p => p.parentId !== parentId);
-        this.parentsTotal -= 1;
       } catch (err: any) {
         this.error = err.message;
         throw err;
@@ -366,18 +320,6 @@ export const useAdminStore = defineStore('admin', {
       } catch (err: any) {
         this.error = err.message;
         throw err;
-      }
-    },
-
-    async fetchGenders() {
-      if (this.genders.length > 0) return;
-      this.gendersLoading = true;
-      try {
-        this.genders = await adminRepository.getGenders();
-      } catch (err: any) {
-        this.error = err.message;
-      } finally {
-        this.gendersLoading = false;
       }
     },
 

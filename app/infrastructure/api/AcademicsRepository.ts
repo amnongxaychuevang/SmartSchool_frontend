@@ -1,6 +1,29 @@
 import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
 
+export interface AcademicTerm {
+  termId: number;
+  academicYear: string;
+  termNameEn: string;
+  termNameLo: string;
+  startDate: string;
+  endDate: string;
+  status: 'active' | 'upcoming' | 'completed';
+}
+
+type Named = { fullNameEn: string; fullNameLo: string };
+export interface ClassSubject {
+  id: number;
+  classId: number;
+  subjectId: number;
+  teacherId: number | null;
+  termId: number;
+  class: { classId: number; classNameEn: string; classNameLo: string; academicYear: string };
+  subject: { subjectId: number; subjectCode: string | null; subjectNameEn: string; subjectNameLo: string };
+  teacher: (Named & { userId: number }) | null;
+  term: Pick<AcademicTerm, 'termId' | 'termNameEn' | 'termNameLo' | 'academicYear' | 'status'>;
+}
+
 export const academicsRepository = {
   // Subjects
   async getSubjects(params: { search?: string; page?: number; limit?: number } = {}) {
@@ -145,5 +168,39 @@ export const academicsRepository = {
     });
     if (!res.success) throw new Error('Failed to send notification');
     return res.data.notification;
-  }
+  },
+
+  // Academic terms
+  async getTerms() {
+    const res = await useApiClient()<{ success: boolean; data: { terms: AcademicTerm[] } }>(API_ENDPOINTS.academicTerms.list, { method: 'GET' });
+    return res.data.terms;
+  },
+  async saveTerm(termId: number | null, payload: Omit<AcademicTerm, 'termId'>) {
+    const url = termId ? `${API_ENDPOINTS.academicTerms.list}/${termId}` : API_ENDPOINTS.academicTerms.list;
+    const res = await useApiClient()<{ success: boolean; data: { term: AcademicTerm } }>(url, { method: termId ? 'PUT' : 'POST', body: payload });
+    return res.data.term;
+  },
+  async deleteTerm(termId: number) {
+    await useApiClient()(`${API_ENDPOINTS.academicTerms.list}/${termId}`, { method: 'DELETE' });
+  },
+
+  // Class subjects: which subject is taught to which class, by whom, in which term
+  async getClassSubjects(params: { classId?: number; subjectId?: number; termId?: number } = {}) {
+    const query = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) query.set(k, String(v));
+    const res = await useApiClient()<{ success: boolean; data: { classSubjects: ClassSubject[] } }>(
+      `${API_ENDPOINTS.classSubjects.list}?${query}`, { method: 'GET' });
+    return res.data.classSubjects;
+  },
+  async createClassSubject(payload: { classId: number; subjectId: number; termId?: number; teacherId?: number | null }) {
+    const res = await useApiClient()<{ success: boolean; data: { classSubject: ClassSubject } }>(API_ENDPOINTS.classSubjects.list, { method: 'POST', body: payload });
+    return res.data.classSubject;
+  },
+  async setClassSubjectTeacher(id: number, teacherId: number | null) {
+    const res = await useApiClient()<{ success: boolean; data: { classSubject: ClassSubject } }>(`${API_ENDPOINTS.classSubjects.list}/${id}`, { method: 'PUT', body: { teacherId } });
+    return res.data.classSubject;
+  },
+  async deleteClassSubject(id: number) {
+    await useApiClient()(`${API_ENDPOINTS.classSubjects.list}/${id}`, { method: 'DELETE' });
+  },
 };

@@ -19,9 +19,7 @@
     <!-- We reuse the students list from adminStore for this page -->
     <div class="glass-panel overflow-hidden">
       <!-- Loading -->
-      <div v-if="adminStore.studentsLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="adminStore.studentsLoading" />
 
       <div v-else-if="adminStore.students.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <p>No students found.</p>
@@ -64,9 +62,8 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal -->
+    <!-- Modal -->
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -82,18 +79,16 @@
           </div>
 
           <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-          <div v-if="modal.loading" class="flex justify-center py-8">
-            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-          </div>
+          <LoadingSpinner v-if="modal.loading" padding="py-8" />
 
           <form v-else class="flex flex-col gap-4" @submit.prevent="handleSubmit">
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Daily Limit (₭)</label>
-              <input v-model.number="modal.form.dailyLimit" type="number" class="modal-input" placeholder="Leave empty for no limit" >
+              <input v-model.number="modal.form.dailyMax" type="number" class="modal-input" placeholder="Leave empty for no limit" >
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Weekly Limit (₭)</label>
-              <input v-model.number="modal.form.weeklyLimit" type="number" class="modal-input" placeholder="Leave empty for no limit" >
+              <input v-model.number="modal.form.weeklyMax" type="number" class="modal-input" placeholder="Leave empty for no limit" >
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
@@ -113,12 +108,14 @@ type="submit" :disabled="modal.saving"
       </div>
     </Transition>
   </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import { financeRepository } from '../../../infrastructure/api/FinanceRepository';
+import type { Student } from '../../../domain/models/Student';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Spending Limits — Smart School Admin' });
@@ -151,24 +148,25 @@ const modal = reactive({
   error: '',
   studentId: null as number | null,
   form: {
-    dailyLimit: null as number | null,
-    weeklyLimit: null as number | null
+    dailyMax: null as number | null,
+    weeklyMax: null as number | null
   }
 });
 
-const openLimitModal = async (student: any) => {
+const openLimitModal = async (student: Student) => {
   modal.studentId = student.studentId;
   modal.error = '';
   modal.open = true;
   modal.loading = true;
   try {
-    const limits = await financeRepository.getSpendingLimit(student.studentId);
-    modal.form.dailyLimit = limits?.dailyLimit || null;
-    modal.form.weeklyLimit = limits?.weeklyLimit || null;
-  } catch (err: any) {
+    const data = await financeRepository.getSpendingLimit(student.studentId);
+    const limits = data?.spendingLimit;
+    modal.form.dailyMax = limits?.dailyMax != null ? Number(limits.dailyMax) : null;
+    modal.form.weeklyMax = limits?.weeklyMax != null ? Number(limits.weeklyMax) : null;
+  } catch {
     // If not found, just leave empty
-    modal.form.dailyLimit = null;
-    modal.form.weeklyLimit = null;
+    modal.form.dailyMax = null;
+    modal.form.weeklyMax = null;
   } finally {
     modal.loading = false;
   }
@@ -180,12 +178,13 @@ const handleSubmit = async () => {
   modal.error = '';
   try {
     await financeRepository.updateSpendingLimit(modal.studentId, {
-      dailyLimit: modal.form.dailyLimit || undefined,
-      weeklyLimit: modal.form.weeklyLimit || undefined
+      // null clears the limit (the API treats an empty value as "no limit").
+      dailyMax: modal.form.dailyMax || null,
+      weeklyMax: modal.form.weeklyMax || null
     });
     modal.open = false;
-  } catch (err: any) {
-    modal.error = err.message || 'Failed to update spending limits';
+  } catch (err) {
+    modal.error = (err instanceof Error && err.message) || 'Failed to update spending limits';
   } finally {
     modal.saving = false;
   }

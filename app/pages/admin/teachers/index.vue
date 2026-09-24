@@ -26,9 +26,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
 
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
-      <div v-if="adminStore.teachersLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="adminStore.teachersLoading" />
       <div v-else-if="adminStore.teachers.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
@@ -83,12 +81,18 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
+                <!-- Deactivate / reactivate (accounts are never deleted) -->
                 <button
-class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                  :title="$t('common.delete')"
-                  @click="openDeleteModal(teacher)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  :disabled="togglingId === teacher.teacherId"
+                  class="p-1.5 rounded-lg text-slate-400 transition-all disabled:opacity-40"
+                  :class="teacher.user?.isActive ? 'hover:text-red-400 hover:bg-red-500/10' : 'hover:text-teal-400 hover:bg-teal-500/10'"
+                  :title="teacher.user?.isActive ? $t('common.deactivate') : $t('common.reactivate')"
+                  @click="toggleActive(teacher)">
+                  <svg v-if="teacher.user?.isActive" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
               </div>
@@ -117,23 +121,12 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 tr
     :form="teacherModal.form"
     @submit="handleTeacherSubmit"
   />
-
-  <!-- ── DELETE CONFIRM MODAL ── -->
-  <DeleteModal
-    v-model:open="deleteModal.open"
-    :deleting="deleteModal.deleting"
-    :error="deleteModal.error"
-    :title="$t('teachers.delete_confirm_title')"
-    :message="$t('teachers.delete_confirm_msg', { name: deleteModal.teacher?.user?.fullNameEn })"
-    @delete="handleDelete"
-  />
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import TeacherFormModal from './modal/TeacherFormModal.vue';
 import Pagination from '../../../components/Pagination.vue';
-import DeleteModal from '../../../components/modals/DeleteModal.vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { Teacher } from '../../../domain/models/Teacher';
 
@@ -141,6 +134,7 @@ definePageMeta({ layout: 'admin' });
 useHead({ title: 'Teachers — Smart School Admin' });
 
 const adminStore = useAdminStore();
+const { locale, t } = useI18n();
 const searchInput = ref('');
 let searchTimeout: ReturnType<typeof setTimeout>;
 
@@ -176,12 +170,10 @@ const emptyTeacherForm = () => ({
   isActive: true,
   employeeCode: '',
   specialization: '',
-  qualificationEn: '',
-  qualificationLo: '',
+  qualification: '',
   hireDate: '',
   salary: null as number | null,
-  addressEn: '',
-  addressLo: ''
+  address: ''
 });
 
 const teacherModal = reactive({
@@ -213,12 +205,10 @@ const openEditModal = (teacher: Teacher) => {
     isActive: teacher.user?.isActive ?? true,
     employeeCode: teacher.employeeCode,
     specialization: teacher.specialization ?? '',
-    qualificationEn: teacher.qualificationEn ?? '',
-    qualificationLo: teacher.qualificationLo ?? '',
+    qualification: teacher.qualification ?? '',
     hireDate: formatDate(teacher.hireDate),
     salary: teacher.salary ? Number(teacher.salary) : null,
-    addressEn: teacher.addressEn ?? '',
-    addressLo: teacher.addressLo ?? ''
+    address: teacher.address ?? ''
   };
   teacherModal.error = '';
   teacherModal.open = true;
@@ -252,31 +242,21 @@ const handleTeacherSubmit = async () => {
   }
 };
 
-// ── Delete Modal ──
-const deleteModal = reactive({
-  open: false,
-  deleting: false,
-  error: '',
-  teacher: null as Teacher | null
-});
+// ── Deactivate / reactivate ──
+// Accounts are never deleted: their top-up, leave and audit history must stay.
+const togglingId = ref<number | null>(null);
 
-const openDeleteModal = (teacher: Teacher) => {
-  deleteModal.teacher = teacher;
-  deleteModal.error = '';
-  deleteModal.open = true;
-};
-
-const handleDelete = async () => {
-  if (!deleteModal.teacher) return;
-  deleteModal.deleting = true;
-  deleteModal.error = '';
+const toggleActive = async (u: Teacher) => {
+  const makeActive = !u.user?.isActive;
+  const name = (locale.value === 'lo' ? u.user?.fullNameLo : u.user?.fullNameEn) || u.user?.fullNameEn || '';
+  if (!makeActive && !confirm(t('common.deactivate_confirm', { name }))) return;
+  togglingId.value = u.teacherId;
   try {
-    await adminStore.deleteTeacher(deleteModal.teacher.teacherId);
-    deleteModal.open = false;
-  } catch (err: any) {
-    deleteModal.error = err.message || 'Failed to delete teacher';
+    await adminStore.updateTeacher(u.teacherId, { isActive: makeActive });
+  } catch (err) {
+    alert((err instanceof Error && err.message) || 'Failed to update status');
   } finally {
-    deleteModal.deleting = false;
+    togglingId.value = null;
   }
 };
 </script>

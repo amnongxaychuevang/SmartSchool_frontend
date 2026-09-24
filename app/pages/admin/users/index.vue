@@ -66,9 +66,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibo
 
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
-      <div v-if="adminStore.usersLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"/>
-      </div>
+      <LoadingSpinner v-if="adminStore.usersLoading" />
       <div v-else-if="adminStore.users.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -136,12 +134,18 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
+                <!-- Deactivate / reactivate (accounts are never deleted) -->
                 <button
-class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                  :title="$t('common.delete')"
-                  @click="openDeleteModal(user)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  :disabled="togglingId === user.userId"
+                  class="p-1.5 rounded-lg text-slate-400 transition-all disabled:opacity-40"
+                  :class="user.isActive ? 'hover:text-red-400 hover:bg-red-500/10' : 'hover:text-teal-400 hover:bg-teal-500/10'"
+                  :title="user.isActive ? $t('common.deactivate') : $t('common.reactivate')"
+                  @click="toggleActive(user)">
+                  <svg v-if="user.isActive" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
               </div>
@@ -169,21 +173,11 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 tr
     :db-roles="dbRoles"
     @submit="handleUserSubmit"
   />
-
-  <!-- ── DELETE CONFIRM MODAL ── -->
-  <DeleteModal
-    v-model:open="deleteModal.open"
-    :deleting="deleteModal.deleting"
-    :error="deleteModal.error"
-    :user="deleteModal.user"
-    @delete="handleDelete"
-  />
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import UserFormModal from './modals/UserFormModal.vue';
-import DeleteModal from '../../../components/modals/DeleteModal.vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { User } from '../../../domain/models/User';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
@@ -193,7 +187,7 @@ definePageMeta({ layout: 'admin' });
 useHead({ title: 'Users — Smart School Admin' });
 
 const adminStore = useAdminStore();
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const searchInput = ref('');
 const roleFilter = ref('');
 const roleDropdownOpen = ref(false);
@@ -324,31 +318,21 @@ const handleUserSubmit = async () => {
   }
 };
 
-// ── Delete Modal ──
-const deleteModal = reactive({
-  open: false,
-  deleting: false,
-  error: '',
-  user: null as User | null
-});
+// ── Deactivate / reactivate ──
+// Accounts are never deleted: their top-up, leave and audit history must stay.
+const togglingId = ref<number | null>(null);
 
-const openDeleteModal = (user: User) => {
-  deleteModal.user = user;
-  deleteModal.error = '';
-  deleteModal.open = true;
-};
-
-const handleDelete = async () => {
-  if (!deleteModal.user) return;
-  deleteModal.deleting = true;
-  deleteModal.error = '';
+const toggleActive = async (u: User) => {
+  const makeActive = !u?.isActive;
+  const name = (locale.value === 'lo' ? u.fullNameLo : u.fullNameEn) || u.fullNameEn;
+  if (!makeActive && !confirm(t('common.deactivate_confirm', { name }))) return;
+  togglingId.value = u.userId;
   try {
-    await adminStore.deleteUser(deleteModal.user.userId);
-    deleteModal.open = false;
-  } catch (err: any) {
-    deleteModal.error = err.message || 'Failed to delete user';
+    await adminStore.updateUser(u.userId, { isActive: makeActive });
+  } catch (err) {
+    alert((err instanceof Error && err.message) || 'Failed to update status');
   } finally {
-    deleteModal.deleting = false;
+    togglingId.value = null;
   }
 };
 </script>

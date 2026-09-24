@@ -29,21 +29,13 @@ export const adminRepository = {
     return res.data.student;
   },
 
-  async updateStudent(studentId: number, payload: Partial<{ studentCode: string; fullNameEn: string; fullNameLo: string; gender: string; status: string }>) {
+  async updateStudent(studentId: number, payload: Partial<{ studentCode: string; fullNameEn: string; fullNameLo: string; gender: string; status: Student['status'] }>) {
     const res = await useApiClient()<{ success: boolean; data: { student: Student } }>(`${API_ENDPOINTS.students.list}/${studentId}`, {
       method: 'PUT',
       body: payload
     });
     if (!res.success) throw new Error('Failed to update student');
     return res.data.student;
-  },
-
-  async deleteStudent(studentId: number) {
-    const res = await useApiClient()<{ success: boolean }>(`${API_ENDPOINTS.students.list}/${studentId}`, {
-      method: 'DELETE'
-    });
-    if (!res.success) throw new Error('Failed to delete student');
-    return true;
   },
 
   async getUsers(params: { role?: string; search?: string; page?: number; limit?: number } = {}) {
@@ -76,14 +68,6 @@ export const adminRepository = {
     return res.data.user;
   },
 
-  async deleteUser(userId: number) {
-    const res = await useApiClient()<{ success: boolean }>(`${API_ENDPOINTS.users.list}/${userId}`, {
-      method: 'DELETE'
-    });
-    if (!res.success) throw new Error('Failed to delete user');
-    return true;
-  },
-
   async getTeachers(params: { search?: string; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();
     if (params.search) query.set('search', params.search);
@@ -113,14 +97,6 @@ export const adminRepository = {
     return res.data.teacher;
   },
 
-  async deleteTeacher(teacherId: number) {
-    const res = await useApiClient()<{ success: boolean }>(`${API_ENDPOINTS.teachers.list}/${teacherId}`, {
-      method: 'DELETE'
-    });
-    if (!res.success) throw new Error('Failed to delete teacher');
-    return true;
-  },
-
   async getParents(params: { search?: string; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();
     if (params.search) query.set('search', params.search);
@@ -148,14 +124,6 @@ export const adminRepository = {
     });
     if (!res.success) throw new Error('Failed to update parent');
     return res.data.parent;
-  },
-
-  async deleteParent(parentId: number) {
-    const res = await useApiClient()<{ success: boolean }>(`${API_ENDPOINTS.parents.list}/${parentId}`, {
-      method: 'DELETE'
-    });
-    if (!res.success) throw new Error('Failed to delete parent');
-    return true;
   },
 
   async getClasses(params: { search?: string; page?: number; limit?: number } = {}) {
@@ -200,10 +168,6 @@ export const adminRepository = {
     return res.data;
   },
 
-  async getGenders() {
-    const res = await useApiClient()<{ success: boolean; data: { genders: { id: number; code: string; nameEn: string; nameLo: string }[] } }>(API_ENDPOINTS.genders.list, { method: 'GET' });
-    return res.data.genders;
-  },
 
   async getAuditLogs(params: { userId?: number | string; entityType?: string; action?: string; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();

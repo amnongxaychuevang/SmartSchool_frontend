@@ -178,7 +178,6 @@ const refreshData = async () => {
   // Fetch up to 1000 students to get a good demographic overview
   // Real world: backend should have a dedicated /analytics/students endpoint
   await adminStore.fetchStudents({ page: 1 }); 
-  await adminStore.fetchGenders();
 };
 
 onMounted(() => {
@@ -194,6 +193,6 @@ const activeStudents = computed(() => studentsList.value.filter(s => s.status ==
 const graduatedStudents = computed(() => studentsList.value.filter(s => s.status === 'graduated').length);
 const transferredStudents = computed(() => studentsList.value.filter(s => s.status === 'transferred').length);
 
-const maleStudents = computed(() => studentsList.value.filter(s => s.gender === 'male' || (s.gender as any)?.code === 'male').length);
-const femaleStudents = computed(() => studentsList.value.filter(s => s.gender === 'female' || (s.gender as any)?.code === 'female').length);
+const maleStudents = computed(() => studentsList.value.filter(s => s.gender === 'male').length);
+const femaleStudents = computed(() => studentsList.value.filter(s => s.gender === 'female').length);
 </script>
