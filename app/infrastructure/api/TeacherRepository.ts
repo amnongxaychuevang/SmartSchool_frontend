@@ -52,8 +52,8 @@ export class TeacherRepository {
     return useApiClient()<ApiResponse<Announcement[]>>(API_ENDPOINTS.announcements.base, { method: 'GET' });
   }
 
-  async getLeaveRequests() {
-    return useApiClient()<ApiResponse<Paged<'requests', LeaveRequest>>>(API_ENDPOINTS.leaveRequests.list, { method: 'GET' });
+  async getLeaveRequests(params: { status?: LeaveRequest['status']; page?: number; limit?: number } = {}) {
+    return useApiClient()<ApiResponse<Paged<'requests', LeaveRequest>>>(API_ENDPOINTS.leaveRequests.list, { method: 'GET', query: params });
   }
 
   async updateLeaveRequestStatus(leaveId: number, status: 'approved' | 'rejected') {

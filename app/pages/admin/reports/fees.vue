@@ -154,7 +154,7 @@ class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transi
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse min-w-max">
           <thead>
             <tr class="border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/10">
               <th class="px-6 py-3.5">{{ locale === 'lo' ? 'ເລກອ້າງອີງ' : 'Ref No' }}</th>

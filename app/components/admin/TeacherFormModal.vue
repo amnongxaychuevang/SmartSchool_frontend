@@ -48,7 +48,7 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                 @click="activeTab = tab.id">
                 <!-- eslint-disable-next-line vue/no-v-html -- tab.icon is a hardcoded SVG string in this file's own `tabs` array (line ~266), never user/API-supplied, so there's no injection vector here. -->
                 <span class="tab-icon" v-html="tab.icon" />
-                {{ tab.label }}
+                {{ $t(tab.label) }}
               </button>
             </div>
           </div>
@@ -75,7 +75,7 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                         <span class="input-icon">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                         </span>
-                        <input v-model="form.fullNameEn" required type="text" class="field-input" placeholder="e.g. John Doe" >
+                        <input v-model="form.fullNameEn" required type="text" class="field-input" :placeholder="$t('forms.ph_full_name_en')" >
                       </div>
                     </div>
                     <div class="field-group">
@@ -95,7 +95,7 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                         <span class="input-icon">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                         </span>
-                        <input v-model="form.email" type="email" autocomplete="email" class="field-input" placeholder="john@example.com" >
+                        <input v-model="form.email" type="email" autocomplete="email" class="field-input" :placeholder="$t('forms.ph_email')" >
                       </div>
                     </div>
                     <div class="field-group">
@@ -116,7 +116,7 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                 <div v-if="activeTab === 'profile'" key="profile" class="flex flex-col gap-4">
                   <div :class="mode === 'edit' ? 'grid grid-cols-2 gap-4' : ''">
                     <div v-if="mode === 'edit'" class="field-group">
-                      <label class="field-label">{{ $t('teachers.employee_code') }} <span class="badge-readonly">readonly</span></label>
+                      <label class="field-label">{{ $t('teachers.employee_code') }} <span class="badge-readonly">{{ $t('common.readonly') }}</span></label>
                       <div class="input-wrap">
                         <span class="input-icon">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1" /></svg>
@@ -130,7 +130,7 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                         <span class="input-icon">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                         </span>
-                        <input v-model="form.specialization" type="text" class="field-input" placeholder="e.g. Mathematics" >
+                        <input v-model="form.specialization" type="text" class="field-input" :placeholder="$t('forms.ph_specialization')" >
                       </div>
                     </div>
                   </div>
@@ -141,7 +141,7 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                         <span class="input-icon">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055" /></svg>
                         </span>
-                        <input v-model="form.qualification" type="text" class="field-input" placeholder="Bachelor of Education" >
+                        <input v-model="form.qualification" type="text" class="field-input" :placeholder="$t('forms.ph_qualification')" >
                       </div>
                     </div>
                   </div>
@@ -177,13 +177,13 @@ v-for="tab in tabs" :key="tab.id" type="button" :class="['tab-btn', activeTab ==
                       <span class="input-icon input-icon--top">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                       </span>
-                      <textarea v-model="form.address" rows="3" class="field-input field-input--textarea" placeholder="ບ້ານ, ເມືອງ, ແຂວງ"/>
+                      <textarea v-model="form.address" rows="3" class="field-input field-input--textarea" :placeholder="$t('forms.ph_address')"/>
                     </div>
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="field-group">
                       <label class="field-label">{{ $t('common.notes') }}</label>
-                      <textarea v-model="form.notes" rows="2" class="field-input field-input--textarea field-input--no-icon" placeholder="Additional notes..."/>
+                      <textarea v-model="form.notes" rows="2" class="field-input field-input--textarea field-input--no-icon" :placeholder="$t('forms.ph_notes')"/>
                     </div>
                   </div>
                 </div>
@@ -263,17 +263,17 @@ const activeTab = ref<'account' | 'profile' | 'location'>('account');
 const tabs = [
   {
     id: 'account' as const,
-    label: 'Account',
+    label: 'forms.tab_account',
     icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`,
   },
   {
     id: 'profile' as const,
-    label: 'Profile',
+    label: 'forms.tab_profile',
     icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`,
   },
   {
     id: 'location' as const,
-    label: 'Location',
+    label: 'forms.tab_location',
     icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
   },
 ];

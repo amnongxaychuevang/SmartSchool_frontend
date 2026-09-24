@@ -6,10 +6,10 @@
         'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out',
         sidebarOpen ? 'w-64' : 'w-[68px]'
       ]"
-      style="background: rgba(8,14,26,0.95); border-right: 1px solid rgba(148,163,184,0.07); backdrop-filter: blur(20px);"
+      class="bg-white dark:bg-[#080e1a] border-r border-slate-200 dark:border-slate-800"
     >
       <!-- Logo -->
-      <div class="h-16 flex items-center gap-3 px-4 shrink-0" style="border-bottom: 1px solid rgba(148,163,184,0.07);">
+      <div class="h-16 flex items-center gap-3 px-4 shrink-0 border-b border-slate-200 dark:border-slate-800">
         <div
 class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
           style="background: linear-gradient(135deg, #2dd4bf, #0d9488); box-shadow: 0 4px 12px rgba(45,212,191,0.35);">
@@ -19,7 +19,7 @@ class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
         </div>
         <transition name="fade-slide">
           <div v-if="sidebarOpen" class="overflow-hidden">
-            <p class="text-white font-bold text-sm leading-tight">Smart School</p>
+            <p class="text-slate-800 dark:text-white font-bold text-sm leading-tight">Smart School</p>
             <p class="text-teal-400/70 text-[10px] font-medium tracking-widest uppercase">Admin Portal</p>
           </div>
         </transition>
@@ -90,7 +90,7 @@ v-if="sidebarOpen && isActive(item.to)"
       </nav>
 
       <!-- Logout -->
-      <div class="border-t border-slate-800 p-3 shrink-0" style="border-top: 1px solid rgba(148,163,184,0.07);">
+      <div class="border-t border-slate-200 dark:border-slate-800 p-3 shrink-0">
         <button class="w-full flex items-center justify-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm" @click="handleLogout">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -104,15 +104,14 @@ v-if="sidebarOpen && isActive(item.to)"
     <div :class="['flex flex-col flex-1 min-h-screen transition-all duration-300', sidebarOpen ? 'ml-64' : 'ml-[68px]']">
       <!-- Topbar -->
       <header
-class="h-16 flex items-center gap-4 px-6 sticky top-0 z-40 shrink-0"
-        style="background: rgba(8,14,26,0.85); border-bottom: 1px solid rgba(148,163,184,0.07); backdrop-filter: blur(20px);">
+class="h-16 flex items-center gap-4 px-6 sticky top-0 z-40 shrink-0 bg-white/90 dark:bg-[#080e1a]/85 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md">
         <!-- Toggle -->
         <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-all shrink-0" @click="sidebarOpen = !sidebarOpen">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <h1 class="text-white font-semibold text-lg">{{ currentPageTitle }}</h1>
+        <h1 class="text-slate-800 dark:text-white font-semibold text-lg">{{ currentPageTitle }}</h1>
 
         <!-- Spacer -->
         <div class="flex-1"/>
@@ -136,7 +135,7 @@ class="w-8 h-8 rounded-lg flex items-center justify-center text-teal-300 font-bo
               {{ userInitial }}
             </div>
             <div class="text-left hidden sm:block">
-              <p class="text-xs font-semibold text-white leading-tight">{{ authStore.user && authStore.user.fullNameEn }}</p>
+              <p class="text-xs font-semibold text-slate-800 dark:text-white leading-tight">{{ authStore.user && authStore.user.fullNameEn }}</p>
               <p class="text-[10px] text-slate-500 capitalize">{{ authStore.user && authStore.user.role }}</p>
             </div>
             <svg
@@ -151,8 +150,7 @@ xmlns="http://www.w3.org/2000/svg"
           <transition name="profile-drop">
             <div
 v-if="profileOpen"
-              class="absolute right-0 top-full mt-2 w-48 rounded-2xl overflow-hidden shadow-2xl z-50"
-              style="background: rgba(10,17,32,0.98); border: 1px solid rgba(148,163,184,0.1); backdrop-filter: blur(20px);">
+              class="absolute right-0 top-full mt-2 w-48 rounded-2xl overflow-hidden shadow-2xl z-50 bg-white dark:bg-[#0a1120] border border-slate-200 dark:border-slate-800 shadow-xl">
               <!-- Actions -->
               <div class="p-2">
                 <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all text-sm">
@@ -206,79 +204,58 @@ const userInitial = computed((): string => {
   return fullName.charAt(0).toUpperCase() || 'A';
 });
 
-// Grouped by task: people → teaching → attendance → money → communication → reports → settings.
 const navItems: NavItem[] = [
-  { to: '/admin',          key: 'nav.dashboard', icon: resolveComponent('IconDashboard') },
-  { to: '/admin/students', key: 'nav.students',  icon: resolveComponent('IconStudents') },
-  { to: '/admin/teachers', key: 'nav.teachers',  icon: resolveComponent('IconTeachers') },
-  { to: '/admin/parents',  key: 'nav.parents',   icon: resolveComponent('IconParents') },
+  { to: '/admin',            key: 'nav.dashboard',  icon: resolveComponent('IconDashboard') },
+  { to: '/admin/students',   key: 'nav.students',   icon: resolveComponent('IconStudents') },
+  { to: '/admin/teachers',   key: 'nav.teachers',   icon: resolveComponent('IconTeachers') },
+  { to: '/admin/parents',    key: 'nav.parents',    icon: resolveComponent('IconParents') },
+  { to: '/admin/classes',    key: 'nav.classes',    icon: resolveComponent('IconClasses') },
+  { to: '/admin/attendance', key: 'nav.attendance', icon: resolveComponent('IconAttendance') },
   {
     key: 'nav.academic',
-    icon: resolveComponent('IconSchedule'),
+    icon: resolveComponent('IconClasses'),
     children: [
-      { to: '/admin/classes',                  key: 'nav.classes' },
-      { to: '/admin/academics/subjects',       key: 'nav.subjects' },
       { to: '/admin/academics/class-subjects', key: 'nav.classSubjects' },
+      { to: '/admin/academics/subjects',       key: 'nav.subjects' },
       { to: '/admin/academics/schedule',       key: 'nav.schedule' },
       { to: '/admin/academics/grades',         key: 'nav.grades' },
       { to: '/admin/settings/academic-terms',  key: 'nav.academicTerms' },
     ]
   },
-  {
-    key: 'nav.attendance',
-    icon: resolveComponent('IconAttendance'),
-    children: [
-      { to: '/admin/cards',      key: 'nav.cards' },
-      { to: '/admin/attendance', key: 'nav.scanSimulator' },
-    ]
-  },
-  {
-    key: 'nav.finance',
-    icon: resolveComponent('IconWallet'),
-    children: [
-      { to: '/admin/finance/top-ups',         key: 'nav.topUps' },
-      { to: '/admin/finance',                 key: 'nav.wallets' },
-      { to: '/admin/finance/spending-limits', key: 'nav.spendingLimits' },
-      { to: '/admin/finance/shops',           key: 'nav.shops' },
-    ]
-  },
-  {
-    key: 'nav.communication',
-    icon: resolveComponent('IconNotifications'),
-    children: [
-      { to: '/admin/announcements', key: 'nav.announcements' },
-      { to: '/admin/notifications', key: 'nav.notifications' },
-    ]
-  },
-  {
-    key: 'nav.reports',
-    icon: resolveComponent('IconReports'),
-    children: [
-      { to: '/admin/reports',            key: 'nav.overview' },
-      { to: '/admin/reports/attendance', key: 'nav.attendance' },
-      { to: '/admin/reports/grades',     key: 'nav.grades' },
-      { to: '/admin/reports/students',   key: 'nav.students' },
-      { to: '/admin/reports/wallet',     key: 'nav.wallet' },
-      { to: '/admin/reports/fees',       key: 'nav.fees' },
-    ]
-  },
-  {
-    key: 'nav.settings',
+  
+   { 
+    key: 'nav.settings',  
     icon: resolveComponent('IconSettings'),
     children: [
-      { to: '/admin/settings',               key: 'nav.general' },
+      { to: '/admin/settings',               key: 'nav.settings' },
       { to: '/admin/users',                  key: 'nav.users' },
       { to: '/admin/settings/permissions',   key: 'nav.permissions' },
-      { to: '/admin/settings/notifications', key: 'nav.notificationSettings' },
+      { to: '/admin/settings/shops',         key: 'nav.shops' },
+      { to: '/admin/settings/notifications', key: 'nav.notifications' },
+      { to: '/admin/announcements',          key: 'nav.announcements' },
       { to: '/admin/audit-logs',             key: 'nav.auditLogs' },
     ]
   },
+  { 
+    key: 'nav.reports',   
+    icon: resolveComponent('IconReports'),
+    children: [
+      { to: '/admin/reports',            key: 'nav.reports' },
+      { to: '/admin/reports/attendance', key: 'nav.attendance' },
+      { to: '/admin/reports/fees',       key: 'nav.fees' },
+      { to: '/admin/reports/grades',     key: 'nav.grades' },
+      { to: '/admin/reports/students',   key: 'nav.students' },
+      { to: '/admin/reports/wallet',     key: 'nav.wallet' },
+    ]
+  },
+ 
 ];
 
-// One entry per group, all collapsed; the group holding the current page opens on mount.
-const openMenus = reactive<Record<string, boolean>>(
-  Object.fromEntries(navItems.filter((item) => item.children).map((item) => [item.key, false])),
-);
+const openMenus = reactive<Record<string, boolean>>({
+  'nav.reports': false,
+  'nav.settings': false,
+  'nav.academic': false,
+});
 
 const toggleMenu = (key: string) => {
   if (!sidebarOpen.value) {
@@ -287,16 +264,10 @@ const toggleMenu = (key: string) => {
   openMenus[key] = !openMenus[key];
 };
 
-// The single most specific menu link matching the current path, so that on
-// /admin/settings/permissions only "Permissions" is highlighted, not also
-// "General" (/admin/settings); /admin/students/create still highlights Students.
-const allLinks = navItems.flatMap((item) => (item.children ? item.children.map((c) => c.to) : item.to ? [item.to] : []));
-const activeLink = computed(() =>
-  allLinks
-    .filter((to) => route.path === to || (to !== '/admin' && route.path.startsWith(to + '/')))
-    .sort((a, b) => b.length - a.length)[0] ?? (route.path === '/admin' ? '/admin' : ''),
-);
-const isActive = (to: string) => activeLink.value === to;
+const isActive = (to: string) => {
+  if (to === '/admin') return route.path === '/admin';
+  return route.path === to || (to !== '/admin' && route.path.startsWith(to + '/'));
+};
 
 const isSubActive = (item: NavItem): boolean => {
   return item.children?.some((sub: NavSubItem) => isActive(sub.to)) ?? false;

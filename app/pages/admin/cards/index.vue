@@ -1,264 +1,184 @@
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Header + Filter -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input
-          v-model="searchInput"
-          type="text"
-          placeholder="Search UID..."
-          class="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
-          @input="handleSearch"
-        >
-      </div>
-      <div class="flex items-center gap-2">
-        <button class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]" @click="openCreateModal">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Issue Card
-        </button>
-      </div>
-    </div>
+    <PageHeader :eyebrow="$t('navSection.attendance')" :title="$t('cards_admin.title')" :subtitle="$t('cards_admin.subtitle')">
+      <input v-model="searchInput" type="search" class="input-field w-64" :placeholder="$t('cards_admin.search')" @input="handleSearch">
+      <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="handleFilter">
+        <option value="">{{ $t('cards_admin.all_status') }}</option>
+        <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
+      </select>
+      <button type="button" class="btn-primary" @click="openCreate">{{ $t('cards_admin.issue') }}</button>
+    </PageHeader>
 
-    <!-- Table -->
-    <div class="glass-panel overflow-hidden">
-      <!-- Loading -->
+    <section class="panel overflow-hidden">
       <LoadingSpinner v-if="academicsStore.cardsLoading" />
-
-      <!-- Empty -->
-      <div v-else-if="academicsStore.cards.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-        </svg>
-        <p>No cards found.</p>
+      <p v-else-if="!academicsStore.cards.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('cards_admin.empty') }}</p>
+      <div v-else class="overflow-x-auto">
+        <table class="data-table w-full min-w-max">
+          <thead>
+            <tr>
+              <th>{{ $t('cards_admin.col_uid') }}</th>
+              <th>{{ $t('cards_admin.col_student') }}</th>
+              <th>{{ $t('common.status') }}</th>
+              <th>{{ $t('cards_admin.col_issued') }}</th>
+              <th>{{ $t('cards_admin.col_expires') }}</th>
+              <th>{{ $t('cards_admin.col_notes') }}</th>
+              <th class="text-right">{{ $t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="card in academicsStore.cards" :key="card.cardId">
+              <td class="font-mono font-semibold text-primary-ink">{{ card.cardUid }}</td>
+              <td>
+                <p class="font-semibold">{{ studentName(card) }}</p>
+                <p class="text-xs text-ink-subtle font-mono">{{ card.student?.studentCode }}</p>
+              </td>
+              <td><span :class="statusBadge[card.status]">{{ $t(`status.${card.status}`) }}</span></td>
+              <td class="tnum">{{ f.date(card.issuedDate) }}</td>
+              <td class="tnum">{{ f.date(card.expiredDate) }}</td>
+              <td class="max-w-xs truncate text-ink-muted" :title="card.notes ?? undefined">{{ card.notes || '—' }}</td>
+              <td class="text-right">
+                <div class="inline-flex gap-2">
+                  <button type="button" class="btn-secondary min-h-8 px-3" @click="openEdit(card)">{{ $t('common.edit') }}</button>
+                  <button type="button" class="btn-danger min-h-8 px-3" @click="openDelete(card)">{{ $t('common.delete') }}</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <PaginationBar :current-page="academicsStore.cardsPage" :total-pages="totalPages" @update:page="changePage" />
+    </section>
 
-      <!-- Data Table -->
-      <table v-else class="w-full">
-        <thead>
-          <tr class="border-b border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Card UID</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Assigned To</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Status</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Issued Date</th>
-            <th class="text-right text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800/60">
-          <tr v-for="card in academicsStore.cards" :key="card.cardId" class="hover:bg-slate-800/40 transition-colors">
-            <td class="px-6 py-4 text-sm font-mono text-teal-400">
-              {{ card.cardUid }}
-            </td>
-            <td class="px-6 py-4">
-              <p class="text-sm font-medium text-white">{{ card.student?.fullNameEn }}</p>
-              <p class="text-xs text-slate-500">{{ card.student?.studentCode }}</p>
-            </td>
-            <td class="px-6 py-4">
-              <span
-class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
-                :class="{
-                  'bg-teal-500/20 text-teal-400': card.status === 'active',
-                  'bg-slate-500/20 text-slate-400': card.status === 'deactivated',
-                  'bg-red-500/20 text-red-400': card.status === 'lost',
-                }">
-                {{ card.status }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-400">
-              {{ new Date(card.issuedDate).toLocaleDateString() }}
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center justify-end gap-2">
-                <button class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" title="Edit" @click="openEditModal(card)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </button>
-                <button class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" title="Delete" @click="handleDelete(card.cardId)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Pagination Placeholder -->
-      <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-slate-800">
-        <span class="text-sm text-slate-500">Page {{ academicsStore.cardsPage }} of {{ totalPages }}</span>
-        <div class="flex items-center gap-2">
-          <button :disabled="academicsStore.cardsPage === 1" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50" @click="changePage(academicsStore.cardsPage - 1)">Prev</button>
-          <button :disabled="academicsStore.cardsPage === totalPages" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50" @click="changePage(academicsStore.cardsPage + 1)">Next</button>
+    <AppModal v-model:open="modal.open" :title="modal.cardId ? $t('cards_admin.edit') : $t('cards_admin.issue')">
+      <form id="card-form" class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+        <div>
+          <label for="c-uid" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.uid') }}</label>
+          <input id="c-uid" v-model.trim="modal.form.cardUid" :disabled="!!modal.cardId" required maxlength="50" class="input-field font-mono" :placeholder="$t('cards_admin.uid_placeholder')">
         </div>
-      </div>
-    </div>
-
-
-    <!-- Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Card' : 'Issue New Card' }}</h2>
-              <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-
-            <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Card UID *</label>
-                <input v-model="modal.form.cardUid" :disabled="modal.isEdit" required type="text" class="modal-input" placeholder="e.g. 04:DF:3A:..." >
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student ID *</label>
-                <input v-model.number="modal.form.studentId" required type="number" class="modal-input" >
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</label>
-                <select v-model="modal.form.status" class="modal-input">
-                  <option value="active">Active</option>
-                  <option value="deactivated">Deactivated</option>
-                  <option value="lost">Lost</option>
-                </select>
-              </div>
-
-              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
-                <button
-  type="submit" :disabled="modal.saving"
-                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                  <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  {{ modal.isEdit ? 'Update Card' : 'Issue Card' }}
-                </button>
-              </div>
-            </form>
+        <div v-if="!modal.cardId">
+          <label for="c-student" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.student') }}</label>
+          <StudentPicker v-model="modal.form.studentId" input-id="c-student" />
+        </div>
+        <div v-else>
+          <p class="text-sm font-semibold">{{ $t('cards_admin.student') }}</p>
+          <p class="text-sm text-ink-muted">{{ modal.studentLabel }}</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div v-if="modal.cardId">
+            <label for="c-status" class="block mb-1.5 text-sm font-semibold">{{ $t('common.status') }}</label>
+            <select id="c-status" v-model="modal.form.status" class="input-field">
+              <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
+            </select>
+          </div>
+          <div>
+            <label for="c-exp" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.expires') }}</label>
+            <input id="c-exp" v-model="modal.form.expiredDate" type="date" class="input-field">
           </div>
         </div>
-      </Transition>
-    </Teleport>
+        <div>
+          <label for="c-notes" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.notes') }}</label>
+          <input id="c-notes" v-model.trim="modal.form.notes" maxlength="255" class="input-field">
+        </div>
+        <p v-if="modal.error" role="alert" class="rounded border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">{{ modal.error }}</p>
+      </form>
+      <template #footer>
+        <button type="button" class="btn-secondary" :disabled="modal.saving" @click="modal.open = false">{{ $t('common.cancel') }}</button>
+        <button type="submit" form="card-form" class="btn-primary" :disabled="modal.saving || (!modal.cardId && !modal.form.studentId)">
+          {{ modal.saving ? $t('common.saving') : $t('common.save') }}
+        </button>
+      </template>
+    </AppModal>
+
+    <ConfirmDialog
+      v-model:open="del.open"
+      tone="danger"
+      :title="$t('cards_admin.delete_title')"
+      :message="del.card ? $t('cards_admin.delete_msg', { uid: del.card.cardUid }) : ''"
+      :confirm-label="$t('common.delete')"
+      :busy="del.busy"
+      :error="del.error"
+      @confirm="handleDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Card } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAcademicsStore } from '../../../application/stores/academics';
+import PageHeader from '../../../components/PageHeader.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
+import AppModal from '../../../components/AppModal.vue';
+import ConfirmDialog from '../../../components/ConfirmDialog.vue';
+import LoadingSpinner from '../../../components/LoadingSpinner.vue';
+import StudentPicker from '../../../components/StudentPicker.vue';
+import { useFormat } from '../../../composables/useFormat';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Cards — Smart School Admin' });
+
+const { t, locale } = useI18n();
+const f = useFormat();
+useHead({ title: () => t('cards_admin.title') });
 
 const academicsStore = useAcademicsStore();
+const statuses = ['active', 'lost', 'deactivated'] as const;
+const statusBadge: Record<Card['status'], string> = { active: 'badge-success', lost: 'badge-danger', deactivated: 'badge-neutral' };
 const searchInput = ref('');
+const statusFilter = ref('');
+const totalPages = computed(() => Math.ceil(academicsStore.cardsTotal / 15));
 let searchTimeout: ReturnType<typeof setTimeout>;
 
-const totalPages = computed(() => Math.ceil(academicsStore.cardsTotal / 15));
+const studentName = (c: Card) => (locale.value === 'lo' ? c.student?.fullNameLo : c.student?.fullNameEn) || c.student?.fullNameEn || '—';
 
-onMounted(() => {
-  academicsStore.fetchCards();
-});
-
+onMounted(() => academicsStore.fetchCards());
 const handleSearch = () => {
   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    academicsStore.fetchCards({ search: searchInput.value, page: 1 });
-  }, 400);
+  searchTimeout = setTimeout(() => academicsStore.fetchCards({ search: searchInput.value, page: 1 }), 400);
 };
+const handleFilter = () => academicsStore.fetchCards({ status: statusFilter.value, page: 1 });
+const changePage = (page: number) => academicsStore.fetchCards({ page });
 
-const changePage = (page: number) => {
-  academicsStore.fetchCards({ search: searchInput.value, page });
-};
-
-const modal = reactive({
-  open: false,
-  saving: false,
-  error: '',
-  isEdit: false,
-  cardId: null as number | null,
-  form: {
-    // The API field is cardUid (the form sent `uid`, so creating a card always failed).
-    cardUid: '',
-    studentId: '' as number | '',
-    status: 'active' as Card['status']
-  }
+// ── Issue / edit ──
+const emptyForm = () => ({ cardUid: '', studentId: null as number | null, status: 'active' as Card['status'], expiredDate: '', notes: '' });
+const modal = reactive({ open: false, saving: false, error: '', cardId: null as number | null, studentLabel: '', form: emptyForm() });
+const openCreate = () => Object.assign(modal, { open: true, saving: false, error: '', cardId: null, studentLabel: '', form: emptyForm() });
+const openEdit = (card: Card) => Object.assign(modal, {
+  open: true, saving: false, error: '', cardId: card.cardId,
+  studentLabel: `${studentName(card)} · ${card.student?.studentCode ?? ''}`,
+  form: { cardUid: card.cardUid, studentId: card.studentId, status: card.status, expiredDate: card.expiredDate?.slice(0, 10) ?? '', notes: card.notes ?? '' },
 });
 
-const openCreateModal = () => {
-  modal.isEdit = false;
-  modal.cardId = null;
-  modal.form.cardUid = '';
-  modal.form.studentId = '';
-  modal.form.status = 'active';
-  modal.error = '';
-  modal.open = true;
-};
-
-const openEditModal = (card: Card) => {
-  modal.isEdit = true;
-  modal.cardId = card.cardId;
-  modal.form.cardUid = card.cardUid;
-  modal.form.studentId = card.studentId;
-  modal.form.status = card.status;
-  modal.error = '';
-  modal.open = true;
-};
-
-const handleSubmit = async () => {
+async function handleSubmit() {
   modal.saving = true;
   modal.error = '';
+  const { cardUid, studentId, status, expiredDate, notes } = modal.form;
+  const optional = { ...(expiredDate ? { expiredDate } : {}), ...(notes ? { notes } : {}) };
   try {
-    if (modal.isEdit && modal.cardId) {
-      await academicsStore.updateCard(modal.cardId, modal.form);
-    } else {
-      await academicsStore.createCard(modal.form);
-    }
+    if (modal.cardId) await academicsStore.updateCard(modal.cardId, { status, ...optional });
+    else await academicsStore.createCard({ cardUid, studentId, ...optional });
     modal.open = false;
   } catch (err) {
-    modal.error = getErrorMessage(err, 'Failed to save card');
+    modal.error = getErrorMessage(err, t('common.error'));
   } finally {
     modal.saving = false;
   }
-};
+}
 
-const handleDelete = async (cardId: number) => {
-  if (confirm('Are you sure you want to delete this card?')) {
-    try {
-      await academicsStore.deleteCard(cardId);
-    } catch (err) {
-      alert(getErrorMessage(err, 'Failed to delete card'));
-    }
+// ── Delete ──
+const del = reactive({ open: false, busy: false, error: '', card: null as Card | null });
+const openDelete = (card: Card) => Object.assign(del, { open: true, busy: false, error: '', card });
+async function handleDelete() {
+  if (!del.card) return;
+  del.busy = true;
+  del.error = '';
+  try {
+    await academicsStore.deleteCard(del.card.cardId);
+    del.open = false;
+  } catch (err) {
+    del.error = getErrorMessage(err, t('common.error'));
+  } finally {
+    del.busy = false;
   }
-};
+}
 </script>
-
-<style scoped lang="postcss">
-.modal-input {
-  @apply w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700/60 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 transition-all;
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

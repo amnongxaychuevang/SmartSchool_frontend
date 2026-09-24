@@ -15,8 +15,9 @@ interface StudentsResponse {
 }
 
 export const adminRepository = {
-  async getStudents(params: { search?: string; page?: number; limit?: number; status?: string } = {}) {
+  async getStudents(params: { search?: string; page?: number; limit?: number; status?: string; classId?: number } = {}) {
     const query = new URLSearchParams();
+    if (params.classId) query.set('classId', String(params.classId));
     if (params.search) query.set('search', params.search);
     if (params.page) query.set('page', String(params.page));
     if (params.limit) query.set('limit', String(params.limit));
@@ -25,6 +26,11 @@ export const adminRepository = {
     const url = query.toString() ? `${API_ENDPOINTS.students.list}?${query}` : API_ENDPOINTS.students.list;
     const res = await useApiClient()<StudentsResponse>(url, { method: 'GET' });
     return res.data;
+  },
+
+  async getStudentStatuses() {
+    const res = await useApiClient()<{ success: boolean; data: { statuses: { code: string; labelKey: string }[] } }>(API_ENDPOINTS.students.metaStatuses, { method: 'GET' });
+    return res.data.statuses;
   },
 
   async getStudent(studentId: number) {

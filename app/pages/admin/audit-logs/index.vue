@@ -1,158 +1,104 @@
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Filters -->
-    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-      <div class="relative flex-1 max-w-xs">
-        <input
-          v-model="filters.userId"
-          type="text"
-          inputmode="numeric"
-          placeholder="Filter by User ID..."
-          class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
-          @input="handleFilterChange"
-        >
+    <PageHeader :eyebrow="$t('navSection.system')" :title="$t('audit_admin.title')" :subtitle="$t('audit_admin.subtitle')" />
+
+    <div class="flex flex-wrap items-end gap-3">
+      <div class="w-72">
+        <label for="a-actor" class="block mb-1.5 text-xs font-semibold text-ink-muted">{{ $t('audit_admin.actor') }}</label>
+        <UserPicker :key="pickerKey" v-model="actorId" input-id="a-actor" @update:model-value="apply" />
       </div>
-
-      <select v-model="filters.action" class="filter-select" @change="handleFilterChange">
-        <option value="">All actions</option>
-        <option v-for="a in actionOptions" :key="a" :value="a">{{ actionLabel(a) }}</option>
+      <select v-model="filters.action" class="input-field w-auto" :aria-label="$t('audit_admin.col_action')" @change="apply">
+        <option value="">{{ $t('audit_admin.all_actions') }}</option>
+        <option v-for="a in actions" :key="a" :value="a">{{ $t(`audit_admin.actions.${a}`) }}</option>
       </select>
-
-      <select v-model="filters.entityType" class="filter-select" @change="handleFilterChange">
-        <option value="">All entities</option>
-        <option v-for="e in entityTypeOptions" :key="e" :value="e">{{ e }}</option>
+      <select v-model="filters.entityType" class="input-field w-auto" :aria-label="$t('audit_admin.col_entity')" @change="apply">
+        <option value="">{{ $t('audit_admin.all_entities') }}</option>
+        <option v-for="e in entities" :key="e" :value="e">{{ $t(`audit_admin.entities.${e}`) }}</option>
       </select>
-
-      <button v-if="hasActiveFilters" class="text-xs text-slate-400 hover:text-white transition-colors px-2" @click="clearFilters">
-        Clear filters
-      </button>
+      <button v-if="hasFilters" type="button" class="btn-ghost" @click="clearFilters">{{ $t('audit_admin.clear') }}</button>
     </div>
 
-    <!-- Table -->
-    <div class="glass-panel overflow-hidden">
+    <section class="panel overflow-hidden">
       <LoadingSpinner v-if="adminStore.auditLogsLoading" />
-
-      <div v-else-if="adminStore.auditLogs.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <p>No audit log entries found.</p>
-      </div>
-
+      <p v-else-if="!adminStore.auditLogs.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('audit_admin.empty') }}</p>
       <div v-else class="overflow-x-auto">
-        <table class="w-full">
+        <table class="data-table w-full min-w-max">
           <thead>
-            <tr class="border-b border-slate-800">
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Time</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Actor</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Action</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Entity</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Detail</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">IP</th>
+            <tr>
+              <th>{{ $t('audit_admin.col_time') }}</th>
+              <th>{{ $t('audit_admin.col_actor') }}</th>
+              <th>{{ $t('audit_admin.col_action') }}</th>
+              <th>{{ $t('audit_admin.col_entity') }}</th>
+              <th>{{ $t('audit_admin.col_detail') }}</th>
+              <th>{{ $t('audit_admin.col_ip') }}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-800/60">
-            <tr v-for="log in adminStore.auditLogs" :key="log.auditId" class="hover:bg-slate-800/40 transition-colors">
-              <td class="px-6 py-4 text-sm text-slate-400 whitespace-nowrap">
-                {{ new Date(log.createdAt).toLocaleString() }}
+          <tbody>
+            <tr v-for="log in adminStore.auditLogs" :key="log.auditId">
+              <td class="tnum whitespace-nowrap">{{ f.dateTime(log.createdAt) }}</td>
+              <td>
+                <span v-if="log.user" class="font-semibold">{{ locale === 'lo' ? log.user.fullNameLo : log.user.fullNameEn }}</span>
+                <span v-else class="italic text-ink-subtle">{{ $t('audit_admin.unknown_actor') }}</span>
               </td>
-              <td class="px-6 py-4 text-sm text-white">
-                <span v-if="log.user">{{ log.user.fullNameEn }}</span>
-                <span v-else class="text-slate-500 italic">unknown (#{{ log.userId ?? '—' }})</span>
+              <td><span :class="actionBadge(log.action)">{{ te(`audit_admin.actions.${log.action}`) ? $t(`audit_admin.actions.${log.action}`) : log.action }}</span></td>
+              <td>
+                {{ te(`audit_admin.entities.${log.entityType}`) ? $t(`audit_admin.entities.${log.entityType}`) : log.entityType }}
+                <span v-if="log.entityId" class="text-ink-subtle tnum">#{{ log.entityId }}</span>
               </td>
-              <td class="px-6 py-4 text-sm">
-                <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold', actionBadgeClass(log.action)]">
-                  {{ actionLabel(log.action) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-sm text-slate-300">
-                {{ log.entityType }}<span v-if="log.entityId" class="text-slate-500"> #{{ log.entityId }}</span>
-              </td>
-              <td class="px-6 py-4 text-xs text-slate-500 max-w-xs truncate" :title="log.detail ? JSON.stringify(log.detail) : ''">
+              <td class="max-w-xs truncate font-mono text-xs text-ink-subtle" :title="log.detail ? JSON.stringify(log.detail) : undefined">
                 {{ log.detail ? JSON.stringify(log.detail) : '—' }}
               </td>
-              <td class="px-6 py-4 text-xs text-slate-500 font-mono">
-                {{ log.ipAddress ?? '—' }}
-              </td>
+              <td class="font-mono text-xs text-ink-subtle">{{ log.ipAddress ?? '—' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-
-      <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-slate-800">
-        <span class="text-sm text-slate-500">Page {{ adminStore.auditLogsPage }} of {{ totalPages }}</span>
-        <div class="flex items-center gap-2">
-          <button :disabled="adminStore.auditLogsPage === 1" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50" @click="changePage(adminStore.auditLogsPage - 1)">Prev</button>
-          <button :disabled="adminStore.auditLogsPage === totalPages" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50" @click="changePage(adminStore.auditLogsPage + 1)">Next</button>
-        </div>
-      </div>
-    </div>
+      <PaginationBar :current-page="adminStore.auditLogsPage" :total-pages="totalPages" @update:page="(page) => adminStore.fetchAuditLogs({ page })" />
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAdminStore } from '../../../application/stores/admin';
+import PageHeader from '../../../components/PageHeader.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
+import LoadingSpinner from '../../../components/LoadingSpinner.vue';
+import UserPicker from '../../../components/UserPicker.vue';
+import { useFormat } from '../../../composables/useFormat';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Audit Log — Smart School Admin' });
+
+const { t, te, locale } = useI18n();
+const f = useFormat();
+useHead({ title: () => t('audit_admin.title') });
 
 const adminStore = useAdminStore();
 
-const actionOptions = ['login', 'login_failed', 'logout', 'create', 'update', 'delete', 'approve', 'reject', 'status_change'];
-const entityTypeOptions = ['user', 'wallet', 'wallet_transaction', 'top_up_request', 'spending_limit'];
+// The values the backend writes (AuditAction enum; entity types used by the controllers).
+const actions = ['login', 'login_failed', 'logout', 'create', 'update', 'delete', 'approve', 'reject', 'status_change'];
+const entities = ['user', 'wallet', 'wallet_transaction', 'top_up_request', 'spending_limit'];
 
-const filters = reactive({ userId: '', action: '', entityType: '' });
-let filterTimeout: ReturnType<typeof setTimeout>;
-
+const actorId = ref<number | null>(null);
+const pickerKey = ref(0); // remounts the picker to clear its text
+const filters = reactive({ action: '', entityType: '' });
 const totalPages = computed(() => Math.ceil(adminStore.auditLogsTotal / 20));
-const hasActiveFilters = computed(() => !!(filters.userId || filters.action || filters.entityType));
+const hasFilters = computed(() => !!(actorId.value || filters.action || filters.entityType));
 
-onMounted(() => {
-  adminStore.fetchAuditLogs();
-});
-
-const handleFilterChange = () => {
-  clearTimeout(filterTimeout);
-  filterTimeout = setTimeout(() => {
-    adminStore.fetchAuditLogs({ ...filters, page: 1 });
-  }, 350);
-};
-
+onMounted(() => adminStore.fetchAuditLogs());
+const apply = () => adminStore.fetchAuditLogs({ ...filters, userId: actorId.value ? String(actorId.value) : '', page: 1 });
 const clearFilters = () => {
-  filters.userId = '';
-  filters.action = '';
-  filters.entityType = '';
-  adminStore.fetchAuditLogs({ ...filters, page: 1 });
+  actorId.value = null;
+  pickerKey.value++;
+  Object.assign(filters, { action: '', entityType: '' });
+  apply();
 };
 
-const changePage = (page: number) => {
-  adminStore.fetchAuditLogs({ page });
-};
-
-const actionLabel = (action: string) => action.replace('_', ' ');
-
-const actionBadgeClass = (action: string) => {
-  switch (action) {
-    case 'login':
-    case 'approve':
-      return 'bg-emerald-500/15 text-emerald-400';
-    case 'login_failed':
-    case 'delete':
-    case 'reject':
-      return 'bg-red-500/15 text-red-400';
-    case 'create':
-      return 'bg-teal-500/15 text-teal-400';
-    case 'update':
-    case 'status_change':
-      return 'bg-amber-500/15 text-amber-400';
-    case 'logout':
-      return 'bg-slate-600/30 text-slate-400';
-    default:
-      return 'bg-slate-600/30 text-slate-300';
-  }
+const actionBadge = (action: string) => {
+  if (['login', 'approve', 'create'].includes(action)) return 'badge-success';
+  if (['login_failed', 'delete', 'reject'].includes(action)) return 'badge-danger';
+  if (['update', 'status_change'].includes(action)) return 'badge-warning';
+  return 'badge-neutral';
 };
 </script>
-
-<style scoped lang="postcss">
-.filter-select {
-  @apply px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500 transition-colors;
-}
-</style>

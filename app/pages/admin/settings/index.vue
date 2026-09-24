@@ -44,7 +44,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
               </svg>
-              School settings saved successfully
+              {{ $t('settings_ui.school_saved') }}
             </span>
             <span v-else/>
             <button type="submit" :disabled="savingSchool" class="btn-primary flex items-center gap-2">
@@ -99,7 +99,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
               </svg>
-              Academic settings updated
+              {{ $t('settings_ui.academic_saved') }}
             </span>
           </div>
         </form>
@@ -114,7 +114,7 @@ import { reactive, ref, onMounted } from 'vue';
 import { useSettingsStore } from '../../../application/stores/settings';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Settings — Smart School Admin' });
+useHead({ title: () => useNuxtApp().$i18n.t('page_titles.settings') });
 
 const settingsStore = useSettingsStore();
 

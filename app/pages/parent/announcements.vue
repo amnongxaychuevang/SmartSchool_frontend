@@ -26,7 +26,7 @@ v-for="announcement in parentStore.announcements" :key="announcement.announcemen
               {{ locale === 'lo' ? (announcement.titleLo || announcement.titleEn) : (announcement.titleEn || announcement.titleLo) }}
             </h2>
             <span class="text-xs text-slate-400 whitespace-nowrap bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50">
-              {{ new Date(announcement.publishDate).toLocaleDateString() }}
+              {{ fmt.date(announcement.publishDate) }}
             </span>
           </div>
           <p class="text-slate-300 text-sm whitespace-pre-line leading-relaxed">
@@ -44,6 +44,7 @@ import { useParentStore } from '../../application/stores/parent';
 import { useI18n } from 'vue-i18n';
 
 const { t, locale } = useI18n();
+const fmt = useFormat();
 
 definePageMeta({ layout: 'parent' });
 useHead({ title: computed(() => `${t('parentPortal.announcements')} — ${t('parentPortal.title')}`) });

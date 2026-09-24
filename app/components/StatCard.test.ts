@@ -14,12 +14,12 @@ describe('StatCard', () => {
 
   it('applies the default color class when none is given', () => {
     const wrapper = mount(StatCard, { props: { title: 'X', value: 1 } });
-    expect(wrapper.find('.w-12').classes()).toContain('bg-teal-500');
+    expect(wrapper.find('[data-stat-icon]').classes()).toContain('bg-primary');
   });
 
   it('applies a custom color class when given one', () => {
     const wrapper = mount(StatCard, { props: { title: 'X', value: 1, colorClass: 'bg-red-500' } });
-    expect(wrapper.find('.w-12').classes()).toContain('bg-red-500');
+    expect(wrapper.find('[data-stat-icon]').classes()).toContain('bg-red-500');
   });
 
   it('renders a custom icon slot instead of the default icon', () => {

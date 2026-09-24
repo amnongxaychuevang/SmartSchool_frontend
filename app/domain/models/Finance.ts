@@ -36,6 +36,8 @@ export interface TopUpRequest {
   parentUserId: number;
   amount: Money;
   method: 'cash' | 'mobile_banking' | 'admin_manual';
+  methodLabelEn?: string | null;
+  methodLabelLo?: string | null;
   status: 'pending' | 'approved' | 'rejected';
   rejectReason: string | null;
   slipUrl: string | null;

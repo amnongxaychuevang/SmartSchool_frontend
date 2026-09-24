@@ -169,9 +169,9 @@ import { computed, onMounted } from 'vue';
 import { useAdminStore } from '~/application/stores/admin';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Student Demographics — Smart School Admin' });
+useHead({ title: () => t('page_titles.students_report') });
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const adminStore = useAdminStore();
 
 const refreshData = async () => {

@@ -23,7 +23,11 @@
         class="page-enter hover:-translate-y-2 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
         style="animation-delay: 0.1s"
         :title="$t('admin.total_students')"
-        :value="adminStore.statsLoading ? '...' : (adminStore.stats?.totalStudents ?? '—')"
+        :value="
+          adminStore.statsLoading
+            ? '...'
+            : (adminStore.stats?.totalStudents ?? '—')
+        "
         color-class="bg-gradient-to-br from-blue-500 to-indigo-600"
       >
         <template #icon>
@@ -48,7 +52,11 @@
         class="page-enter hover:-translate-y-2 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
         style="animation-delay: 0.2s"
         :title="$t('admin.present_today')"
-        :value="adminStore.statsLoading ? '...' : (adminStore.stats?.presentToday ?? '—')"
+        :value="
+          adminStore.statsLoading
+            ? '...'
+            : (adminStore.stats?.presentToday ?? '—')
+        "
         color-class="bg-gradient-to-br from-teal-400 to-emerald-600"
       >
         <template #icon>
@@ -73,7 +81,11 @@
         class="page-enter hover:-translate-y-2 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
         style="animation-delay: 0.3s"
         :title="$t('admin.absent_today')"
-        :value="adminStore.statsLoading ? '...' : (adminStore.stats?.absentToday ?? '—')"
+        :value="
+          adminStore.statsLoading
+            ? '...'
+            : (adminStore.stats?.absentToday ?? '—')
+        "
         color-class="bg-gradient-to-br from-orange-400 to-red-500"
       >
         <template #icon>
@@ -189,20 +201,20 @@
             :key="link.to"
             :to="link.to"
             :class="[
-              'flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50 transition-all duration-300 group cursor-pointer hover:-translate-y-1',
+              'flex flex-col items-center justify-center gap-2 p-3 sm:p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 transition-all duration-300 group cursor-pointer hover:-translate-y-1',
               link.border,
             ]"
           >
             <div
               :class="[
-                'w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-inner',
+                'w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-inner',
                 link.iconBg,
                 link.iconColor,
               ]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-7 w-7"
+                class="h-5 w-5 sm:h-6 sm:w-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -217,7 +229,7 @@
             </div>
             <span
               :class="[
-                'text-sm font-semibold text-slate-200 transition-colors text-center',
+                'text-xs sm:text-sm font-semibold text-slate-200 transition-colors text-center',
                 link.textHover,
               ]"
               >{{ $t(link.labelKey) }}</span
@@ -261,14 +273,14 @@
           >
             <div class="min-w-0">
               <p class="text-sm font-medium text-white truncate">
-                {{ req.student && req.student.fullNameEn || "—" }}
+                {{ req.student ? (locale === 'lo' ? req.student.fullNameLo : req.student.fullNameEn) : "—" }}
               </p>
               <p class="text-xs text-slate-500 capitalize">
-                {{ (req.method || "").replace("_", " ") }}
+                {{ (locale === 'lo' ? req.methodLabelLo : req.methodLabelEn) || $t(`topups.method.${req.method}`) }}
               </p>
             </div>
             <span class="text-sm font-semibold text-amber-400 whitespace-nowrap"
-              >₭ {{ Number(req.amount).toLocaleString() }}</span
+              >{{ f.kip(req.amount) }}</span
             >
           </div>
         </div>
@@ -305,13 +317,15 @@
             class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/40"
           >
             <p class="text-sm text-slate-200">
-              <span class="font-medium">{{ log.user && log.user.fullNameEn }}</span>
+              <span class="font-medium">{{
+                log.user && (locale === 'lo' ? log.user.fullNameLo : log.user.fullNameEn)
+              }}</span>
               <span class="text-slate-500">
-                — {{ log.action.replace("_", " ") }} {{ log.entityType }}</span
+                — {{ te(`audit_admin.actions.${log.action}`) ? $t(`audit_admin.actions.${log.action}`) : log.action }} · {{ te(`audit_admin.entities.${log.entityType}`) ? $t(`audit_admin.entities.${log.entityType}`) : log.entityType }}</span
               >
             </p>
             <p class="text-xs text-slate-500 mt-0.5">
-              {{ new Date(log.createdAt).toLocaleString() }}
+              {{ f.dateTime(log.createdAt) }}
             </p>
           </div>
         </div>
@@ -321,24 +335,28 @@
 </template>
 
 <script setup lang="ts">
-import type { TopUpRequest } from '../../domain/models/Finance';
-import type { AuditLog } from '../../domain/models/School';
+import type { TopUpRequest } from "../../domain/models/Finance";
+import type { AuditLog } from "../../domain/models/School";
 import { ref, onMounted, computed } from "vue";
 import { useAdminStore } from "../../application/stores/admin";
 import { financeRepository } from "../../infrastructure/api/FinanceRepository";
 import { adminRepository } from "../../infrastructure/api/AdminRepository";
 import StatCard from "../../components/StatCard.vue";
+import { useFormat } from "../../composables/useFormat";
 import LiveFeed from "../../components/LiveFeed.vue";
 import TrendBarChart from "../../components/TrendBarChart.vue";
 
 definePageMeta({ layout: "admin" });
+
+const { t, te, locale } = useI18n();
+const f = useFormat();
 
 const adminStore = useAdminStore();
 
 const transactionsTodayValue = computed(() =>
   adminStore.statsLoading
     ? "..."
-    : `₭ ${Number(adminStore.stats?.transactionsToday?.totalAmount ?? 0).toLocaleString()}`,
+    : f.kip(adminStore.stats?.transactionsToday?.totalAmount ?? 0),
 );
 
 // Colors validated against this app's dark glass-panel surface (~#0f172a)
@@ -360,7 +378,7 @@ interface WalletTrendDay {
 }
 
 function shortDayLabel(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString(undefined, { weekday: "short" });
+  return f.weekdayShort(dateStr);
 }
 
 const attendanceTrend = computed<AttendanceTrendDay[]>(
@@ -371,12 +389,12 @@ const attendanceTrendCategories = computed(() =>
 );
 const attendanceTrendSeries = computed(() => [
   {
-    label: "Present",
+    label: t('chart.present'),
     color: COLOR_PRESENT,
     data: attendanceTrend.value.map((d) => d.present),
   },
   {
-    label: "Absent",
+    label: t('chart.absent'),
     color: COLOR_ABSENT,
     data: attendanceTrend.value.map((d) => d.absent),
   },
@@ -390,13 +408,13 @@ const walletTrendCategories = computed(() =>
 );
 const walletTrendSeries = computed(() => [
   {
-    label: "Total",
+    label: t('chart.total'),
     color: COLOR_WALLET,
     data: walletTrend.value.map((d) => d.totalAmount),
   },
 ]);
 
-useHead({ title: "Dashboard — Smart School Admin" });
+useHead({ title: () => t('page_titles.dashboard') });
 
 const quickLinks = [
   {

@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   },
   students: {
     list: '/students',
+    metaStatuses: '/students/meta/statuses',
   },
   users: {
     list: '/users',
@@ -28,6 +29,7 @@ export const API_ENDPOINTS = {
   attendance: {
     base: '/attendance',
     scan: '/attendance/scan',
+    scanManual: '/attendance/scan/manual',
     daily: '/attendance/daily',
   },
   wallets: {
@@ -78,6 +80,10 @@ export const API_ENDPOINTS = {
   },
   leaveRequests: {
     list: '/leave-requests'
+  },
+  reports: {
+    attendance: '/reports/attendance',
+    notifyAbsence: '/reports/attendance/notify',
   },
   auditLogs: {
     list: '/audit-logs'

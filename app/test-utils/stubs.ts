@@ -9,6 +9,9 @@ import { vi } from 'vitest';
 const cookieStore = new Map<string, string>();
 
 export function stubUseCookie() {
+  // No Nuxt app in unit tests; code that restores the SSR context falls back
+  // to calling directly when this returns null.
+  vi.stubGlobal('tryUseNuxtApp', () => null);
   vi.stubGlobal('useCookie', (name: string) => ({
     get value() {
       return cookieStore.get(name) ?? null;

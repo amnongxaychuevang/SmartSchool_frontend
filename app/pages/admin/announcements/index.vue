@@ -78,22 +78,22 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div class="flex flex-col gap-2">
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.title_lo') }}</label>
-                  <input v-model="form.titleLo" type="text" required class="input-field" placeholder="ຫົວຂໍ້ປະກາດ..." >
+                  <input v-model="form.titleLo" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_lo')" >
                 </div>
                 <div class="flex flex-col gap-2">
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.title_en') }}</label>
-                  <input v-model="form.titleEn" type="text" required class="input-field" placeholder="Announcement Title..." >
+                  <input v-model="form.titleEn" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_en')" >
                 </div>
               </div>
 
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.content_lo') }}</label>
-                <textarea v-model="form.contentLo" required rows="4" class="input-field resize-none" placeholder="ເນື້ອໃນປະກາດ..."/>
+                <textarea v-model="form.contentLo" required rows="4" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_lo')"/>
               </div>
 
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.content_en') }}</label>
-                <textarea v-model="form.contentEn" required rows="4" class="input-field resize-none" placeholder="Announcement Content..."/>
+                <textarea v-model="form.contentEn" required rows="4" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_en')"/>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -253,7 +253,7 @@ const saveAnnouncement = async () => {
 };
 
 const deleteItem = async (id: string | number) => {
-  if (confirm('Are you sure you want to delete this announcement?')) {
+  if (confirm(t('announcements_admin.delete_confirm'))) {
     try {
       await apiClient(`${API_ENDPOINTS.announcements.base}/${id}`, { method: 'DELETE' });
       await fetchAnnouncements();

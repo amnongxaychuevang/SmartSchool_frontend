@@ -86,6 +86,52 @@ describe('auth store', () => {
     expect(store.user).toBeNull();
   });
 
+  it('init restores the session from the auth cookie after a page reload', async () => {
+    vi.mocked(authRepository.login).mockResolvedValue({ token: 'access-1', refreshToken: 'refresh-1', user: testUser });
+    vi.mocked(authRepository.getMe).mockResolvedValue(testUser);
+
+    await useAuthStore().login('admin@school.test', 'password'); // seeds the cookies
+
+    setActivePinia(createPinia()); // a reload starts with an empty store
+    const store = useAuthStore();
+    expect(store.initialized).toBe(false);
+
+    await store.init();
+
+    expect(store.initialized).toBe(true);
+    expect(store.token).toBe('access-1');
+    expect(store.user?.userId).toBe(1);
+    expect(authRepository.refresh).not.toHaveBeenCalled();
+  });
+
+  it('init falls back to the refresh token when the access-token cookie is gone', async () => {
+    vi.mocked(authRepository.login).mockResolvedValue({ token: 'access-1', refreshToken: 'refresh-1', user: testUser });
+    vi.mocked(authRepository.refresh).mockResolvedValue({ token: 'access-2', refreshToken: 'refresh-2', user: testUser });
+    vi.mocked(authRepository.getMe).mockResolvedValue(testUser);
+
+    await useAuthStore().login('admin@school.test', 'password');
+    useCookie('auth_token').value = null; // access-token cookie expired
+
+    setActivePinia(createPinia());
+    const store = useAuthStore();
+    await store.init();
+
+    expect(authRepository.refresh).toHaveBeenCalledWith('refresh-1');
+    expect(store.token).toBe('access-2');
+    expect(store.isAuthenticated).toBe(true);
+    expect(store.user?.userId).toBe(1);
+    expect(authRepository.getMe).not.toHaveBeenCalled(); // user comes with the refresh response
+  });
+
+  it('init leaves the store logged out when there are no cookies', async () => {
+    const store = useAuthStore();
+    await store.init();
+
+    expect(store.initialized).toBe(true);
+    expect(store.isAuthenticated).toBe(false);
+    expect(authRepository.getMe).not.toHaveBeenCalled();
+  });
+
   it('logout clears local state and asks the repository to revoke the refresh token', async () => {
     vi.mocked(authRepository.login).mockResolvedValue({ token: 'access-1', refreshToken: 'refresh-1', user: testUser });
     vi.mocked(authRepository.logout).mockResolvedValue(undefined);

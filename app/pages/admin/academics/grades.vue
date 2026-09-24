@@ -1,304 +1,233 @@
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Header + Filter -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex flex-wrap items-center gap-2">
-        <select
-          v-model="classFilter"
-          class="bg-slate-800 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-teal-500"
-          @change="handleFilter"
-        >
-          <option value="">Select Class</option>
-          <option v-for="c in adminStore.classes" :key="c.classId" :value="c.classId">
-            {{ c.classNameEn }}
-          </option>
-        </select>
-        <select
-          v-model="subjectFilter"
-          class="bg-slate-800 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-teal-500"
-          @change="handleFilter"
-        >
-          <option value="">Select Subject</option>
-          <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">
-            {{ s.subjectNameEn }}
-          </option>
-        </select>
-      </div>
-      <div class="flex items-center gap-2">
-        <button class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]" @click="openCreateModal">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Add Grade
-        </button>
-      </div>
-    </div>
+    <PageHeader :eyebrow="$t('nav.academic')" :title="$t('grades_admin.title')" :subtitle="$t('grades_admin.subtitle')">
+      <select v-model="classFilter" class="input-field w-auto" :aria-label="$t('grades_admin.class')" @change="handleFilter">
+        <option value="">{{ $t('grades_admin.all_classes') }}</option>
+        <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ className(c) }}</option>
+      </select>
+      <select v-model="subjectFilter" class="input-field w-auto" :aria-label="$t('grades_admin.subject')" @change="handleFilter">
+        <option value="">{{ $t('grades_admin.all_subjects') }}</option>
+        <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">{{ subjectName(s) }}</option>
+      </select>
+      <button type="button" class="btn-primary" @click="openCreate">{{ $t('grades_admin.add') }}</button>
+    </PageHeader>
 
-    <!-- Table -->
-    <div class="glass-panel overflow-hidden">
-      <!-- Loading -->
+    <section class="panel overflow-hidden">
       <LoadingSpinner v-if="academicsStore.gradesLoading" />
-
-      <!-- Empty -->
-      <div v-else-if="academicsStore.grades.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <p>No grades found.</p>
+      <p v-else-if="!academicsStore.grades.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('grades_admin.empty') }}</p>
+      <div v-else class="overflow-x-auto">
+        <table class="data-table w-full min-w-max">
+          <thead>
+            <tr>
+              <th>{{ $t('grades_admin.col_student') }}</th>
+              <th>{{ $t('grades_admin.col_class') }}</th>
+              <th>{{ $t('grades_admin.col_subject') }}</th>
+              <th>{{ $t('grades_admin.col_type') }}</th>
+              <th>{{ $t('grades_admin.col_month') }}</th>
+              <th class="text-right">{{ $t('grades_admin.col_score') }}</th>
+              <th>{{ $t('grades_admin.col_published') }}</th>
+              <th class="text-right">{{ $t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="grade in academicsStore.grades" :key="grade.gradeId">
+              <td>
+                <p class="font-semibold">{{ personName(grade.student) }}</p>
+                <p class="text-xs text-ink-subtle font-mono">{{ grade.student?.studentCode }}</p>
+              </td>
+              <td>{{ grade.class ? className(grade.class) : '—' }}</td>
+              <td>{{ grade.subject ? subjectName(grade.subject) : '—' }}</td>
+              <td class="text-ink-muted">{{ grade.gradeType ? (locale === 'lo' ? grade.gradeType.typeNameLo : grade.gradeType.typeNameEn) : '—' }}</td>
+              <td class="tnum text-ink-muted">{{ grade.gradeMonth ?? '—' }}</td>
+              <td class="text-right tnum"><span class="font-semibold">{{ f.number(grade.score, 2) }}</span><span class="text-ink-subtle"> / {{ f.number(grade.maxScore, 2) }}</span></td>
+              <td>
+                <span :class="grade.isPublished ? 'badge-success' : 'badge-neutral'">
+                  {{ grade.isPublished ? $t('grades_admin.col_published') : $t('grades_admin.draft') }}
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="inline-flex gap-2">
+                  <button type="button" class="btn-secondary min-h-8 px-3" @click="openEdit(grade)">{{ $t('common.edit') }}</button>
+                  <button type="button" class="btn-danger min-h-8 px-3" @click="openDelete(grade)">{{ $t('common.delete') }}</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <PaginationBar :current-page="academicsStore.gradesPage" :total-pages="totalPages" @update:page="changePage" />
+    </section>
 
-      <!-- Data Table -->
-      <table v-else class="w-full">
-        <thead>
-          <tr class="border-b border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Student</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Class</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Subject</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Type</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Score</th>
-            <th class="text-right text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800/60">
-          <tr v-for="grade in academicsStore.grades" :key="grade.gradeId" class="hover:bg-slate-800/40 transition-colors">
-            <td class="px-6 py-4">
-              <p class="text-sm font-medium text-white">{{ grade.student?.fullNameEn }}</p>
-              <p class="text-xs text-slate-500">{{ grade.student?.studentCode }}</p>
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-300">
-              {{ grade.class?.classNameEn }}
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-300">
-              {{ grade.subject?.subjectNameEn }}
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-300">
-              {{ grade.gradeType ? (locale === 'lo' ? grade.gradeType.typeNameLo : grade.gradeType.typeNameEn) : '—' }}
-            </td>
-            <td class="px-6 py-4">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
-                {{ grade.score }}
-              </span>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center justify-end gap-2">
-                <button class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" title="Edit" @click="openEditModal(grade)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </button>
-                <button class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" title="Delete" @click="handleDelete(grade.gradeId)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Pagination Placeholder -->
-      <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-slate-800">
-        <span class="text-sm text-slate-500">Page {{ academicsStore.gradesPage }} of {{ totalPages }}</span>
-        <div class="flex items-center gap-2">
-          <button :disabled="academicsStore.gradesPage === 1" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50" @click="changePage(academicsStore.gradesPage - 1)">Prev</button>
-          <button :disabled="academicsStore.gradesPage === totalPages" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50" @click="changePage(academicsStore.gradesPage + 1)">Next</button>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-          <div class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-white">{{ modal.isEdit ? 'Edit Grade' : 'Add Grade' }}</h2>
-              <button class="text-slate-400 hover:text-white transition-colors" @click="modal.open = false">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div v-if="modal.error" class="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-
-            <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col gap-1.5 col-span-2">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student ID *</label>
-                  <input v-model.number="modal.form.studentId" required type="number" class="modal-input" >
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subject *</label>
-                  <select v-model.number="modal.form.subjectId" required class="modal-input">
-                    <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">{{ s.subjectNameEn }}</option>
-                  </select>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Class *</label>
-                  <select v-model.number="modal.form.classId" required class="modal-input">
-                    <option v-for="c in adminStore.classes" :key="c.classId" :value="c.classId">{{ c.classNameEn }}</option>
-                  </select>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Grade Type *</label>
-                  <select v-model.number="modal.form.gradeTypeId" required class="modal-input">
-                    <option :value="0" disabled>—</option>
-                    <option v-for="gt in academicsStore.gradeTypes" :key="gt.typeId" :value="gt.typeId">
-                      {{ locale === 'lo' ? gt.typeNameLo : gt.typeNameEn }}
-                    </option>
-                  </select>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score *</label>
-                  <input v-model.number="modal.form.score" required type="number" class="modal-input" step="0.01" >
-                </div>
-              </div>
-
-              <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-                <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" @click="modal.open = false">Cancel</button>
-                <button
-  type="submit" :disabled="modal.saving"
-                  class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white transition-colors disabled:opacity-60 flex items-center gap-2">
-                  <svg v-if="modal.saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  {{ modal.isEdit ? 'Update Grade' : 'Save Grade' }}
-                </button>
-              </div>
-            </form>
+    <AppModal v-model:open="modal.open" :title="modal.gradeId ? $t('grades_admin.edit') : $t('grades_admin.add')">
+      <form id="grade-form" class="grid grid-cols-2 gap-4" @submit.prevent="handleSubmit">
+        <template v-if="!modal.gradeId">
+          <div class="col-span-2 sm:col-span-1">
+            <label for="g-class" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.class') }}</label>
+            <select id="g-class" v-model.number="modal.form.classId" required class="input-field" @change="loadClassStudents">
+              <option value="" disabled>—</option>
+              <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ className(c) }}</option>
+            </select>
           </div>
+          <div class="col-span-2 sm:col-span-1">
+            <label for="g-subject" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.subject') }}</label>
+            <select id="g-subject" v-model.number="modal.form.subjectId" required class="input-field">
+              <option value="" disabled>—</option>
+              <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">{{ subjectName(s) }}</option>
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label for="g-student" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.student') }}</label>
+            <select id="g-student" v-model.number="modal.form.studentId" required class="input-field" :disabled="!classStudents.length">
+              <option value="" disabled>{{ modal.form.classId ? '—' : $t('grades_admin.choose_class_first') }}</option>
+              <option v-for="s in classStudents" :key="s.studentId" :value="s.studentId">{{ personName(s) }} · {{ s.studentCode }}</option>
+            </select>
+          </div>
+        </template>
+        <div class="col-span-2 sm:col-span-1">
+          <label for="g-type" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.type') }}</label>
+          <select id="g-type" v-model.number="modal.form.gradeTypeId" required class="input-field">
+            <option value="" disabled>—</option>
+            <option v-for="gt in academicsStore.gradeTypes" :key="gt.typeId" :value="gt.typeId">{{ locale === 'lo' ? gt.typeNameLo : gt.typeNameEn }}</option>
+          </select>
         </div>
-      </Transition>
-    </Teleport>
+        <div class="col-span-2 sm:col-span-1">
+          <label for="g-month" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.month') }}</label>
+          <input id="g-month" v-model="modal.form.gradeMonth" type="month" class="input-field">
+        </div>
+        <div>
+          <label for="g-score" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.score') }}</label>
+          <input id="g-score" v-model.number="modal.form.score" required type="number" min="0" :max="modal.form.maxScore" step="0.5" class="input-field tnum">
+        </div>
+        <div>
+          <label for="g-max" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.max_score') }}</label>
+          <input id="g-max" v-model.number="modal.form.maxScore" required type="number" min="1" step="1" class="input-field tnum">
+        </div>
+        <label class="col-span-2 flex items-center gap-2 text-sm">
+          <input v-model="modal.form.isPublished" type="checkbox" class="h-4 w-4 rounded border-line-strong">
+          {{ $t('grades_admin.published') }}
+        </label>
+        <p v-if="modal.error" role="alert" class="col-span-2 rounded border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">{{ modal.error }}</p>
+      </form>
+      <template #footer>
+        <button type="button" class="btn-secondary" :disabled="modal.saving" @click="modal.open = false">{{ $t('common.cancel') }}</button>
+        <button type="submit" form="grade-form" class="btn-primary" :disabled="modal.saving">{{ modal.saving ? $t('common.saving') : $t('common.save') }}</button>
+      </template>
+    </AppModal>
+
+    <ConfirmDialog
+      v-model:open="del.open"
+      tone="danger"
+      :title="$t('grades_admin.delete_title')"
+      :message="del.grade ? $t('grades_admin.delete_msg', { subject: del.grade.subject ? subjectName(del.grade.subject) : '', name: personName(del.grade.student) }) : ''"
+      :confirm-label="$t('common.delete')"
+      :busy="del.busy"
+      :error="del.error"
+      @confirm="handleDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Grade } from '../../../domain/models/Academics';
+import type { SchoolClass } from '../../../domain/models/SchoolClass';
+import type { Student } from '../../../domain/models/Student';
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAcademicsStore } from '../../../application/stores/academics';
-import { useAdminStore } from '../../../application/stores/admin';
+import { adminRepository } from '../../../infrastructure/api/AdminRepository';
+import PageHeader from '../../../components/PageHeader.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
+import AppModal from '../../../components/AppModal.vue';
+import ConfirmDialog from '../../../components/ConfirmDialog.vue';
+import LoadingSpinner from '../../../components/LoadingSpinner.vue';
+import { useFormat } from '../../../composables/useFormat';
+import { schoolToday } from '../../../utils/schoolDate';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Grades — Smart School Admin' });
+
+const { t, locale } = useI18n();
+const f = useFormat();
+useHead({ title: () => t('grades_admin.title') });
 
 const academicsStore = useAcademicsStore();
-const adminStore = useAdminStore();
-const { locale } = useI18n();
-
-const classFilter = ref('');
-const subjectFilter = ref('');
-
+const classes = ref<SchoolClass[]>([]);
+const classFilter = ref<number | ''>('');
+const subjectFilter = ref<number | ''>('');
 const totalPages = computed(() => Math.ceil(academicsStore.gradesTotal / 50));
 
-onMounted(() => {
-  academicsStore.fetchSubjects({ limit: 100 });
-  adminStore.fetchClasses();
+type Named = { fullNameEn: string; fullNameLo: string } | null | undefined;
+const personName = (p: Named) => (p ? (locale.value === 'lo' ? p.fullNameLo : p.fullNameEn) || p.fullNameEn : '—');
+const className = (c: { classNameEn: string; classNameLo: string }) => (locale.value === 'lo' ? c.classNameLo : c.classNameEn) || c.classNameEn;
+const subjectName = (s: { subjectNameEn: string; subjectNameLo: string }) => (locale.value === 'lo' ? s.subjectNameLo : s.subjectNameEn) || s.subjectNameEn;
+
+onMounted(async () => {
+  academicsStore.fetchSubjects({ limit: 200 });
   academicsStore.fetchGrades();
   academicsStore.fetchGradeTypes();
+  classes.value = (await adminRepository.getClasses({ limit: 200 })).classes;
 });
 
-const handleFilter = () => {
-  academicsStore.fetchGrades({
-    classId: classFilter.value ? Number(classFilter.value) : undefined,
-    subjectId: subjectFilter.value ? Number(subjectFilter.value) : undefined,
-    page: 1
-  });
-};
-
-const changePage = (page: number) => {
-  academicsStore.fetchGrades({
-    classId: classFilter.value ? Number(classFilter.value) : undefined,
-    subjectId: subjectFilter.value ? Number(subjectFilter.value) : undefined,
-    page
-  });
-};
-
-const modal = reactive({
-  open: false,
-  saving: false,
-  error: '',
-  isEdit: false,
-  gradeId: null as number | null,
-  form: {
-    studentId: '' as number | '',
-    subjectId: '' as number | '',
-    classId: '' as number | '',
-    gradeTypeId: 0,
-    score: 0
-  }
+const filters = () => ({
+  classId: classFilter.value || undefined,
+  subjectId: subjectFilter.value || undefined,
 });
+const handleFilter = () => academicsStore.fetchGrades({ ...filters(), page: 1 });
+const changePage = (page: number) => academicsStore.fetchGrades({ ...filters(), page });
 
-const openCreateModal = () => {
-  modal.isEdit = false;
-  modal.gradeId = null;
+// ── Add / edit ──
+const emptyForm = () => ({
+  classId: '' as number | '', subjectId: '' as number | '', studentId: '' as number | '',
+  gradeTypeId: '' as number | '', gradeMonth: schoolToday().slice(0, 7), score: 0, maxScore: 100, isPublished: false,
+});
+const modal = reactive({ open: false, saving: false, error: '', gradeId: null as number | null, form: emptyForm() });
+const classStudents = ref<Student[]>([]);
+
+async function loadClassStudents() {
   modal.form.studentId = '';
-  modal.form.subjectId = '';
-  modal.form.classId = '';
-  modal.form.gradeTypeId = 0;
-  modal.form.score = 0;
-  modal.error = '';
-  modal.open = true;
-};
+  classStudents.value = modal.form.classId
+    ? (await adminRepository.getStudents({ classId: modal.form.classId, limit: 200, status: 'active' })).students
+    : [];
+}
 
-const openEditModal = (grade: Grade) => {
-  modal.isEdit = true;
-  modal.gradeId = grade.gradeId;
-  modal.form.studentId = grade.studentId;
-  modal.form.subjectId = grade.subjectId;
-  modal.form.classId = grade.classId;
-  modal.form.gradeTypeId = grade.gradeTypeId ?? 0;
-  modal.form.score = Number(grade.score ?? 0);
-  modal.error = '';
-  modal.open = true;
-};
+const openCreate = () => Object.assign(modal, { open: true, saving: false, error: '', gradeId: null, form: emptyForm() });
+const openEdit = (g: Grade) => Object.assign(modal, {
+  open: true, saving: false, error: '', gradeId: g.gradeId,
+  form: {
+    ...emptyForm(), gradeTypeId: g.gradeTypeId ?? '', gradeMonth: g.gradeMonth ?? '',
+    score: Number(g.score ?? 0), maxScore: Number(g.maxScore ?? 100), isPublished: g.isPublished,
+  },
+});
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   modal.saving = true;
   modal.error = '';
+  const { classId, subjectId, studentId, gradeMonth, ...rest } = modal.form;
+  const scores = { ...rest, ...(gradeMonth ? { gradeMonth } : {}) };
   try {
-    if (modal.isEdit && modal.gradeId) {
-      await academicsStore.updateGrade(modal.gradeId, modal.form);
-    } else {
-      await academicsStore.createGrade(modal.form);
-    }
+    if (modal.gradeId) await academicsStore.updateGrade(modal.gradeId, scores);
+    else await academicsStore.createGrade({ ...scores, classId, subjectId, studentId });
     modal.open = false;
   } catch (err) {
-    modal.error = getErrorMessage(err, 'Failed to save grade');
+    modal.error = getErrorMessage(err, t('common.error'));
   } finally {
     modal.saving = false;
   }
-};
+}
 
-const handleDelete = async (gradeId: number) => {
-  if (confirm('Are you sure you want to delete this grade?')) {
-    try {
-      await academicsStore.deleteGrade(gradeId);
-    } catch (err) {
-      alert(getErrorMessage(err, 'Failed to delete grade'));
-    }
+// ── Delete ──
+const del = reactive({ open: false, busy: false, error: '', grade: null as Grade | null });
+const openDelete = (g: Grade) => Object.assign(del, { open: true, busy: false, error: '', grade: g });
+async function handleDelete() {
+  if (!del.grade) return;
+  del.busy = true;
+  del.error = '';
+  try {
+    await academicsStore.deleteGrade(del.grade.gradeId);
+    del.open = false;
+  } catch (err) {
+    del.error = getErrorMessage(err, t('common.error'));
+  } finally {
+    del.busy = false;
   }
-};
+}
 </script>
-
-<style scoped lang="postcss">
-.modal-input {
-  @apply w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700/60 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 transition-all;
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

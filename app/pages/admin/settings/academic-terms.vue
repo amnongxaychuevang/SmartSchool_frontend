@@ -13,12 +13,12 @@
       </button>
     </div>
 
-    <div class="glass-panel overflow-hidden">
+    <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="loading" />
       <div v-else-if="terms.length === 0" class="py-16 text-center text-slate-500 text-sm">
         {{ L('No academic terms yet.', 'ຍັງບໍ່ມີພາກຮຽນ.') }}
       </div>
-      <table v-else class="w-full">
+      <table v-else class="w-full min-w-max">
         <thead>
           <tr class="border-b border-slate-800">
             <th class="th">{{ L('Academic Year', 'ສົກຮຽນ') }}</th>
@@ -94,7 +94,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { academicsRepository, type AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Academic Terms — Smart School Admin' });
+useHead({ title: () => useNuxtApp().$i18n.t('page_titles.academic_terms') });
 
 const { locale } = useI18n();
 const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);

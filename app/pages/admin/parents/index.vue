@@ -25,7 +25,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
     </div>
 
     <!-- Table -->
-    <div class="glass-panel overflow-hidden">
+    <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="adminStore.parentsLoading" />
       <div v-else-if="adminStore.parents.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -33,7 +33,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
         </svg>
         <p>{{ $t('parents.no_parents') }}</p>
       </div>
-      <table v-else class="w-full">
+      <table v-else class="w-full min-w-max">
         <thead>
           <tr class="border-b border-slate-800">
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.user') }}</th>
@@ -111,7 +111,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
       <button
 :disabled="adminStore.parentsPage >= totalPages"
         class="px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        @click="changePage(adminStore.parentsPage + 1)">Next →</button>
+        @click="changePage(adminStore.parentsPage + 1)">{{ $t('common.next') }} →</button>
     </div>
 
 
@@ -128,7 +128,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                   </svg>
                   {{ parentModal.mode === 'add' ? $t('parents.add_parent') : $t('parents.edit_parent') }}
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">Provide credential and profile details for this parent.</p>
+                <p class="text-xs text-slate-400 mt-1">{{ $t('parents.modal_desc') }}</p>
               </div>
               <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" @click="parentModal.open = false">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -146,7 +146,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Account Credentials</h3>
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">{{ $t('parents.account_credentials') }}</h3>
                   </div>
 
                   <!-- Full Name EN -->
@@ -160,7 +160,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.fullNameEn" required type="text" class="input-field pl-10" placeholder="e.g. Jane Doe" >
+                      <input v-model="parentModal.form.fullNameEn" required type="text" class="input-field pl-10" :placeholder="$t('parents.ph_name_en')" >
                     </div>
                   </div>
 
@@ -175,7 +175,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.fullNameLo" required type="text" class="input-field pl-10" placeholder="ຕົວຢ່າງ: ນາງ ສົມດີ" >
+                      <input v-model="parentModal.form.fullNameLo" required type="text" class="input-field pl-10" :placeholder="$t('parents.ph_name_lo')" >
                     </div>
                   </div>
 
@@ -190,7 +190,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.email" type="email" autocomplete="email" class="input-field pl-10" placeholder="e.g. jane@example.com" >
+                      <input v-model="parentModal.form.email" type="email" autocomplete="email" class="input-field pl-10" :placeholder="$t('parents.ph_email')" >
                     </div>
                   </div>
 
@@ -205,7 +205,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.phoneNumber" required type="text" autocomplete="tel" class="input-field pl-10" placeholder="e.g. +856 20 ..." >
+                      <input v-model="parentModal.form.phoneNumber" required type="text" autocomplete="tel" class="input-field pl-10" :placeholder="$t('parents.ph_phone')" >
                     </div>
                   </div>
 
@@ -234,7 +234,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                   <div class="flex items-center justify-between p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl mt-2">
                     <div class="flex flex-col gap-1">
                       <span class="text-xs font-semibold text-white uppercase tracking-wider">{{ $t('common.status') }}</span>
-                      <span class="text-xs text-slate-400">Toggle parent's login status</span>
+                      <span class="text-xs text-slate-400">{{ $t('parents.toggle_active') }}</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input v-model="parentModal.form.isActive" type="checkbox" class="sr-only peer" >
@@ -249,7 +249,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1" />
                     </svg>
-                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Parent Profile Details</h3>
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">{{ $t('parents.profile_details') }}</h3>
                   </div>
 
                   <!-- Occupation EN & LO -->
@@ -264,7 +264,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01" />
                           </svg>
                         </span>
-                        <input v-model="parentModal.form.occupation" type="text" placeholder="e.g. ຊາວນາ / Engineer" class="input-field pl-10" >
+                        <input v-model="parentModal.form.occupation" type="text" :placeholder="$t('parents.ph_occupation')" class="input-field pl-10" >
                       </div>
                     </div>
 
@@ -282,19 +282,19 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
                         </span>
-                        <input v-model="parentModal.form.emergencyContact" type="text" placeholder="e.g. +85620..." class="input-field pl-10" >
+                        <input v-model="parentModal.form.emergencyContact" type="text" :placeholder="$t('parents.ph_emergency')" class="input-field pl-10" >
                       </div>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                      <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Line ID</label>
+                      <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parents.line_id') }}</label>
                       <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                           </svg>
                         </span>
-                        <input v-model="parentModal.form.lineId" type="text" placeholder="e.g. mylineid" class="input-field pl-10" >
+                        <input v-model="parentModal.form.lineId" type="text" :placeholder="$t('parents.ph_line')" class="input-field pl-10" >
                       </div>
                     </div>
                   </div>
@@ -310,7 +310,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                       </span>
-                      <input v-model="parentModal.form.nationalId" type="text" placeholder="e.g. N-12345" class="input-field pl-10" >
+                      <input v-model="parentModal.form.nationalId" type="text" :placeholder="$t('parents.ph_national_id')" class="input-field pl-10" >
                     </div>
                   </div>
 
@@ -324,7 +324,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </span>
-                      <textarea v-model="parentModal.form.address" rows="2" class="input-field pl-10 resize-none pt-2" placeholder="ບ້ານ, ເມືອງ, ແຂວງ"/>
+                      <textarea v-model="parentModal.form.address" rows="2" class="input-field pl-10 resize-none pt-2" :placeholder="$t('parents.ph_address')"/>
                     </div>
                   </div>
 
@@ -363,7 +363,7 @@ import { useAdminStore } from '../../../application/stores/admin';
 import type { Parent } from '../../../domain/models/Parent';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Parents — Smart School Admin' });
+useHead({ title: () => useNuxtApp().$i18n.t('parents.page_title') });
 
 const adminStore = useAdminStore();
 const { locale, t } = useI18n();

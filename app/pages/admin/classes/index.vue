@@ -98,12 +98,12 @@ class="text-xs px-2 py-0.5 rounded-full"
       <button
 :disabled="adminStore.classesPage <= 1"
         class="px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        @click="changePage(adminStore.classesPage - 1)">← Prev</button>
-      <span class="text-sm text-slate-400">Page {{ adminStore.classesPage }} / {{ totalPages }}</span>
+        @click="changePage(adminStore.classesPage - 1)">← {{ $t('common.prev') }}</button>
+      <span class="text-sm text-slate-400">{{ $t('common.page_of', { page: adminStore.classesPage, total: totalPages }) }}</span>
       <button
 :disabled="adminStore.classesPage >= totalPages"
         class="px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        @click="changePage(adminStore.classesPage + 1)">Next →</button>
+        @click="changePage(adminStore.classesPage + 1)">{{ $t('common.next') }} →</button>
     </div>
 
 
@@ -121,7 +121,7 @@ class="text-xs px-2 py-0.5 rounded-full"
                   </svg>
                   {{ classModal.mode === 'add' ? $t('classes.add_class') : $t('classes.edit_class') }}
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">Specify class name, grade level, and assign a homeroom teacher.</p>
+                <p class="text-xs text-slate-400 mt-1">{{ $t('classes.modal_desc') }}</p>
               </div>
               <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" @click="classModal.open = false">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -138,7 +138,7 @@ class="text-xs px-2 py-0.5 rounded-full"
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     {{ $t('classes.class_name_en') }} <span class="text-teal-400">*</span>
                   </label>
-                  <input v-model="classModal.form.classNameEn" required type="text" class="input-field" placeholder="e.g. Grade 10A" >
+                  <input v-model="classModal.form.classNameEn" required type="text" class="input-field" :placeholder="$t('classes.ph_name_en')" >
                 </div>
 
                 <!-- Class Name LO -->
@@ -146,7 +146,7 @@ class="text-xs px-2 py-0.5 rounded-full"
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     {{ $t('classes.class_name_lo') }} <span class="text-teal-400">*</span>
                   </label>
-                  <input v-model="classModal.form.classNameLo" required type="text" class="input-field" placeholder="ຕົວຢ່າງ: ມໍ 4ກ" >
+                  <input v-model="classModal.form.classNameLo" required type="text" class="input-field" :placeholder="$t('classes.ph_name_lo')" >
                 </div>
 
                 <!-- Grade Level EN -->
@@ -154,7 +154,7 @@ class="text-xs px-2 py-0.5 rounded-full"
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     {{ $t('classes.grade_level_en') }}
                   </label>
-                  <input v-model="classModal.form.gradeLevelEn" type="text" class="input-field" placeholder="e.g. Grade 10" >
+                  <input v-model="classModal.form.gradeLevelEn" type="text" class="input-field" :placeholder="$t('classes.ph_level_en')" >
                 </div>
 
                 <!-- Grade Level LO -->
@@ -162,7 +162,7 @@ class="text-xs px-2 py-0.5 rounded-full"
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     {{ $t('classes.grade_level_lo') }}
                   </label>
-                  <input v-model="classModal.form.gradeLevelLo" type="text" class="input-field" placeholder="ຕົວຢ່າງ: ມໍ 4" >
+                  <input v-model="classModal.form.gradeLevelLo" type="text" class="input-field" :placeholder="$t('classes.ph_level_lo')" >
                 </div>
 
                 <!-- Academic Year -->
@@ -170,7 +170,7 @@ class="text-xs px-2 py-0.5 rounded-full"
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     {{ $t('classes.academic_year') }} <span class="text-teal-400">*</span>
                   </label>
-                  <input v-model="classModal.form.academicYear" required type="text" class="input-field" placeholder="e.g. 2025-2026" >
+                  <input v-model="classModal.form.academicYear" required type="text" class="input-field" :placeholder="$t('classes.ph_year')" >
                 </div>
 
                 <!-- Homeroom Teacher -->
@@ -189,20 +189,20 @@ class="text-xs px-2 py-0.5 rounded-full"
                 <!-- Description EN -->
                 <div class="flex flex-col gap-2 md:col-span-2">
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('classes.description_en') }}</label>
-                  <textarea v-model="classModal.form.descriptionEn" rows="2" class="input-field resize-none" placeholder="e.g. Science stream class"/>
+                  <textarea v-model="classModal.form.descriptionEn" rows="2" class="input-field resize-none" :placeholder="$t('classes.ph_desc_en')"/>
                 </div>
 
                 <!-- Description LO -->
                 <div class="flex flex-col gap-2 md:col-span-2">
                   <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('classes.description_lo') }}</label>
-                  <textarea v-model="classModal.form.descriptionLo" rows="2" class="input-field resize-none" placeholder="ຕົວຢ່າງ: ຫ້ອງເນັ້ນວິທະຍາສາດທຳມະຊາດ"/>
+                  <textarea v-model="classModal.form.descriptionLo" rows="2" class="input-field resize-none" :placeholder="$t('classes.ph_desc_lo')"/>
                 </div>
 
                 <!-- Status Switch Row -->
                 <div class="flex items-center justify-between p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl mt-2 md:col-span-2">
                   <div class="flex flex-col gap-1">
                     <span class="text-xs font-semibold text-white uppercase tracking-wider">{{ $t('common.status') }}</span>
-                    <span class="text-xs text-slate-400">Toggle whether this class is active or inactive</span>
+                    <span class="text-xs text-slate-400">{{ $t('classes.toggle_active') }}</span>
                   </div>
                   <label class="relative inline-flex items-center cursor-pointer">
                      <input v-model="classModal.form.isActive" type="checkbox" class="sr-only peer" >
@@ -277,7 +277,7 @@ import { useAdminStore } from '../../../application/stores/admin';
 import type { SchoolClass } from '../../../domain/models/SchoolClass';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Classes — Smart School Admin' });
+useHead({ title: () => useNuxtApp().$i18n.t('classes.page_title') });
 
 const adminStore = useAdminStore();
 const { locale } = useI18n();

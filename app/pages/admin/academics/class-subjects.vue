@@ -29,12 +29,12 @@
       <NuxtLink to="/admin/settings/academic-terms" class="text-teal-400 hover:underline ml-1">{{ L('Academic terms →', 'ພາກຮຽນ →') }}</NuxtLink>
     </div>
 
-    <div v-else class="glass-panel overflow-hidden">
+    <div v-else class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="loading" />
       <div v-else-if="rows.length === 0" class="py-16 text-center text-slate-500 text-sm">
         {{ L('No subjects assigned for this term yet.', 'ຍັງບໍ່ມີວິຊາໃນພາກຮຽນນີ້.') }}
       </div>
-      <table v-else class="w-full">
+      <table v-else class="w-full min-w-max">
         <thead>
           <tr class="border-b border-slate-800">
             <th class="th">{{ $t('common.class') }}</th>

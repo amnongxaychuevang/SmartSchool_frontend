@@ -38,9 +38,9 @@
       <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
         <div class="flex flex-col gap-1">
           <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ຍອດເງິນລວມທັງໝົດ' : 'Total System Balance' }}
+            {{ $t('wallet_ui.total_balance') }}
           </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ totalBalance.toLocaleString() }} <span class="text-sm font-normal text-slate-500">LAK</span></span>
+          <span class="text-2xl font-bold text-white font-mono">{{ f.kip(totalBalance) }}</span>
         </div>
         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-emerald-400">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -114,15 +114,15 @@ v-model="searchQuery" type="text" :placeholder="locale === 'lo' ? 'ຄົ້ນ�
           <span class="text-sm font-semibold tracking-wider animate-pulse">{{ $t('common.loading') }}</span>
         </div>
 
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse min-w-max">
           <thead>
             <tr class="border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/20">
-              <th class="px-6 py-3">ID</th>
-              <th class="px-6 py-3">{{ locale === 'lo' ? 'ນັກຮຽນ' : 'Student' }}</th>
-              <th class="px-6 py-3 text-right">{{ locale === 'lo' ? 'ຍອດເງິນຄົງເຫຼືອ' : 'Balance (LAK)' }}</th>
-              <th class="px-6 py-3 text-right">{{ locale === 'lo' ? 'ຈຳກັດລາຍວັນ' : 'Daily Limit' }}</th>
-              <th class="px-6 py-3 text-center">{{ locale === 'lo' ? 'ສະຖານະ' : 'Status' }}</th>
-              <th class="px-6 py-3 text-right">{{ locale === 'lo' ? 'ອັບເດດລ່າສຸດ' : 'Last Updated' }}</th>
+              <th class="px-6 py-3">{{ $t('wallet_ui.col_id') }}</th>
+              <th class="px-6 py-3">{{ $t('wallet_ui.col_student') }}</th>
+              <th class="px-6 py-3 text-right">{{ $t('wallet_ui.col_balance') }}</th>
+              <th class="px-6 py-3 text-right">{{ $t('wallet_ui.col_daily') }}</th>
+              <th class="px-6 py-3 text-center">{{ $t('wallet_ui.col_status') }}</th>
+              <th class="px-6 py-3 text-right">{{ $t('wallet_ui.col_updated') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/40 text-xs">
@@ -136,11 +136,11 @@ v-model="searchQuery" type="text" :placeholder="locale === 'lo' ? 'ຄົ້ນ�
               </td>
               <td class="px-6 py-3 text-right">
                 <span class="font-bold font-mono text-emerald-400 text-[13px] tracking-wider">
-                  {{ Number(wallet.balance).toLocaleString() }}
+                  {{ f.number(wallet.balance) }}
                 </span>
               </td>
               <td class="px-6 py-3 text-right text-slate-400 font-mono">
-                {{ wallet.student?.spendingLimit?.dailyMax ? Number(wallet.student.spendingLimit.dailyMax).toLocaleString() : '∞' }}
+                {{ wallet.student?.spendingLimit?.dailyMax ? f.number(wallet.student.spendingLimit.dailyMax) : $t('wallet_ui.no_limit') }}
               </td>
               <td class="px-6 py-3 text-center">
                 <span
@@ -152,7 +152,7 @@ v-model="searchQuery" type="text" :placeholder="locale === 'lo' ? 'ຄົ້ນ�
                 </span>
               </td>
               <td class="px-6 py-3 text-right text-slate-500 font-mono text-[11px]">
-                {{ wallet.updatedAt ? new Date(wallet.updatedAt).toLocaleDateString() : '—' }}
+                {{ f.date(wallet.updatedAt) }}
               </td>
             </tr>
             <tr v-if="filteredWallets.length === 0 && !financeStore.walletsLoading">
@@ -186,9 +186,10 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useFinanceStore } from '~/application/stores/finance';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Wallet Report — Smart School Admin' });
+useHead({ title: () => t('page_titles.wallet_report') });
+const f = useFormat();
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const financeStore = useFinanceStore();
 
 const filterStatus = ref('all');

@@ -16,27 +16,36 @@ export const useAuthStore = defineStore('auth', {
     token: null as string | null, // will be loaded from cookie in init action
     loading: false,
     error: null as string | null,
+    // True once the session has been restored from cookies for this app load
+    // (on the server during SSR, then carried to the client in the Pinia state).
+    initialized: false,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.token,
     userRole: (state) => state.user?.role ?? null,
+    portal: (state) => state.user?.portal ?? null,
+    permissions: (state): string[] => state.user?.permissions ?? [],
   },
 
 
 
   actions: {
-    // Called once when the app boots (e.g., from a plugin or root layout)
+    // Called once per app load by the auth.global middleware.
     // Loads the token from the cookie and optionally fetches the current user.
     // The access token is short-lived (15 min) — if it's missing/expired but a
     // refresh token is still on hand, silently exchange it before giving up.
     async init() {
+      this.initialized = true;
       const cookie = useCookie<string>('auth_token');
       this.token = cookie.value ?? null;
 
       if (!this.token) {
-        const refreshed = await this.refreshAccessToken();
-        if (!refreshed) return;
+        // The refresh response already carries the user, so there is no
+        // follow-up /auth/me call — during SSR that call would still read the
+        // old (missing) cookie from the request and fail with a 401.
+        await this.refreshAccessToken();
+        return;
       }
 
       try {
@@ -54,6 +63,7 @@ export const useAuthStore = defineStore('auth', {
 
         this.token = token;
         this.user = user;
+        this.initialized = true;
         // Cookie lifetime intentionally outlives the JWT's own 15-min expiry —
         // the server is still the source of truth on validity; an expired JWT
         // sitting in the cookie just means the next request triggers a refresh.
@@ -73,19 +83,27 @@ export const useAuthStore = defineStore('auth', {
     // false (without throwing) if there's no refresh token or it's no longer
     // valid — callers treat that as "not logged in", not as an error.
     async refreshAccessToken(): Promise<boolean> {
-      const refreshCookie = useCookie<string>('refresh_token');
+      // Take the cookie refs before awaiting: during SSR the Nuxt context is
+      // gone after an `await`, and useCookie() would throw there.
+      const authCookie = useCookie<string | null>('auth_token', { maxAge: 60 * 30 });
+      const refreshCookie = useCookie<string | null>('refresh_token', { maxAge: 60 * 60 * 24 * 30 });
       if (!refreshCookie.value) return false;
 
       try {
         const { token, refreshToken, user } = await authRepository.refresh(refreshCookie.value);
         this.token = token;
         this.user = user;
-        useCookie('auth_token', { maxAge: 60 * 30 }).value = token;
-        useCookie('refresh_token', { maxAge: 60 * 60 * 24 * 30 }).value = refreshToken;
+        authCookie.value = token;
+        refreshCookie.value = refreshToken;
         return true;
       } catch (err) {
+        // The server already rejected this refresh token, so there is nothing
+        // to revoke — just clear local state through the refs taken above.
         console.warn('Refresh token invalid/expired:', err);
-        this.logout();
+        this.user = null;
+        this.token = null;
+        authCookie.value = null;
+        refreshCookie.value = null;
         return false;
       }
     },
@@ -93,13 +111,18 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       if (!this.token) return null;
 
+      // logout() uses useCookie(), which needs the Nuxt context that SSR
+      // loses after an `await` — keep the app instance to restore it.
+      const nuxtApp = tryUseNuxtApp();
       this.loading = true;
       try {
         this.user = await fetchMeUseCase.execute();
         return this.user;
       } catch (err) {
         console.error('Failed to fetch user:', getErrorMessage(err));
-        this.logout(); // Token likely expired or invalid
+        // Token likely expired or invalid
+        if (nuxtApp) nuxtApp.runWithContext(() => this.logout());
+        else this.logout();
       } finally {
         this.loading = false;
       }

@@ -6,10 +6,10 @@
         'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out',
         sidebarOpen ? 'w-64' : 'w-[68px]'
       ]"
-      style="background: rgba(8,14,26,0.95); border-right: 1px solid rgba(148,163,184,0.07); backdrop-filter: blur(20px);"
+      class="bg-white dark:bg-[#080e1a] border-r border-slate-200 dark:border-slate-800"
     >
       <!-- Logo -->
-      <div class="h-16 flex items-center gap-3 px-4 shrink-0" style="border-bottom: 1px solid rgba(148,163,184,0.07);">
+      <div class="h-16 flex items-center gap-3 px-4 shrink-0 border-b border-slate-200 dark:border-slate-800">
         <div
 class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
           style="background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 4px 12px rgba(236,72,153,0.35);">
@@ -19,7 +19,7 @@ class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
         </div>
         <transition name="fade-slide">
           <div v-if="sidebarOpen" class="overflow-hidden">
-            <p class="text-white font-bold text-sm leading-tight">Smart School</p>
+            <p class="text-slate-800 dark:text-white font-bold text-sm leading-tight">Smart School</p>
             <p class="text-pink-400/70 text-[10px] font-medium tracking-widest uppercase">{{ $t('parentPortal.title') }}</p>
           </div>
         </transition>
@@ -49,7 +49,7 @@ v-if="sidebarOpen && isActive(item.to)"
       </nav>
 
       <!-- Logout -->
-      <div class="border-t border-slate-800 p-3 shrink-0" style="border-top: 1px solid rgba(148,163,184,0.07);">
+      <div class="border-t border-slate-200 dark:border-slate-800 p-3 shrink-0">
         <button class="w-full flex items-center justify-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm" @click="handleLogout">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -63,15 +63,14 @@ v-if="sidebarOpen && isActive(item.to)"
     <div :class="['flex flex-col flex-1 min-h-screen transition-all duration-300', sidebarOpen ? 'ml-64' : 'ml-[68px]']">
       <!-- Topbar -->
       <header
-class="h-16 flex items-center gap-4 px-6 sticky top-0 z-40 shrink-0"
-        style="background: rgba(8,14,26,0.85); border-bottom: 1px solid rgba(148,163,184,0.07); backdrop-filter: blur(20px);">
+class="h-16 flex items-center gap-4 px-6 sticky top-0 z-40 shrink-0 bg-white/90 dark:bg-[#080e1a]/85 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md">
         <!-- Toggle -->
         <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-all shrink-0" @click="sidebarOpen = !sidebarOpen">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <h1 class="text-white font-semibold text-lg">{{ currentPageTitle }}</h1>
+        <h1 class="text-slate-800 dark:text-white font-semibold text-lg">{{ currentPageTitle }}</h1>
 
         <!-- Spacer -->
         <div class="flex-1"/>
@@ -95,7 +94,7 @@ class="w-8 h-8 rounded-lg flex items-center justify-center text-pink-300 font-bo
               {{ userInitial }}
             </div>
             <div class="text-left hidden sm:block">
-              <p class="text-xs font-semibold text-white leading-tight">{{ authStore.user?.fullNameEn }}</p>
+              <p class="text-xs font-semibold text-slate-800 dark:text-white leading-tight">{{ authStore.user?.fullNameEn }}</p>
               <p class="text-[10px] text-slate-500 capitalize">{{ authStore.user?.role }}</p>
             </div>
           </button>
@@ -130,11 +129,11 @@ const userInitial = computed(() => authStore.user?.fullNameEn?.[0]?.toUpperCase(
 
 const navItems = computed(() => [
   { to: '/parent',            label: t('parentPortal.dashboard'),  icon: resolveComponent('IconDashboard') },
-  { to: '/parent/schedule',   label: t('parentPortal.schedule'),          icon: resolveComponent('IconSchedule') },
   { to: '/parent/attendance', label: t('parentPortal.childs_attendance'), icon: resolveComponent('IconAttendance') },
-  { to: '/parent/leave',      label: t('parentPortal.leave_requests'),    icon: resolveComponent('IconLeave') },
   { to: '/parent/grades',     label: t('parentPortal.childs_grades'),     icon: resolveComponent('IconReports') },
-  { to: '/parent/wallet',     label: t('parentPortal.childs_wallet'),     icon: resolveComponent('IconWallet') },
+  { to: '/parent/wallet',     label: t('parentPortal.childs_wallet'),     icon: resolveComponent('IconStudents') },
+  { to: '/parent/schedule',   label: t('parentPortal.schedule'),          icon: resolveComponent('IconSchedule') },
+  { to: '/parent/leave',      label: t('parentPortal.leave_requests'),    icon: resolveComponent('IconLeave') },
   { to: '/parent/announcements', label: t('parentPortal.announcements'),  icon: resolveComponent('IconNotifications') },
 ]);
 

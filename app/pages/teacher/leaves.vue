@@ -25,7 +25,7 @@
             req.status === 'approved' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
             'bg-red-500/20 text-red-600 dark:text-red-400'
           ]">
-            {{ req.status.toUpperCase() }}
+            {{ $t(`status.${req.status}`) }}
           </span>
         </div>
         
@@ -61,6 +61,7 @@ import { useTeacherStore } from '../../application/stores/teacher';
 definePageMeta({ layout: 'teacher' });
 
 const { t, locale } = useI18n();
+const fmt = useFormat();
 useHead({ title: computed(() => `${t('teacherPortal.leave_approvals')} — Teacher Portal`) });
 
 const teacherStore = useTeacherStore();
@@ -70,14 +71,13 @@ onMounted(() => {
 });
 
 const updateStatus = async (leaveId: number, status: 'approved' | 'rejected') => {
-  if (confirm(`Are you sure you want to ${status} this request?`)) {
+  if (confirm(t(status === 'approved' ? 'leave_ui.confirm_approve' : 'leave_ui.confirm_reject'))) {
     await teacherStore.updateLeaveRequestStatus(leaveId, status);
   }
 };
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString();
+  return fmt.date(dateStr);
 };
 </script>

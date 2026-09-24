@@ -22,7 +22,9 @@ export const useAdminStore = defineStore('admin', {
     studentsTotal: 0,
     studentsPage: 1,
     studentsSearch: '',
+    studentsStatus: '',
     studentsLoading: false,
+    studentStatuses: [] as { code: string; labelKey: string }[],
 
     // Users
     users: [] as User[],
@@ -107,18 +109,27 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchStudents(params?: { search?: string; page?: number }) {
+    async fetchStudents(params?: { search?: string; page?: number; status?: string }) {
       this.studentsLoading = true;
       if (params?.search !== undefined) this.studentsSearch = params.search;
       if (params?.page !== undefined) this.studentsPage = params.page;
+      if (params?.status !== undefined) this.studentsStatus = params.status;
       try {
-        const res = await adminRepository.getStudents({ search: this.studentsSearch, page: this.studentsPage, limit: 15 });
+        const res = await adminRepository.getStudents({ search: this.studentsSearch, page: this.studentsPage, limit: 15, status: this.studentsStatus });
         this.students = res.students;
         this.studentsTotal = res.total;
       } catch (err) {
         this.error = getErrorMessage(err);
       } finally {
         this.studentsLoading = false;
+      }
+    },
+
+    async fetchStudentStatuses() {
+      try {
+        this.studentStatuses = await adminRepository.getStudentStatuses();
+      } catch (err) {
+        this.error = getErrorMessage(err);
       }
     },
 

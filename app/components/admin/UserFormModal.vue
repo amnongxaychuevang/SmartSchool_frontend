@@ -19,19 +19,19 @@
             <div class="p-6 grid grid-cols-2 gap-5">
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('users.full_name_en') }} *</label>
-                <input v-model="form.fullNameEn" required type="text" class="input-field" placeholder="Full Name..." >
+                <input v-model="form.fullNameEn" required type="text" class="input-field" :placeholder="$t('forms.ph_full_name_en')" >
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('users.full_name_lo') }} *</label>
-                <input v-model="form.fullNameLo" required type="text" class="input-field" placeholder="ຊື່ເຕັມ..." >
+                <input v-model="form.fullNameLo" required type="text" class="input-field" :placeholder="$t('forms.ph_full_name_lo')" >
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('users.email') }}</label>
-                <input v-model="form.email" type="email" class="input-field" placeholder="Email..." >
+                <input v-model="form.email" type="email" class="input-field" :placeholder="$t('forms.ph_email')" >
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('users.phone') }}</label>
-                <input v-model="form.phoneNumber" type="text" class="input-field" placeholder="Phone..." >
+                <input v-model="form.phoneNumber" type="text" class="input-field" :placeholder="$t('forms.ph_phone')" >
               </div>
               <div class="flex flex-col gap-1.5 relative">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('users.role') }} *</label>

@@ -26,7 +26,7 @@ v-for="role in roles" :key="role.id"
         </button>
 
         <button class="mt-4 w-full py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-slate-300 rounded-xl text-xs font-semibold border border-slate-700/30 hover:border-slate-700 transition-all" @click="resetToDefaults">
-          Reset to Defaults
+          {{ $t('settings_ui.reset_defaults') }}
         </button>
       </div>
 
@@ -42,7 +42,7 @@ v-for="role in roles" :key="role.id"
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
               </svg>
-              Permissions saved successfully
+              {{ $t('settings_ui.permissions_saved') }}
             </span>
             <button :disabled="saving" class="btn-primary flex items-center gap-2" @click="savePermissions">
               <svg v-if="saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useSettingsStore } from '../../../application/stores/settings';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Permissions — Smart School Admin' });
+useHead({ title: () => useNuxtApp().$i18n.t('page_titles.permissions') });
 
 const settingsStore = useSettingsStore();
 

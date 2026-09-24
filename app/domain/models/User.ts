@@ -13,4 +13,10 @@ export interface User {
   phoneNumber?: string;
   lastLogin?: string | null;
   isActive?: boolean;
+  /** Which app the role signs in to; set on the signed-in user only. */
+  portal?: 'admin' | 'teacher' | 'parent' | null;
+  /** Admin-portal permissions of the role (the server checks them on every request). */
+  permissions?: string[];
+  roleNameEn?: string;
+  roleNameLo?: string;
 }

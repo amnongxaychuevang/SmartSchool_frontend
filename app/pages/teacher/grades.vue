@@ -32,7 +32,7 @@
     </div>
 
     <!-- Students List for Grades -->
-    <div v-if="selectedClass && selectedSubject" class="glass-panel overflow-hidden">
+    <div v-if="selectedClass && selectedSubject" class="glass-panel overflow-x-auto">
       <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{{ $t('teacherPortal.enter_grades_final') }}</h2>
         <button :disabled="saving" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50" @click="saveGrades">
@@ -50,7 +50,7 @@
         <p>{{ $t('teacherPortal.no_students_in_class') }}</p>
       </div>
 
-      <table v-else class="w-full">
+      <table v-else class="w-full min-w-max">
         <thead>
           <tr class="border-b border-slate-200 dark:border-slate-800">
             <th class="text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('teacherPortal.student_name') }}</th>

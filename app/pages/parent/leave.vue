@@ -30,7 +30,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         <p>{{ $t('parentPortal.no_leaves') }}</p>
       </div>
       <div v-else class="glass-panel rounded-2xl overflow-hidden">
-        <table class="w-full">
+        <table class="w-full min-w-max">
           <thead>
             <tr class="border-b border-slate-800 bg-slate-900/50">
               <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.date') }}</th>
@@ -41,12 +41,12 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
           <tbody class="divide-y divide-slate-800/60">
             <tr v-for="leave in parentStore.leaveRequests" :key="leave.leaveId" class="hover:bg-slate-800/30 transition-colors">
               <td class="px-6 py-4 text-sm text-white">
-                {{ new Date(leave.startDate).toLocaleDateString() }} - {{ new Date(leave.endDate).toLocaleDateString() }}
+                {{ fmt.date(leave.startDate) }} – {{ fmt.date(leave.endDate) }}
               </td>
               <td class="px-6 py-4 text-sm text-slate-300">
                 {{ leave.reason }}
                 <div v-if="leave.documentUrl" class="mt-1">
-                  <a :href="leave.documentUrl" target="_blank" class="text-xs text-teal-400 hover:underline">View Document</a>
+                  <a :href="leave.documentUrl" target="_blank" class="text-xs text-teal-400 hover:underline">{{ $t('common.view_document') }}</a>
                 </div>
               </td>
               <td class="px-6 py-4">
@@ -85,22 +85,22 @@ class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cap
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.start_date') }}</label>
-            <input v-model="leaveModal.form.startDate" type="date" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500" >
+            <input v-model="leaveModal.form.startDate" type="date" required class="input-field focus:border-teal-500" >
           </div>
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.end_date') }}</label>
-            <input v-model="leaveModal.form.endDate" type="date" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500" >
+            <input v-model="leaveModal.form.endDate" type="date" required class="input-field focus:border-teal-500" >
           </div>
         </div>
 
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.reason') }}</label>
-          <textarea v-model="leaveModal.form.reason" required rows="3" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500" placeholder="Reason for leave..."/>
+          <textarea v-model="leaveModal.form.reason" required rows="3" class="input-field focus:border-teal-500" :placeholder="$t('leave_ui.ph_reason')"/>
         </div>
         
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.document_url') }}</label>
-          <input v-model="leaveModal.form.documentUrl" type="text" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500" placeholder="Optional URL to doctor's note" >
+          <input v-model="leaveModal.form.documentUrl" type="text" class="input-field focus:border-teal-500" :placeholder="$t('leave_ui.ph_document')" >
         </div>
         
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
@@ -121,6 +121,7 @@ import { useParentStore } from '../../application/stores/parent';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const fmt = useFormat();
 
 definePageMeta({ layout: 'parent' });
 useHead({ title: computed(() => `${t('parentPortal.leave_requests')} — ${t('parentPortal.title')}`) });
@@ -170,7 +171,7 @@ const submitLeaveRequest = async () => {
     leaveModal.form = { startDate: '', endDate: '', reason: '', documentUrl: '' };
     loadLeaves();
   } catch {
-    alert('Failed to submit leave request');
+    alert(t('common.submit_failed'));
   } finally {
     leaveModal.saving = false;
   }

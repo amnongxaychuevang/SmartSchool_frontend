@@ -25,7 +25,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
     </div>
 
     <!-- Table -->
-    <div class="glass-panel overflow-hidden">
+    <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="adminStore.teachersLoading" />
       <div v-else-if="adminStore.teachers.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -34,7 +34,7 @@ class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibol
         </svg>
         <p>{{ $t('teachers.no_teachers') }}</p>
       </div>
-      <table v-else class="w-full">
+      <table v-else class="w-full min-w-max">
         <thead>
           <tr class="border-b border-slate-800">
             <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.user') }}</th>

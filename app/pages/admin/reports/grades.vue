@@ -106,7 +106,7 @@
           <span class="text-sm font-semibold tracking-wider animate-pulse">{{ $t('common.loading') }}</span>
         </div>
 
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse min-w-max">
           <thead>
             <tr class="border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/20">
               <th class="px-6 py-3">{{ locale === 'lo' ? 'ນັກຮຽນ' : 'Student' }}</th>
@@ -146,7 +146,7 @@
                 </span>
               </td>
               <td class="px-6 py-3 text-right text-slate-500 font-mono text-[11px]">
-                {{ new Date(grade.recordedAt).toLocaleDateString() }}
+                {{ fmt.date(grade.recordedAt) }}
               </td>
             </tr>
             <tr v-if="filteredGrades.length === 0 && !academicsStore.gradesLoading">
@@ -180,9 +180,10 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useAcademicsStore } from '~/application/stores/academics';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Grades Report — Smart School Admin' });
+useHead({ title: () => t('page_titles.grades_report') });
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
+const fmt = useFormat();
 const academicsStore = useAcademicsStore();
 
 const filterStatus = ref('all');

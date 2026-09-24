@@ -76,5 +76,5 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Reports — Smart School Admin' });
+useHead({ title: () => useNuxtApp().$i18n.t('page_titles.reports') });
 </script>

@@ -73,7 +73,10 @@ export const financeRepository = {
     return res.data;
   },
 
-  async updateSpendingLimit(studentId: number, payload: { dailyMax?: number | null; weeklyMax?: number | null }) {
+  async updateSpendingLimit(studentId: number, payload: {
+    dailyMax?: number | null; weeklyMax?: number | null; perTransactionMax?: number | null; alertThreshold?: number | null;
+    blockedShops?: number[]; notes?: string;
+  }) {
     const res = await useApiClient()<ApiResponse<{ spendingLimit: SpendingLimit }>>(API_ENDPOINTS.spendingLimits.student.replace(':studentId', String(studentId)), {
       method: 'PUT',
       body: payload

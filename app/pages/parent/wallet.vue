@@ -35,20 +35,20 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
             </div>
           </div>
         </div>
-        <h2 class="text-3xl font-bold text-white">₭ {{ parentStore.wallet.balance?.toLocaleString() || 0 }}</h2>
+        <h2 class="text-3xl font-bold text-white">{{ fmt.kip(parentStore.wallet.balance ?? 0) }}</h2>
         <div v-if="parentStore.spendingLimits?.dailyMax" class="text-sm text-slate-400 mt-1">
-          {{ $t('parentPortal.daily_max') }}: ₭ {{ parentStore.spendingLimits.dailyMax.toLocaleString() }}
+          {{ $t('parentPortal.daily_max') }}: {{ fmt.kip(parentStore.spendingLimits.dailyMax) }}
         </div>
       </div>
 
-      <div class="glass-panel overflow-hidden">
+      <div class="glass-panel overflow-x-auto">
         <div class="p-4 border-b border-slate-800 bg-slate-900/50">
           <h2 class="text-lg font-semibold text-white">{{ $t('parentPortal.recent_transactions') }}</h2>
         </div>
         <div v-if="!parentStore.wallet.transactions || parentStore.wallet.transactions.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
           <p>{{ $t('parentPortal.no_transactions') }}</p>
         </div>
-        <table v-else class="w-full">
+        <table v-else class="w-full min-w-max">
           <thead>
             <tr class="border-b border-slate-800">
               <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.date') }}</th>
@@ -58,10 +58,10 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
           </thead>
           <tbody class="divide-y divide-slate-800/60">
             <tr v-for="tx in parentStore.wallet.transactions" :key="tx.transactionId" class="hover:bg-slate-800/40 transition-colors">
-              <td class="px-6 py-4 text-sm text-white">{{ new Date(tx.createdAt).toLocaleString() }}</td>
+              <td class="px-6 py-4 text-sm text-white">{{ fmt.dateTime(tx.createdAt) }}</td>
               <td class="px-6 py-4 text-sm text-slate-400 capitalize">{{ tx.transactionType }}</td>
               <td class="px-6 py-4 text-sm font-bold" :class="tx.transactionType === 'top_up' ? 'text-teal-400' : 'text-pink-400'">
-                {{ tx.transactionType === 'top_up' ? '+' : '-' }}₭ {{ tx.amount.toLocaleString() }}
+                {{ tx.transactionType === 'top_up' ? '+' : '−' }}{{ fmt.kip(tx.amount) }}
               </td>
             </tr>
           </tbody>
@@ -89,12 +89,12 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
             <form class="flex flex-col gap-4" @submit.prevent="handleTopUp">
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.amount') }}</label>
-                <input v-model.number="topUpModal.form.amount" type="number" required min="1000" step="1000" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="e.g. 50000" >
+                <input v-model.number="topUpModal.form.amount" type="number" required min="1000" step="1000" class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_amount')" >
               </div>
             
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.proof_of_payment') }}</label>
-                <input v-model="topUpModal.form.proofOfPayment" type="text" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="Transaction Ref or Image URL" >
+                <input v-model="topUpModal.form.proofOfPayment" type="text" required class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_proof')" >
               </div>
             
               <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
@@ -124,7 +124,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
             <form class="flex flex-col gap-4" @submit.prevent="handleSaveLimits">
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.daily_max') }}</label>
-                <input v-model.number="limitsModal.form.dailyMax" type="number" min="0" step="1000" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-pink-500" placeholder="e.g. 50000" >
+                <input v-model.number="limitsModal.form.dailyMax" type="number" min="0" step="1000" class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_daily')" >
                 <span class="text-xs text-slate-500">{{ $t('parentPortal.no_limit') }}: {{ limitsModal.form.dailyMax ? '' : '✓' }}</span>
               </div>
             
@@ -148,6 +148,7 @@ import { useParentStore } from '../../application/stores/parent';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const fmt = useFormat();
 
 definePageMeta({ layout: 'parent' });
 useHead({ title: computed(() => `${t('parentPortal.childs_wallet')} — ${t('parentPortal.title')}`) });
@@ -225,7 +226,7 @@ const handleTopUp = async () => {
   try {
     // TopUp logic typically requires walletId
     await parentStore.requestTopUp(topUpModal.form.amount, topUpModal.form.proofOfPayment);
-    alert('Top up request submitted successfully! Pending admin approval.');
+    alert(t('wallet_ui.topup_submitted'));
     topUpModal.open = false;
     topUpModal.form.amount = 50000;
     topUpModal.form.proofOfPayment = '';

@@ -32,6 +32,7 @@ import { useTeacherStore } from '../../application/stores/teacher';
 definePageMeta({ layout: 'teacher' });
 
 const { t, locale } = useI18n();
+const fmt = useFormat();
 useHead({ title: computed(() => `${t('teacherPortal.announcements')} — Teacher Portal`) });
 
 const teacherStore = useTeacherStore();
@@ -42,7 +43,6 @@ onMounted(() => {
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString();
+  return fmt.date(dateStr);
 };
 </script>

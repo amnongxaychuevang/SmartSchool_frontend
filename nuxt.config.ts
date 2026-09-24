@@ -4,6 +4,19 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt", "@nuxtjs/i18n", "@nuxt/eslint"],
   css: ["~/assets/css/main.css"],
+  app: {
+    head: {
+      script: [
+        {
+          // Apply the saved theme before first paint so there is no flash.
+          // Light is the default; ThemeSwitch.vue keeps it in sync afterwards.
+          innerHTML:
+            "try{var d=localStorage.getItem('theme')==='dark';document.documentElement.classList.add(d?'dark':'light')}catch(e){document.documentElement.classList.add('light')}",
+          tagPosition: "head",
+        },
+      ],
+    },
+  },
   runtimeConfig: {
     public: {
       apiBaseUrl:

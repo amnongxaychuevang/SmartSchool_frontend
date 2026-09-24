@@ -32,17 +32,17 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <label class="input-group">
               <span>{{ $t('students.student_code') }} <b class="text-teal-400">*</b></span>
-              <input v-model="form.studentCode" required maxlength="20" class="input-element font-mono" placeholder="ST-001" >
+              <input v-model="form.studentCode" required maxlength="20" class="input-field font-mono" :placeholder="$t('forms.ph_student_code')" >
             </label>
             <label class="input-group">
               <span>{{ $t('common.status') }}</span>
-              <select v-model="form.status" class="input-element">
+              <select v-model="form.status" class="input-field">
                 <option v-for="s in STATUS_OPTIONS" :key="s" :value="s">{{ statusLabel(s) }}</option>
               </select>
             </label>
             <label class="input-group">
               <span>{{ $t('common.class') }} ({{ currentYear }})</span>
-              <select v-model.number="form.classId" class="input-element">
+              <select v-model.number="form.classId" class="input-field">
                 <option :value="0">— {{ L('No class', 'ບໍ່ມີຫ້ອງ') }} —</option>
                 <option v-for="c in currentClasses" :key="c.classId" :value="c.classId">{{ locale === 'lo' ? c.classNameLo : c.classNameEn }}</option>
               </select>
@@ -56,32 +56,32 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <label class="input-group">
               <span>{{ $t('students.full_name_lo') }} <b class="text-teal-400">*</b></span>
-              <input v-model="form.fullNameLo" required maxlength="150" class="input-element" placeholder="ສົມສັກ ແກ້ວມະນີ" >
+              <input v-model="form.fullNameLo" required maxlength="150" class="input-field" :placeholder="$t('forms.ph_full_name_lo')" >
             </label>
             <label class="input-group">
               <span>{{ $t('students.full_name_en') }} <b class="text-teal-400">*</b></span>
-              <input v-model="form.fullNameEn" required maxlength="150" class="input-element" placeholder="Somsack Keomany" >
+              <input v-model="form.fullNameEn" required maxlength="150" class="input-field" :placeholder="$t('forms.ph_full_name_en')" >
             </label>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
             <label class="input-group">
               <span>{{ $t('common.gender') }}</span>
-              <select v-model="form.gender" class="input-element">
+              <select v-model="form.gender" class="input-field">
                 <option value="">—</option>
                 <option v-for="g in GENDERS" :key="g" :value="g">{{ $t(`gender.${g}`) }}</option>
               </select>
             </label>
             <label class="input-group">
               <span>{{ L('Date of birth', 'ວັນເດືອນປີເກີດ') }}</span>
-              <input v-model="form.dateOfBirth" type="date" class="input-element" >
+              <input v-model="form.dateOfBirth" type="date" class="input-field" >
             </label>
             <label class="input-group">
               <span>{{ L('Ethnicity', 'ຊົນເຜົ່າ') }}</span>
-              <input v-model="form.ethnicity" maxlength="50" class="input-element" placeholder="ລາວລຸ່ມ" >
+              <input v-model="form.ethnicity" maxlength="50" class="input-field" :placeholder="$t('forms.ph_ethnicity')" >
             </label>
             <label class="input-group">
               <span>{{ L('Blood type', 'ກຸ່ມເລືອດ') }}</span>
-              <select v-model="form.bloodType" class="input-element">
+              <select v-model="form.bloodType" class="input-field">
                 <option value="">—</option>
                 <option v-for="b in BLOOD_TYPES" :key="b" :value="b">{{ b }}</option>
               </select>
@@ -89,7 +89,7 @@
           </div>
           <label class="input-group">
             <span>{{ L('Place of birth', 'ບ່ອນເກີດ') }}</span>
-            <input v-model="form.birthPlace" maxlength="150" class="input-element" >
+            <input v-model="form.birthPlace" maxlength="150" class="input-field" >
           </label>
         </section>
 
@@ -97,13 +97,13 @@
         <section class="form-section">
           <h3 class="section-title"><span class="dot bg-blue-400" />{{ $t('common.address') }}</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <label class="input-group"><span>{{ L('Village', 'ບ້ານ') }}</span><input v-model="form.village" maxlength="100" class="input-element" ></label>
-            <label class="input-group"><span>{{ L('District', 'ເມືອງ') }}</span><input v-model="form.district" maxlength="100" class="input-element" ></label>
-            <label class="input-group"><span>{{ L('Province', 'ແຂວງ') }}</span><input v-model="form.province" maxlength="100" class="input-element" ></label>
+            <label class="input-group"><span>{{ L('Village', 'ບ້ານ') }}</span><input v-model="form.village" maxlength="100" class="input-field" ></label>
+            <label class="input-group"><span>{{ L('District', 'ເມືອງ') }}</span><input v-model="form.district" maxlength="100" class="input-field" ></label>
+            <label class="input-group"><span>{{ L('Province', 'ແຂວງ') }}</span><input v-model="form.province" maxlength="100" class="input-field" ></label>
           </div>
           <label class="input-group">
             <span>{{ L('House no. / details', 'ເລກເຮືອນ / ລາຍລະອຽດ') }}</span>
-            <input v-model="form.address" class="input-element" >
+            <input v-model="form.address" class="input-field" >
           </label>
         </section>
 
@@ -112,16 +112,16 @@
           <h3 class="section-title"><span class="dot bg-amber-400" />{{ L('Background & health', 'ປະຫວັດ ແລະ ສຸຂະພາບ') }}</h3>
           <label class="input-group">
             <span>{{ L('Previous school', 'ໂຮງຮຽນເກົ່າ') }}</span>
-            <input v-model="form.previousSchool" maxlength="150" class="input-element" >
+            <input v-model="form.previousSchool" maxlength="150" class="input-field" >
           </label>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <label class="input-group">
               <span>{{ L('Allergies / medical conditions', 'ການແພ້ / ພະຍາດປະຈຳຕົວ') }}</span>
-              <textarea v-model="form.medicalNotes" rows="3" class="input-element resize-none" />
+              <textarea v-model="form.medicalNotes" rows="3" class="input-field resize-none" />
             </label>
             <label class="input-group">
               <span>{{ $t('common.notes') }}</span>
-              <textarea v-model="form.notes" rows="3" class="input-element resize-none" />
+              <textarea v-model="form.notes" rows="3" class="input-field resize-none" />
             </label>
           </div>
         </section>
@@ -133,7 +133,7 @@
           <div class="relative">
             <input
               v-model="parentSearch"
-              class="input-element"
+              class="input-field"
               :placeholder="L('Search parent by name or phone…', 'ຄົ້ນຫາຜູ້ປົກຄອງດ້ວຍຊື່ ຫຼື ເບີໂທ…')"
               @input="searchParents"
             >
@@ -154,7 +154,7 @@
           <p v-if="form.parents.length === 0" class="text-sm text-slate-500">{{ L('No parents linked yet.', 'ຍັງບໍ່ໄດ້ເຊື່ອມຜູ້ປົກຄອງ.') }}</p>
           <div v-for="(p, i) in form.parents" :key="p.parentUserId" class="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40">
             <span class="flex-1 min-w-[10rem] text-sm font-medium text-white">{{ p.name }}</span>
-            <select v-model="p.relationship" class="input-element !w-auto !py-2">
+            <select v-model="p.relationship" class="input-field !w-auto !py-2">
               <option v-for="r in RELATIONSHIPS" :key="r" :value="r">{{ relationshipLabel(r) }}</option>
             </select>
             <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
@@ -371,25 +371,12 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped lang="postcss">
-:global(html.light) .create-panel {
-  background-color: #ffffff !important;
-  border-color: #f1f5f9 !important;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05) !important;
-}
+
 :global(html.light) .gradient-border {
   display: none !important;
 }
-:global(html.light) .input-element {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-  color: #0f172a !important;
-  box-shadow: none !important;
-}
-:global(html.light) .input-element:focus {
-  background-color: #ffffff !important;
-  border-color: #0d9488 !important;
-  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1) !important;
-}
+:global(html.light) 
+
 :global(html.light) h1.text-transparent {
   background-image: linear-gradient(to right, #0f172a, #475569) !important;
   -webkit-background-clip: text !important;
@@ -416,11 +403,7 @@ const handleSubmit = async () => {
   @apply flex flex-col gap-2.5;
 }
 .input-group > span {
-  @apply text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1 tracking-wide;
+  @apply text-sm font-semibold text-slate-300 ml-1 tracking-wide;
 }
-.input-element {
-  @apply w-full px-4 py-3 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all duration-300;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-}
+
 </style>

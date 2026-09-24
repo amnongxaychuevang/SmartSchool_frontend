@@ -27,7 +27,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         <p>{{ $t('parentPortal.no_schedule') }}</p>
       </div>
       <div v-else class="glass-panel rounded-2xl overflow-hidden">
-        <table class="w-full">
+        <table class="w-full min-w-max">
           <thead>
             <tr class="border-b border-slate-800 bg-slate-900/50">
               <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.date') }}</th>
