@@ -178,7 +178,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import UserFormModal from './modals/UserFormModal.vue';
+import UserFormModal from '../../../components/admin/UserFormModal.vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { User } from '../../../domain/models/User';
 import type { Role } from '../../../domain/models/School';

@@ -42,7 +42,16 @@
     "logout": "Logout",
     "classSubjects": "Class Subjects",
     "subjects": "Subjects",
-    "academicTerms": "Academic Terms"
+    "academicTerms": "Academic Terms",
+    "cards": "Student Cards",
+    "scanSimulator": "Card Scan Simulator",
+    "finance": "Finance",
+    "topUps": "Top-up Requests",
+    "wallets": "Wallets",
+    "spendingLimits": "Spending Limits",
+    "communication": "Communication",
+    "overview": "Overview",
+    "notificationSettings": "Notification Settings"
   },
   "common": {
     "refresh": "Refresh",

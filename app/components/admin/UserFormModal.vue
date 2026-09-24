@@ -107,7 +107,7 @@ v-model="form.password"
 </template>
 
 <script setup lang="ts">
-import type { Role } from '../../../../domain/models/School';
+import type { Role } from '../../domain/models/School';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

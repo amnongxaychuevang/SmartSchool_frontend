@@ -130,13 +130,13 @@ const userInitial = computed(() => authStore.user?.fullNameEn?.[0]?.toUpperCase(
 
 const navItems = computed(() => [
   { to: '/teacher',               label: t('nav.dashboard'),      icon: resolveComponent('IconDashboard') },
-  { to: '/teacher/schedule',      label: t('teacherPortal.my_schedule'),    icon: resolveComponent('IconClasses') },
+  { to: '/teacher/schedule',      label: t('teacherPortal.my_schedule'),    icon: resolveComponent('IconSchedule') },
   { to: '/teacher/classes',       label: t('nav.classes'),     icon: resolveComponent('IconClasses') },
-  { to: '/teacher/attendance',    label: t('nav.attendance'),     icon: resolveComponent('IconAttendance') },
-  { to: '/teacher/grades',        label: t('nav.grades'),         icon: resolveComponent('IconReports') },
-  { to: '/teacher/leaves',        label: t('teacherPortal.leave_approvals'),icon: resolveComponent('IconAttendance') },
   { to: '/teacher/students',      label: t('nav.students'),       icon: resolveComponent('IconStudents') },
-  { to: '/teacher/announcements', label: t('nav.announcements'),  icon: resolveComponent('IconReports') },
+  { to: '/teacher/attendance',    label: t('nav.attendance'),     icon: resolveComponent('IconAttendance') },
+  { to: '/teacher/leaves',        label: t('teacherPortal.leave_approvals'),icon: resolveComponent('IconLeave') },
+  { to: '/teacher/grades',        label: t('nav.grades'),         icon: resolveComponent('IconReports') },
+  { to: '/teacher/announcements', label: t('nav.announcements'),  icon: resolveComponent('IconNotifications') },
 ]);
 
 const isActive = (to: string) => {

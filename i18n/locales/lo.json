@@ -42,7 +42,16 @@
     "logout": "ອອກຈາກລະບົບ",
     "classSubjects": "ວິຊາຂອງຫ້ອງ",
     "subjects": "ວິຊາຮຽນ",
-    "academicTerms": "ພາກຮຽນ"
+    "academicTerms": "ພາກຮຽນ",
+    "cards": "ບັດນັກຮຽນ",
+    "scanSimulator": "ຈຳລອງການແຕະບັດ",
+    "finance": "ການເງິນ",
+    "topUps": "ຄຳຮ້ອງເຕີມເງິນ",
+    "wallets": "ກະເປົາເງິນ",
+    "spendingLimits": "ຂີດຈຳກັດລາຍຈ່າຍ",
+    "communication": "ການສື່ສານ",
+    "overview": "ພາບລວມ",
+    "notificationSettings": "ຕັ້ງຄ່າການແຈ້ງເຕືອນ"
   },
   "common": {
     "refresh": "ໂຫຼດຄືນ",

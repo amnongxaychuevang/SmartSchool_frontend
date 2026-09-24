@@ -126,7 +126,7 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import TeacherFormModal from './modal/TeacherFormModal.vue';
+import TeacherFormModal from '../../../components/admin/TeacherFormModal.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { Teacher } from '../../../domain/models/Teacher';

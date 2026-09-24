@@ -130,11 +130,11 @@ const userInitial = computed(() => authStore.user?.fullNameEn?.[0]?.toUpperCase(
 
 const navItems = computed(() => [
   { to: '/parent',            label: t('parentPortal.dashboard'),  icon: resolveComponent('IconDashboard') },
-  { to: '/parent/attendance', label: t('parentPortal.childs_attendance'), icon: resolveComponent('IconAttendance') },
-  { to: '/parent/grades',     label: t('parentPortal.childs_grades'),     icon: resolveComponent('IconReports') },
-  { to: '/parent/wallet',     label: t('parentPortal.childs_wallet'),     icon: resolveComponent('IconStudents') },
   { to: '/parent/schedule',   label: t('parentPortal.schedule'),          icon: resolveComponent('IconSchedule') },
+  { to: '/parent/attendance', label: t('parentPortal.childs_attendance'), icon: resolveComponent('IconAttendance') },
   { to: '/parent/leave',      label: t('parentPortal.leave_requests'),    icon: resolveComponent('IconLeave') },
+  { to: '/parent/grades',     label: t('parentPortal.childs_grades'),     icon: resolveComponent('IconReports') },
+  { to: '/parent/wallet',     label: t('parentPortal.childs_wallet'),     icon: resolveComponent('IconWallet') },
   { to: '/parent/announcements', label: t('parentPortal.announcements'),  icon: resolveComponent('IconNotifications') },
 ]);
 

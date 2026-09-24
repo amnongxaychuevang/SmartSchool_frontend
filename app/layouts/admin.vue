@@ -206,58 +206,79 @@ const userInitial = computed((): string => {
   return fullName.charAt(0).toUpperCase() || 'A';
 });
 
+// Grouped by task: people → teaching → attendance → money → communication → reports → settings.
 const navItems: NavItem[] = [
-  { to: '/admin',            key: 'nav.dashboard',  icon: resolveComponent('IconDashboard') },
-  { to: '/admin/students',   key: 'nav.students',   icon: resolveComponent('IconStudents') },
-  { to: '/admin/teachers',   key: 'nav.teachers',   icon: resolveComponent('IconTeachers') },
-  { to: '/admin/parents',    key: 'nav.parents',    icon: resolveComponent('IconParents') },
-  { to: '/admin/classes',    key: 'nav.classes',    icon: resolveComponent('IconClasses') },
-  { to: '/admin/attendance', key: 'nav.attendance', icon: resolveComponent('IconAttendance') },
+  { to: '/admin',          key: 'nav.dashboard', icon: resolveComponent('IconDashboard') },
+  { to: '/admin/students', key: 'nav.students',  icon: resolveComponent('IconStudents') },
+  { to: '/admin/teachers', key: 'nav.teachers',  icon: resolveComponent('IconTeachers') },
+  { to: '/admin/parents',  key: 'nav.parents',   icon: resolveComponent('IconParents') },
   {
     key: 'nav.academic',
-    icon: resolveComponent('IconClasses'),
+    icon: resolveComponent('IconSchedule'),
     children: [
-      { to: '/admin/academics/class-subjects', key: 'nav.classSubjects' },
+      { to: '/admin/classes',                  key: 'nav.classes' },
       { to: '/admin/academics/subjects',       key: 'nav.subjects' },
+      { to: '/admin/academics/class-subjects', key: 'nav.classSubjects' },
       { to: '/admin/academics/schedule',       key: 'nav.schedule' },
       { to: '/admin/academics/grades',         key: 'nav.grades' },
       { to: '/admin/settings/academic-terms',  key: 'nav.academicTerms' },
     ]
   },
-  
-   { 
-    key: 'nav.settings',  
-    icon: resolveComponent('IconSettings'),
+  {
+    key: 'nav.attendance',
+    icon: resolveComponent('IconAttendance'),
     children: [
-      { to: '/admin/settings',               key: 'nav.settings' },
-      { to: '/admin/users',                  key: 'nav.users' },
-      { to: '/admin/settings/permissions',   key: 'nav.permissions' },
-      { to: '/admin/settings/shops',         key: 'nav.shops' },
-      { to: '/admin/settings/notifications', key: 'nav.notifications' },
-      { to: '/admin/announcements',          key: 'nav.announcements' },
-      { to: '/admin/audit-logs',             key: 'nav.auditLogs' },
+      { to: '/admin/cards',      key: 'nav.cards' },
+      { to: '/admin/attendance', key: 'nav.scanSimulator' },
     ]
   },
-  { 
-    key: 'nav.reports',   
+  {
+    key: 'nav.finance',
+    icon: resolveComponent('IconWallet'),
+    children: [
+      { to: '/admin/finance/top-ups',         key: 'nav.topUps' },
+      { to: '/admin/finance',                 key: 'nav.wallets' },
+      { to: '/admin/finance/spending-limits', key: 'nav.spendingLimits' },
+      { to: '/admin/finance/shops',           key: 'nav.shops' },
+    ]
+  },
+  {
+    key: 'nav.communication',
+    icon: resolveComponent('IconNotifications'),
+    children: [
+      { to: '/admin/announcements', key: 'nav.announcements' },
+      { to: '/admin/notifications', key: 'nav.notifications' },
+    ]
+  },
+  {
+    key: 'nav.reports',
     icon: resolveComponent('IconReports'),
     children: [
-      { to: '/admin/reports',            key: 'nav.reports' },
+      { to: '/admin/reports',            key: 'nav.overview' },
       { to: '/admin/reports/attendance', key: 'nav.attendance' },
-      { to: '/admin/reports/fees',       key: 'nav.fees' },
       { to: '/admin/reports/grades',     key: 'nav.grades' },
       { to: '/admin/reports/students',   key: 'nav.students' },
       { to: '/admin/reports/wallet',     key: 'nav.wallet' },
+      { to: '/admin/reports/fees',       key: 'nav.fees' },
     ]
   },
- 
+  {
+    key: 'nav.settings',
+    icon: resolveComponent('IconSettings'),
+    children: [
+      { to: '/admin/settings',               key: 'nav.general' },
+      { to: '/admin/users',                  key: 'nav.users' },
+      { to: '/admin/settings/permissions',   key: 'nav.permissions' },
+      { to: '/admin/settings/notifications', key: 'nav.notificationSettings' },
+      { to: '/admin/audit-logs',             key: 'nav.auditLogs' },
+    ]
+  },
 ];
 
-const openMenus = reactive<Record<string, boolean>>({
-  'nav.reports': false,
-  'nav.settings': false,
-  'nav.academic': false,
-});
+// One entry per group, all collapsed; the group holding the current page opens on mount.
+const openMenus = reactive<Record<string, boolean>>(
+  Object.fromEntries(navItems.filter((item) => item.children).map((item) => [item.key, false])),
+);
 
 const toggleMenu = (key: string) => {
   if (!sidebarOpen.value) {
@@ -266,10 +287,16 @@ const toggleMenu = (key: string) => {
   openMenus[key] = !openMenus[key];
 };
 
-const isActive = (to: string) => {
-  if (to === '/admin') return route.path === '/admin';
-  return route.path === to || (to !== '/admin' && route.path.startsWith(to + '/'));
-};
+// The single most specific menu link matching the current path, so that on
+// /admin/settings/permissions only "Permissions" is highlighted, not also
+// "General" (/admin/settings); /admin/students/create still highlights Students.
+const allLinks = navItems.flatMap((item) => (item.children ? item.children.map((c) => c.to) : item.to ? [item.to] : []));
+const activeLink = computed(() =>
+  allLinks
+    .filter((to) => route.path === to || (to !== '/admin' && route.path.startsWith(to + '/')))
+    .sort((a, b) => b.length - a.length)[0] ?? (route.path === '/admin' ? '/admin' : ''),
+);
+const isActive = (to: string) => activeLink.value === to;
 
 const isSubActive = (item: NavItem): boolean => {
   return item.children?.some((sub: NavSubItem) => isActive(sub.to)) ?? false;
