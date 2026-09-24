@@ -57,8 +57,8 @@ const schedulesByDay = (dayOfWeek: number) => {
 };
 
 const formatTime = (timeStr: string) => {
-  if (!timeStr) return '';
-  const date = new Date(timeStr);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // A TIME column arrives as "1970-01-01THH:MM:00.000Z" — take HH:MM as-is; converting
+  // to local time would shift it by the browser's offset (+7h in Laos).
+  return timeStr ? timeStr.slice(11, 16) : '';
 };
 </script>

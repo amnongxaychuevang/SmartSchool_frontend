@@ -219,6 +219,7 @@ const navItems: NavItem[] = [
     children: [
       { to: '/admin/academics/class-subjects', key: 'nav.classSubjects' },
       { to: '/admin/academics/subjects',       key: 'nav.subjects' },
+      { to: '/admin/academics/schedule',       key: 'nav.schedule' },
       { to: '/admin/academics/grades',         key: 'nav.grades' },
       { to: '/admin/settings/academic-terms',  key: 'nav.academicTerms' },
     ]

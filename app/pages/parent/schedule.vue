@@ -86,9 +86,9 @@ const loadSchedule = () => {
 };
 
 const formatTime = (isoString: string) => {
-  if (!isoString) return '';
-  const date = new Date(isoString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // A TIME column arrives as "1970-01-01THH:MM:00.000Z" — take HH:MM as-is; converting
+  // to local time would shift it by the browser's offset (+7h in Laos).
+  return isoString ? isoString.slice(11, 16) : '';
 };
 
 const getDayName = (dayOfWeek: number) => {

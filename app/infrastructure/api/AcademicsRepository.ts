@@ -12,6 +12,21 @@ export interface AcademicTerm {
 }
 
 type Named = { fullNameEn: string; fullNameLo: string };
+
+export interface ScheduleSlot {
+  scheduleId: number;
+  classSubjectId: number;
+  classId: number;
+  subjectId: number;
+  teacherId: number | null;
+  dayOfWeek: number; // 0 = Sunday
+  startTime: string; // "1970-01-01THH:MM:00.000Z"
+  endTime: string;
+  roomNumber: string | null;
+  class: { classNameEn: string; classNameLo: string };
+  subject: { subjectId: number; subjectCode: string | null; subjectNameEn: string; subjectNameLo: string };
+  teacher: Named | null;
+}
 export interface ClassSubject {
   id: number;
   classId: number;
@@ -202,5 +217,21 @@ export const academicsRepository = {
   },
   async deleteClassSubject(id: number) {
     await useApiClient()(`${API_ENDPOINTS.classSubjects.list}/${id}`, { method: 'DELETE' });
+  },
+
+  // Timetable slots
+  async getSchedules(params: { classId?: number; termId?: number } = {}) {
+    const query = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) query.set(k, String(v));
+    const res = await useApiClient()<{ success: boolean; data: ScheduleSlot[] }>(`${API_ENDPOINTS.schedules.list}?${query}`, { method: 'GET' });
+    return res.data;
+  },
+  async saveSchedule(scheduleId: number | null, payload: { classSubjectId: number; dayOfWeek: number; startTime: string; endTime: string; roomNumber?: string | null }) {
+    const url = scheduleId ? `${API_ENDPOINTS.schedules.list}/${scheduleId}` : API_ENDPOINTS.schedules.list;
+    const res = await useApiClient()<{ success: boolean; data: { schedule: ScheduleSlot } }>(url, { method: scheduleId ? 'PUT' : 'POST', body: payload });
+    return res.data.schedule;
+  },
+  async deleteSchedule(scheduleId: number) {
+    await useApiClient()(`${API_ENDPOINTS.schedules.list}/${scheduleId}`, { method: 'DELETE' });
   },
 };
