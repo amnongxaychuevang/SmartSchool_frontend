@@ -78,7 +78,9 @@
     "delete_confirm_title": "Confirm Delete",
     "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
     "address": "Address",
-    "notes": "Notes"
+    "notes": "Notes",
+    "next": "Next",
+    "prev": "Previous"
   },
   "admin": {
     "dashboard": "Admin Dashboard",
@@ -167,7 +169,8 @@
     "description_en": "Description (English)",
     "description_lo": "Description (Lao)",
     "delete_confirm_title": "Delete Class",
-    "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "search_placeholder": "Search classes…"
   },
   "users": {
     "title": "Users",
@@ -187,7 +190,8 @@
     "select_role": "Select role...",
     "actions": "Actions",
     "delete_confirm_title": "Delete User",
-    "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    "delete_confirm_msg": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "contact": "Contact"
   },
   "teachers": {
     "title": "Teachers",
@@ -242,7 +246,8 @@
       "teacher": "Teacher",
       "parent": "Parent",
       "student": "Student"
-    }
+    },
+    "save_changes": "Save changes"
   },
   "reports": {
     "title": "Academic & Operational Reports",
