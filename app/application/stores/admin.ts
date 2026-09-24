@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { adminRepository } from '../../infrastructure/api/AdminRepository';
 import { dashboardRepository } from '../../infrastructure/api/DashboardRepository';
 import { settingsRepository } from '../../infrastructure/api/SettingsRepository';
-import type { Student } from '../../domain/models/Student';
+import type { Student, StudentPayload } from '../../domain/models/Student';
 import type { SchoolClass } from '../../domain/models/SchoolClass';
 import type { User } from '../../domain/models/User';
 import type { Teacher } from '../../domain/models/Teacher';
@@ -119,7 +119,7 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async createStudent(payload: { studentCode: string; fullNameEn: string; fullNameLo: string; gender: string; status: string }) {
+    async createStudent(payload: StudentPayload) {
       try {
         const newStudent = await adminRepository.createStudent(payload);
         this.students.unshift(newStudent);
@@ -131,7 +131,7 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async updateStudent(studentId: number, payload: any) {
+    async updateStudent(studentId: number, payload: StudentPayload) {
       try {
         const updatedStudent = await adminRepository.updateStudent(studentId, payload);
         const idx = this.students.findIndex(s => s.studentId === studentId);

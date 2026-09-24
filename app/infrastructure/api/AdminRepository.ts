@@ -1,6 +1,6 @@
 import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
-import type { Student } from '../../domain/models/Student';
+import type { Student, StudentPayload } from '../../domain/models/Student';
 
 interface StudentsResponse {
   success: boolean;
@@ -20,7 +20,12 @@ export const adminRepository = {
     return res.data;
   },
 
-  async createStudent(payload: { studentCode: string; fullNameEn: string; fullNameLo: string; gender: string; status: string }) {
+  async getStudent(studentId: number) {
+    const res = await useApiClient()<{ success: boolean; data: { student: Student } }>(`${API_ENDPOINTS.students.list}/${studentId}`, { method: 'GET' });
+    return res.data.student;
+  },
+
+  async createStudent(payload: StudentPayload) {
     const res = await useApiClient()<{ success: boolean; data: { student: Student } }>(API_ENDPOINTS.students.list, {
       method: 'POST',
       body: payload
@@ -29,7 +34,7 @@ export const adminRepository = {
     return res.data.student;
   },
 
-  async updateStudent(studentId: number, payload: Partial<{ studentCode: string; fullNameEn: string; fullNameLo: string; gender: string; status: Student['status'] }>) {
+  async updateStudent(studentId: number, payload: StudentPayload) {
     const res = await useApiClient()<{ success: boolean; data: { student: Student } }>(`${API_ENDPOINTS.students.list}/${studentId}`, {
       method: 'PUT',
       body: payload

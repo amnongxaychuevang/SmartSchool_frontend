@@ -401,5 +401,14 @@
     "male": "ຊາຍ",
     "female": "ຍິງ",
     "other": "ອື່ນໆ"
+  },
+  "relationship": {
+    "father": "ພໍ່",
+    "mother": "ແມ່",
+    "guardian": "ຜູ້ປົກຄອງ",
+    "grandparent": "ພໍ່ຕູ້ / ແມ່ຕູ້",
+    "sibling": "ອ້າຍ / ເອື້ອຍ / ນ້ອງ",
+    "uncle_aunt": "ລຸງ / ປ້າ / ອາ / ນ້າ",
+    "other": "ອື່ນໆ"
   }
 }

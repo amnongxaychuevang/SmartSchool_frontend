@@ -124,7 +124,7 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                 <button
                   class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all"
                   :title="$t('common.edit')"
-                  @click="openEditModal(student)"
+                  @click="navigateTo(`/admin/students/create?id=${student.studentId}`)"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -158,79 +158,13 @@ class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
       :total-pages="totalPages"
       @update:page="changePage"
     />
-
-    <!-- ── EDIT MODAL ── -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="editModal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="editModal.open = false"/>
-        <div class="relative glass-panel w-full max-w-lg flex flex-col p-0 overflow-hidden">
-          <div class="p-6 flex items-center justify-between border-b border-slate-800/50 bg-slate-900/20">
-            <h2 class="text-xl font-bold text-white">{{ $t('students.edit_student') }}</h2>
-            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" @click="editModal.open = false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-
-          <div v-if="editModal.error" class="m-6 mb-0 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ editModal.error }}</div>
-
-          <form class="flex flex-col" @submit.prevent="handleEditSubmit">
-            <div class="p-6 grid grid-cols-2 gap-5">
-              <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('students.student_code') }} *</label>
-                <input v-model="editModal.form.studentCode" required type="text" class="input-field" placeholder="Student Code..." >
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.status') }}</label>
-                <select v-model="editModal.form.status" class="input-field cursor-pointer">
-                  <option v-for="status in STATUS_OPTIONS" :key="status" :value="status">{{ statusLabel(status) }}</option>
-                </select>
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('students.full_name_en') }} *</label>
-                <input v-model="editModal.form.fullNameEn" required type="text" class="input-field" placeholder="Full Name (EN)..." >
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('students.full_name_lo') }} *</label>
-                <input v-model="editModal.form.fullNameLo" required type="text" class="input-field" placeholder="Full Name (LO)..." >
-              </div>
-              <div class="flex flex-col gap-2 col-span-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.gender') }}</label>
-                <select v-model="editModal.form.gender" class="input-field cursor-pointer">
-                  <option value="">—</option>
-                  <option v-for="g in GENDERS" :key="g" :value="g">{{ $t(`gender.${g}`) }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="p-6 pt-4 border-t border-slate-800/50 flex items-center justify-end gap-3 bg-slate-900/20">
-              <button type="button" class="btn-ghost" @click="editModal.open = false">{{ $t('common.cancel') }}</button>
-              <button type="submit" :disabled="editModal.saving" class="btn-primary flex items-center gap-2">
-                <svg v-if="editModal.saving" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                <span v-else>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </span>
-                {{ editModal.saving ? $t('common.saving') : $t('common.save') }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAdminStore } from '../../../application/stores/admin';
 import type { Student } from '../../../domain/models/Student';
-import { GENDERS } from '../../../domain/models/Gender';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Students — Smart School Admin' });
@@ -288,46 +222,6 @@ const changePage = (page: number) => {
   adminStore.fetchStudents({ page });
 };
 
-// ── Edit Modal ──
-const editModal = reactive({
-  open: false,
-  saving: false,
-  error: '',
-  studentId: null as number | null,
-  form: {
-    studentCode: '',
-    fullNameEn: '',
-    fullNameLo: '',
-    gender: '',
-    status: 'active' as Student['status']
-  }
-});
-
-const openEditModal = (student: Student) => {
-  editModal.studentId = student.studentId;
-  editModal.form.studentCode = student.studentCode;
-  editModal.form.fullNameEn = student.fullNameEn;
-  editModal.form.fullNameLo = student.fullNameLo;
-  editModal.form.gender = student.gender ?? '';
-  editModal.form.status = student.status;
-  editModal.error = '';
-  editModal.open = true;
-};
-
-const handleEditSubmit = async () => {
-  if (!editModal.studentId) return;
-  editModal.saving = true;
-  editModal.error = '';
-  try {
-    await adminStore.updateStudent(editModal.studentId, { ...editModal.form });
-    editModal.open = false;
-  } catch (err) {
-    editModal.error = (err instanceof Error && err.message) || 'Failed to update student';
-  } finally {
-    editModal.saving = false;
-  }
-};
-
 // ── Deactivate / reactivate ──
 // Students are never deleted (their wallet, grades and attendance history must stay);
 // admins switch them to "inactive" instead.
@@ -346,17 +240,3 @@ const toggleActive = async (student: Student) => {
   }
 };
 </script>
-
-<style scoped lang="postcss">
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

@@ -401,5 +401,14 @@
     "male": "Male",
     "female": "Female",
     "other": "Other"
+  },
+  "relationship": {
+    "father": "Father",
+    "mother": "Mother",
+    "guardian": "Guardian",
+    "grandparent": "Grandparent",
+    "sibling": "Sibling",
+    "uncle_aunt": "Uncle / Aunt",
+    "other": "Other"
   }
 }
