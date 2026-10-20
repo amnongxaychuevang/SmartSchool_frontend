@@ -1,7 +1,17 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader :eyebrow="$t('navSection.attendance')" :title="$t('cards_admin.title')" :subtitle="$t('cards_admin.subtitle')">
-      <input v-model="searchInput" type="search" class="input-field w-64" :placeholder="$t('cards_admin.search')" @input="handleSearch">
+      <div class="relative w-64">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('cards_admin.search')" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="clearSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
       <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="handleFilter">
         <option value="">{{ $t('cards_admin.all_status') }}</option>
         <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
@@ -30,12 +40,12 @@
               <td class="font-mono font-semibold text-primary-ink">{{ card.cardUid }}</td>
               <td>
                 <p class="font-semibold">{{ studentName(card) }}</p>
-                <p class="text-xs text-ink-subtle font-mono">{{ card.student?.studentCode }}</p>
+                <p class="text-xs text-ink-subtle font-mono">{{ card.student && card.student.studentCode }}</p>
               </td>
               <td><span :class="statusBadge[card.status]">{{ $t(`status.${card.status}`) }}</span></td>
               <td class="tnum">{{ f.date(card.issuedDate) }}</td>
               <td class="tnum">{{ f.date(card.expiredDate) }}</td>
-              <td class="max-w-xs truncate text-ink-muted" :title="card.notes ?? undefined">{{ card.notes || '—' }}</td>
+              <td class="max-w-xs truncate text-ink-muted" :title="card.notes || undefined">{{ card.notes || '—' }}</td>
               <td class="text-right">
                 <div class="inline-flex gap-2">
                   <button type="button" class="btn-secondary min-h-8 px-3" @click="openEdit(card)">{{ $t('common.edit') }}</button>
@@ -46,10 +56,10 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :current-page="academicsStore.cardsPage" :total-pages="totalPages" @update:page="changePage" />
+      <PaginationBar :loading="academicsStore.cardsLoading" :current-page="academicsStore.cardsPage" :total-pages="totalPages" @update:page="changePage" />
     </section>
 
-    <AppModal v-model:open="modal.open" :title="modal.cardId ? $t('cards_admin.edit') : $t('cards_admin.issue')">
+    <AppModal :open="modal.open" :title="modal.cardId ? $t('cards_admin.edit') : $t('cards_admin.issue')" @update:open="modal.open = $event">
       <form id="card-form" class="flex flex-col gap-4" @submit.prevent="handleSubmit">
         <div>
           <label for="c-uid" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.uid') }}</label>
@@ -90,13 +100,14 @@
     </AppModal>
 
     <ConfirmDialog
-      v-model:open="del.open"
+      :open="del.open"
       tone="danger"
       :title="$t('cards_admin.delete_title')"
       :message="del.card ? $t('cards_admin.delete_msg', { uid: del.card.cardUid }) : ''"
       :confirm-label="$t('common.delete')"
       :busy="del.busy"
       :error="del.error"
+      @update:open="del.open = $event"
       @confirm="handleDelete"
     />
   </div>
@@ -136,6 +147,7 @@ const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => academicsStore.fetchCards({ search: searchInput.value, page: 1 }), 400);
 };
+const clearSearch = () => { searchInput.value = ''; academicsStore.fetchCards({ page: 1 }); };
 const handleFilter = () => academicsStore.fetchCards({ status: statusFilter.value, page: 1 });
 const changePage = (page: number) => academicsStore.fetchCards({ page });
 

@@ -6,6 +6,8 @@ export interface Role {
   code: 'admin' | 'teacher' | 'parent' | string;
   nameEn: string;
   nameLo: string;
+  /** Which portal the role signs in to; custom roles are always 'admin'. */
+  portal?: 'admin' | 'teacher' | 'parent';
 }
 
 export interface AuditLog {

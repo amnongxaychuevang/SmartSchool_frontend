@@ -1,4 +1,33 @@
 // Pure domain entity for Student
+
+/** From GET /students/meta/blood-types. `rh` is null when only the ABO group is known. */
+export interface BloodTypeOption {
+  code: string;
+  group: string;
+  rh: '+' | '-' | null;
+}
+
+/** From GET /provinces (reference data, districts nested). */
+export interface District {
+  districtId: number;
+  nameLo: string;
+  nameEn: string;
+}
+export interface Province {
+  provinceId: number;
+  nameLo: string;
+  nameEn: string;
+  districts: District[];
+}
+
+/** From GET /ethnicities (reference data). */
+export interface Ethnicity {
+  ethnicityId: number;
+  code: string;
+  nameLo: string;
+  nameEn: string;
+}
+
 export interface Student {
   studentId: number;
   studentCode: string;
@@ -8,12 +37,14 @@ export interface Student {
   gender?: string;
   photoUrl?: string;
   status: 'active' | 'inactive' | 'graduated' | 'transferred';
-  ethnicity?: string | null;
+  ethnicityId?: number | null;
   bloodType?: string | null;
   birthPlace?: string | null;
   village?: string | null;
-  district?: string | null;
-  province?: string | null;
+  provinceId?: number | null;
+  districtId?: number | null;
+  province?: Omit<Province, 'districts'> | null;
+  district?: District | null;
   address?: string | null;
   previousSchool?: string | null;
   medicalNotes?: string | null;

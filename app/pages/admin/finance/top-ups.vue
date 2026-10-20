@@ -17,6 +17,7 @@
               <th>{{ $t('topups.col_requested') }}</th>
               <th>{{ $t('topups.col_student') }}</th>
               <th>{{ $t('topups.col_method') }}</th>
+              <th>{{ $t('topups.col_slip') }}</th>
               <th class="text-right">{{ $t('topups.col_amount') }}</th>
               <th>{{ $t('common.status') }}</th>
               <th class="text-right">{{ $t('common.actions') }}</th>
@@ -30,6 +31,12 @@
                 <p class="text-xs text-ink-subtle">{{ $t('topups.parent', { name: name(req.parentRequester) }) }}</p>
               </td>
               <td class="text-ink-muted">{{ methodLabel(req) }}</td>
+              <td>
+                <a v-if="req.slipUrl" :href="req.slipUrl" target="_blank" class="inline-block">
+                  <img :src="req.slipUrl" :alt="$t('topups.slip_image')" class="h-10 w-10 rounded border border-line object-cover hover:opacity-80 transition-opacity">
+                </a>
+                <span v-else class="text-ink-subtle">—</span>
+              </td>
               <td class="text-right font-semibold tnum text-primary-ink">{{ f.kip(req.amount) }}</td>
               <td>
                 <span :class="statusBadge[req.status]">{{ $t(`status.${req.status}`) }}</span>
@@ -47,20 +54,21 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :current-page="financeStore.topUpRequestsPage" :total-pages="totalPages" @update:page="changePage" />
+      <PaginationBar :loading="financeStore.topUpRequestsLoading && !financeStore.topUpRequests.length" :current-page="financeStore.topUpRequestsPage" :total-pages="totalPages" @update:page="changePage" />
     </section>
 
     <ConfirmDialog
-      v-model:open="approve.open"
+      :open="approve.open"
       :title="$t('topups.approve_title')"
       :message="approve.request ? $t('topups.approve_msg', { amount: f.kip(approve.request.amount), name: name(approve.request.student) }) : ''"
       :confirm-label="$t('common.approve')"
       :busy="approve.busy"
       :error="approve.error"
+      @update:open="approve.open = $event"
       @confirm="handleApprove"
     />
 
-    <AppModal v-model:open="reject.open" :title="$t('topups.reject_title')" size="sm">
+    <AppModal :open="reject.open" :title="$t('topups.reject_title')" size="sm" @update:open="reject.open = $event">
       <form id="reject-form" @submit.prevent="handleReject">
         <label for="reject-reason" class="block mb-1.5 text-sm font-semibold">{{ $t('topups.reject_reason') }}</label>
         <textarea id="reject-reason" v-model.trim="reject.reason" rows="3" required class="input-field" :placeholder="$t('topups.reject_placeholder')" />

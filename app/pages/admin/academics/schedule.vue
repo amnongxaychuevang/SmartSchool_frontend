@@ -1,35 +1,96 @@
 <template>
   <div class="flex flex-col gap-6">
-    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-white">{{ L('Timetable', 'ຕາຕະລາງຮຽນ') }}</h1>
-        <p class="text-sm text-slate-400 mt-1">
-          {{ L('Weekly slots per class. Clashes for the same class, teacher or room are refused.', 'ຊົ່ວໂມງຮຽນປະຈຳອາທິດຂອງແຕ່ລະຫ້ອງ. ລະບົບບໍ່ຍອມໃຫ້ເວລາຊ້ອນກັນ ສຳລັບຫ້ອງ, ຄູ ຫຼື ຫ້ອງຮຽນດຽວກັນ.') }}
-        </p>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" :placeholder="$t('schedule_admin.search_placeholder')" class="search-bar">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="searchInput = ''">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <select v-model.number="termId" class="filter-select" @change="onTermChange">
-          <option v-for="t in terms" :key="t.termId" :value="t.termId">
-            {{ t.academicYear }} · {{ locale === 'lo' ? t.termNameLo : t.termNameEn }}{{ t.status === 'active' ? ' ●' : '' }}
-          </option>
-        </select>
-        <select v-model.number="classId" class="filter-select" @change="load">
-          <option :value="0" disabled>{{ L('Select a class', 'ເລືອກຫ້ອງ') }}</option>
-          <option v-for="c in termClasses" :key="c.classId" :value="c.classId">{{ nameOf(c, 'className') }}</option>
-        </select>
-        <button :disabled="!classId || classSubjects.length === 0" class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50" @click="openModal()">
-          + {{ L('Add slot', 'ເພີ່ມຊົ່ວໂມງ') }}
+      <div class="flex flex-1 flex-wrap items-center gap-3">
+        <!-- Term Dropdown Menu -->
+        <div class="relative z-50">
+          <button
+            :class="[
+              'relative h-9 px-3 border rounded-lg text-sm focus:outline-none flex items-center justify-between min-w-[200px] transition-colors',
+              !termId
+                ? 'bg-transparent border-slate-700 text-slate-400 hover:border-slate-600'
+                : 'bg-teal-500/20 border-teal-500/50 text-teal-400'
+            ]"
+            @click="termDropdownOpen = !termDropdownOpen">
+            <span>{{ termId && selectedTerm ? (selectedTerm.academicYear + ' · ' + (locale === 'lo' ? selectedTerm.termNameLo : selectedTerm.termNameEn) + (selectedTerm.status === 'active' ? ' ●' : '')) : $t('schedule_admin.select_term') }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform ml-2 shrink-0" :class="[termDropdownOpen ? 'rotate-180' : '', !termId ? 'text-slate-400' : 'text-teal-400']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          
+          <Transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-out" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+            <div v-if="termDropdownOpen" class="absolute left-0 top-full mt-2 w-max min-w-full glass-panel !p-1 border border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] overflow-hidden z-50">
+              <button
+                v-for="t in terms"
+                :key="t.termId"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg whitespace-nowrap"
+                :class="termId === t.termId ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
+                @click="termId = t.termId; onTermChange(); termDropdownOpen = false">
+                <div class="w-1.5 h-1.5 rounded-full shrink-0" :class="termId === t.termId ? 'bg-teal-500' : 'bg-transparent'"/>
+                {{ t.academicYear }} · {{ locale === 'lo' ? t.termNameLo : t.termNameEn }}{{ t.status === 'active' ? ' ●' : '' }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <div v-if="termDropdownOpen" class="fixed inset-0 z-40" @click="termDropdownOpen = false"/>
+
+        <!-- Class Dropdown Menu -->
+        <div class="relative z-50">
+          <button
+            :class="[
+              'relative h-9 px-3 border rounded-lg text-sm focus:outline-none flex items-center justify-between min-w-[140px] transition-colors',
+              !classId
+                ? 'bg-transparent border-slate-700 text-slate-400 hover:border-slate-600'
+                : 'bg-teal-500/20 border-teal-500/50 text-teal-400'
+            ]"
+            @click="classDropdownOpen = !classDropdownOpen">
+            <span>{{ classId ? nameOf(termClasses.find(c => c.classId === classId) || {}, 'className') : $t('schedule_admin.select_class') }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform ml-2 shrink-0" :class="[classDropdownOpen ? 'rotate-180' : '', !classId ? 'text-slate-400' : 'text-teal-400']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          
+          <Transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-out" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+            <div v-if="classDropdownOpen" class="absolute left-0 top-full mt-2 w-max min-w-full glass-panel !p-1 border border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] overflow-hidden z-50 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <button
+                v-for="c in termClasses"
+                :key="c.classId"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg whitespace-nowrap"
+                :class="classId === c.classId ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
+                @click="classId = c.classId; load(); classDropdownOpen = false">
+                <div class="w-1.5 h-1.5 rounded-full shrink-0" :class="classId === c.classId ? 'bg-teal-500' : 'bg-transparent'"/>
+                {{ nameOf(c, 'className') }}
+              </button>
+              <div v-if="termClasses.length === 0" class="px-4 py-3 text-sm text-slate-500 text-center whitespace-nowrap">
+                {{ $t('schedule_admin.no_classes') }}
+              </div>
+            </div>
+          </Transition>
+        </div>
+        <div v-if="classDropdownOpen" class="fixed inset-0 z-40" @click="classDropdownOpen = false"/>
+        <button :disabled="!classId || classSubjects.length === 0" class="ml-auto h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] disabled:opacity-50 disabled:shadow-none" @click="openModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          {{ $t('schedule_admin.add_slot') }}
         </button>
       </div>
     </div>
 
     <div v-if="classId && !loading && classSubjects.length === 0" class="glass-panel p-6 text-sm text-slate-400">
-      {{ L('This class has no subjects for the term yet.', 'ຫ້ອງນີ້ຍັງບໍ່ມີວິຊາໃນພາກຮຽນນີ້.') }}
-      <NuxtLink to="/admin/academics/class-subjects" class="text-teal-400 hover:underline ml-1">{{ L('Assign subjects →', 'ເພີ່ມວິຊາ →') }}</NuxtLink>
+      {{ $t('schedule_admin.no_subjects_yet') }}
+      <NuxtLink to="/admin/academics/class-subjects" class="text-teal-400 hover:underline ml-1">{{ $t('schedule_admin.assign_subjects') }}</NuxtLink>
     </div>
 
     <LoadingSpinner v-if="loading" />
-    <div v-else-if="classId" class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div v-else-if="classId" class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
       <div v-for="day in WEEK_DAYS" :key="day" class="glass-panel p-4 flex flex-col gap-3 min-h-[10rem]">
         <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">{{ dayName(day) }}</h3>
         <button
@@ -41,68 +102,30 @@
         >
           <p class="text-xs font-mono text-teal-400">{{ hhmm(s.startTime) }}–{{ hhmm(s.endTime) }}</p>
           <p class="text-sm font-medium text-white">{{ nameOf(s.subject, 'subjectName') }}</p>
-          <p class="text-xs text-slate-500">{{ s.teacher ? nameOf(s.teacher, 'fullName') : L('No teacher', 'ບໍ່ມີຄູ') }}<span v-if="s.roomNumber"> · {{ s.roomNumber }}</span></p>
+          <p class="text-xs text-slate-500">{{ s.teacher ? nameOf(s.teacher, 'fullName') : $t('schedule_admin.no_teacher') }}<span v-if="s.roomNumber"> · {{ s.roomNumber }}</span></p>
         </button>
         <p v-if="slotsByDay(day).length === 0" class="text-xs text-slate-600 italic">—</p>
       </div>
     </div>
 
-    <Teleport to="body">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-        <form class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-4" @submit.prevent="save">
-          <h2 class="text-xl font-bold text-white">{{ modal.scheduleId ? L('Edit slot', 'ແກ້ໄຂຊົ່ວໂມງ') : L('Add slot', 'ເພີ່ມຊົ່ວໂມງ') }}</h2>
-          <div v-if="modal.error" class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-          <label class="field">
-            <span>{{ L('Subject', 'ວິຊາ') }} *</span>
-            <select v-model.number="modal.form.classSubjectId" required class="modal-input">
-              <option :value="0" disabled>—</option>
-              <option v-for="cs in classSubjects" :key="cs.id" :value="cs.id">
-                {{ nameOf(cs.subject, 'subjectName') }}{{ cs.teacher ? ` — ${nameOf(cs.teacher, 'fullName')}` : '' }}
-              </option>
-            </select>
-          </label>
-          <label class="field">
-            <span>{{ L('Day', 'ວັນ') }} *</span>
-            <select v-model.number="modal.form.dayOfWeek" class="modal-input">
-              <option v-for="d in WEEK_DAYS" :key="d" :value="d">{{ dayName(d) }}</option>
-            </select>
-          </label>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="field"><span>{{ L('Start', 'ເລີ່ມ') }} *</span><input v-model="modal.form.startTime" required type="time" class="modal-input" ></label>
-            <label class="field"><span>{{ L('End', 'ເລີກ') }} *</span><input v-model="modal.form.endTime" required type="time" class="modal-input" ></label>
-          </div>
-          <label class="field">
-            <span>{{ L('Room', 'ຫ້ອງຮຽນ') }}</span>
-            <input v-model="modal.form.roomNumber" maxlength="50" class="modal-input" placeholder="101" >
-          </label>
-          <div class="flex items-center gap-3 pt-2">
-            <button v-if="modal.scheduleId" type="button" class="px-4 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10" @click="remove">{{ $t('common.delete') }}</button>
-            <span class="flex-1" />
-            <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800" @click="modal.open = false">{{ $t('common.cancel') }}</button>
-            <button type="submit" :disabled="modal.saving" class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white disabled:opacity-60">
-              {{ modal.saving ? $t('common.saving') : $t('common.save') }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </Teleport>
+    <ScheduleSlotModal :open="modal.open" :slot-data="modal.slotData" :class-subjects="classSubjects" @update:open="modal.open = $event" @saved="load" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+import ScheduleSlotModal from '../../../components/admin/ScheduleSlotModal.vue';
 import { academicsRepository, type AcademicTerm, type ClassSubject, type ScheduleSlot } from '../../../infrastructure/api/AcademicsRepository';
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Timetable — Smart School Admin' });
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
 
-// Monday–Saturday (dayOfWeek: 0 = Sunday).
-const WEEK_DAYS = [1, 2, 3, 4, 5, 6];
+// Monday–Friday (dayOfWeek: 0 = Sunday).
+const WEEK_DAYS = [1, 2, 3, 4, 5];
 const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAYS_LO = ['ອາທິດ', 'ຈັນ', 'ອັງຄານ', 'ພຸດ', 'ພະຫັດ', 'ສຸກ', 'ເສົາ'];
 const dayName = (d: number) => (locale.value === 'lo' ? DAYS_LO[d] : DAYS_EN[d]) ?? String(d);
@@ -125,12 +148,25 @@ const classId = ref(0);
 const classSubjects = ref<ClassSubject[]>([]);
 const slots = ref<ScheduleSlot[]>([]);
 const loading = ref(true);
+const termDropdownOpen = ref(false);
+const classDropdownOpen = ref(false);
 
+const searchInput = ref('');
+const searchLower = computed(() => searchInput.value.trim().toLowerCase());
+
+const selectedTerm = computed(() => terms.value.find(t => t.termId === termId.value));
 const termClasses = computed(() => {
   const year = terms.value.find((t) => t.termId === termId.value)?.academicYear;
   return classes.value.filter((c) => !year || c.academicYear === year);
 });
-const slotsByDay = (day: number) => slots.value.filter((s) => s.dayOfWeek === day);
+const slotsByDay = (day: number) => slots.value.filter((s) => {
+  if (s.dayOfWeek !== day) return false;
+  if (!searchLower.value) return true;
+  const q = searchLower.value;
+  return nameOf(s.subject, 'subjectName').toLowerCase().includes(q) ||
+         (s.teacher && nameOf(s.teacher, 'fullName').toLowerCase().includes(q)) ||
+         (s.roomNumber && s.roomNumber.toLowerCase().includes(q));
+});
 
 const load = async () => {
   if (!classId.value || !termId.value) return;
@@ -156,9 +192,9 @@ const onTermChange = () => {
 
 onMounted(async () => {
   try {
-    const [t, c] = await Promise.all([academicsRepository.getTerms(), adminRepository.getClasses({ limit: 500 })]);
+    const [t, c] = await Promise.all([academicsRepository.getTerms(), adminRepository.getAllClasses()]);
     terms.value = t;
-    classes.value = c.classes;
+    classes.value = c;
     termId.value = (t.find((x) => x.status === 'active') ?? t[0])?.termId ?? 0;
   } finally {
     loading.value = false;
@@ -167,45 +203,12 @@ onMounted(async () => {
 
 const modal = reactive({
   open: false,
-  saving: false,
-  error: '',
-  scheduleId: null as number | null,
-  form: { classSubjectId: 0, dayOfWeek: 1, startTime: '08:00', endTime: '09:00', roomNumber: '' },
+  slotData: null as ScheduleSlot | null,
 });
 
 const openModal = (slot?: ScheduleSlot) => {
-  modal.scheduleId = slot?.scheduleId ?? null;
-  modal.form = slot
-    ? { classSubjectId: slot.classSubjectId, dayOfWeek: slot.dayOfWeek, startTime: hhmm(slot.startTime), endTime: hhmm(slot.endTime), roomNumber: slot.roomNumber ?? '' }
-    : { classSubjectId: 0, dayOfWeek: 1, startTime: '08:00', endTime: '09:00', roomNumber: '' };
-  modal.error = '';
+  modal.slotData = slot ?? null;
   modal.open = true;
-};
-
-const save = async () => {
-  modal.saving = true;
-  modal.error = '';
-  try {
-    await academicsRepository.saveSchedule(modal.scheduleId, { ...modal.form, roomNumber: modal.form.roomNumber || null });
-    modal.open = false;
-    await load();
-  } catch (err) {
-    // e.g. "Time clash for this teacher: Maths (10A) 08:00–09:00"
-    modal.error = errorMessage(err, 'Failed to save');
-  } finally {
-    modal.saving = false;
-  }
-};
-
-const remove = async () => {
-  if (!modal.scheduleId || !confirm(L('Delete this slot?', 'ລຶບຊົ່ວໂມງນີ້?'))) return;
-  try {
-    await academicsRepository.deleteSchedule(modal.scheduleId);
-    modal.open = false;
-    await load();
-  } catch (err) {
-    modal.error = errorMessage(err, 'Failed to delete');
-  }
 };
 </script>
 
@@ -218,8 +221,5 @@ const remove = async () => {
 }
 .filter-select {
   @apply px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500;
-}
-.modal-input {
-  @apply w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700/60 rounded-xl text-white text-sm focus:outline-none focus:border-teal-500 transition-all;
 }
 </style>

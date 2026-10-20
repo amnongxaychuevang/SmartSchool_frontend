@@ -41,6 +41,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/settings/academic-terms', key: 'nav.academicTerms', icon: 'IconSchedule', permission: 'academics.view' },
   ] },
   { key: 'finance', items: [
+    { to: '/admin/finance/pos', key: 'nav.pos', icon: 'IconWallet', permission: 'finance.pos' },
     { to: '/admin/finance/top-ups', key: 'nav.topUps', icon: 'IconWallet', permission: 'finance.view' },
     { to: '/admin/finance', key: 'nav.wallets', icon: 'IconWallet', permission: 'finance.view' },
     { to: '/admin/finance/spending-limits', key: 'nav.spendingLimits', icon: 'IconSettings', permission: 'finance.view' },
@@ -61,6 +62,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/reports/students', key: 'nav.students', icon: 'IconStudents', permission: 'reports.view' },
     { to: '/admin/reports/wallet', key: 'nav.wallet', icon: 'IconWallet', permission: 'reports.view' },
     { to: '/admin/reports/fees', key: 'nav.fees', icon: 'IconWallet', permission: ['fees.view', 'reports.view'] },
+    { to: '/admin/reports/shop-sales', key: 'nav.shopSales', icon: 'IconDashboard', permission: ['finance.view', 'reports.view'] },
   ] },
   { key: 'system', collapsible: true, items: [
     { to: '/admin/settings', key: 'nav.general', icon: 'IconSettings', permission: 'settings.manage' },
@@ -74,6 +76,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
 // Admin pages that are not menu entries.
 const EXTRA_PAGES: { to: string; permission: AdminPermission }[] = [
   { to: '/admin/students/create', permission: 'students.manage' },
+  { to: '/admin/finance/invoice', permission: 'fees.view' },
 ];
 
 export const hasPermission = (granted: readonly string[], needed: AdminPermission | AdminPermission[]) =>

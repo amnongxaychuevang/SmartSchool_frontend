@@ -3,96 +3,385 @@
     <!-- Header + Search -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
       <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <input
-v-model="searchInput" type="text" :placeholder="$t('teachers.search')"
-          class="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
-          @input="handleSearch" >
-      </div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <!-- Add Teacher button -->
-        <button
-class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]"
-          @click="openAddModal">
+        <input v-model="searchInput" type="text" :placeholder="$t('teachers.search')" class="search-bar" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear')" @click="clearSearch">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          {{ $t('teachers.add_teacher') }}
         </button>
+      </div>
+      <div class="flex flex-1 flex-wrap items-center gap-3">
+        <!-- Status Dropdown Menu -->
+        <div class="relative z-50">
+          <button
+            :class="[
+              'relative h-9 px-3 border rounded-lg text-sm focus:outline-none flex items-center justify-between min-w-[140px] transition-colors',
+              statusFilter === ''
+                ? 'bg-transparent border-slate-700 text-slate-400 hover:border-slate-600'
+                : 'bg-teal-500/20 border-teal-500/50 text-teal-400',
+            ]"
+            @click="statusDropdownOpen = !statusDropdownOpen"
+          >
+            <span>{{ statusText(statusFilter) }}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 transition-transform"
+              :class="[
+                statusDropdownOpen ? 'rotate-180' : '',
+                statusFilter === '' ? 'text-slate-400' : 'text-teal-400',
+              ]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-out"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <div
+              v-if="statusDropdownOpen"
+              class="absolute left-0 top-full mt-2 w-full min-w-[160px] glass-panel !p-1 border border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] overflow-hidden z-50"
+            >
+              <button
+                v-for="s in STATUS_OPTIONS"
+                :key="s"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
+                :class="
+                  statusFilter === s
+                    ? 'bg-teal-500/10 text-teal-400 font-medium'
+                    : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                "
+                @click="
+                  statusFilter = s;
+                  handleFilter();
+                  statusDropdownOpen = false;
+                "
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full"
+                  :class="statusFilter === s ? 'bg-teal-500' : 'bg-transparent'"
+                />
+                {{ statusText(s) }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <div
+          v-if="statusDropdownOpen"
+          class="fixed inset-0 z-40"
+          @click="statusDropdownOpen = false"
+        />
+
+        <!-- Gender Dropdown Menu -->
+        <div class="relative z-50">
+          <button
+            :class="[
+              'relative h-9 px-3 border rounded-lg text-sm focus:outline-none flex items-center justify-between min-w-[120px] transition-colors',
+              genderFilter === ''
+                ? 'bg-transparent border-slate-700 text-slate-400 hover:border-slate-600'
+                : 'bg-teal-500/20 border-teal-500/50 text-teal-400',
+            ]"
+            @click="genderDropdownOpen = !genderDropdownOpen"
+          >
+            <span>{{ genderText(genderFilter) }}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 transition-transform"
+              :class="[
+                genderDropdownOpen ? 'rotate-180' : '',
+                genderFilter === '' ? 'text-slate-400' : 'text-teal-400',
+              ]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-out"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <div
+              v-if="genderDropdownOpen"
+              class="absolute left-0 top-full mt-2 w-max min-w-full glass-panel !p-1 border border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] overflow-hidden z-50"
+            >
+              <button
+                v-for="g in GENDER_OPTIONS"
+                :key="g"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
+                :class="
+                  genderFilter === g
+                    ? 'bg-teal-500/10 text-teal-400 font-medium'
+                    : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                "
+                @click="
+                  genderFilter = g;
+                  handleFilter();
+                  genderDropdownOpen = false;
+                "
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full"
+                  :class="genderFilter === g ? 'bg-teal-500' : 'bg-transparent'"
+                />
+                {{ genderText(g) }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <div
+          v-if="genderDropdownOpen"
+          class="fixed inset-0 z-40"
+          @click="genderDropdownOpen = false"
+        />
+
+        <NuxtLink
+          to="/admin/teachers/create"
+          class="ml-auto h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          {{ $t("common.add") }}
+        </NuxtLink>
       </div>
     </div>
 
     <!-- Table -->
     <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="adminStore.teachersLoading" />
-      <div v-else-if="adminStore.teachers.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7" />
+
+      <div
+        v-else-if="adminStore.teachers.length === 0"
+        class="flex flex-col items-center justify-center py-20 text-slate-500"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-12 w-12 mb-3 opacity-40"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+          />
         </svg>
-        <p>{{ $t('teachers.no_teachers') }}</p>
+        <p>{{ $t("teachers.no_teachers") }}</p>
       </div>
-      <table v-else class="w-full min-w-max">
+
+      <table v-else class="data-table w-full min-w-max">
         <thead>
-          <tr class="border-b border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.user') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('teachers.employee_code') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3 hidden md:table-cell">{{ $t('teachers.specialization') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3 hidden sm:table-cell">{{ $t('users.contact') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.status') }}</th>
-            <th class="text-right text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('common.actions') }}</th>
+          <tr>
+            <th>{{ $t("common.name") }}</th>
+            <th class="hidden md:table-cell">{{ $t("teachers.specialization") }}</th>
+            <th class="hidden min-[1360px]:table-cell">{{ $t("teachers.qualification") }}</th>
+            <th class="hidden sm:table-cell">{{ $t("users.phone") }}</th>
+            <th class="hidden sm:table-cell">{{ $t("common.gender") }}</th>
+            <th class="hidden xl:table-cell">{{ $t("common.address") }}</th>
+            <th class="hidden min-[1800px]:table-cell">{{ $t("users.email") }}</th>
+            <th class="hidden min-[1800px]:table-cell">{{ $t("teachers.hire_date") }}</th>
+            <th>{{ $t("common.status") }}</th>
+            <th class="text-right">{{ $t("common.actions") }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/60">
-          <tr v-for="teacher in adminStore.teachers" :key="teacher.teacherId" class="hover:bg-slate-800/40 transition-colors">
-            <td class="px-6 py-4">
+          <tr
+            v-for="teacher in adminStore.teachers"
+            :key="teacher.teacherId"
+            class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+          >
+            <td>
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-bold shrink-0">
-                  {{ teacher.user?.fullNameEn?.[0] ?? '?' }}
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-white">{{ teacher.user?.fullNameEn }}</p>
-                  <p class="text-xs text-slate-500">{{ teacher.user?.fullNameLo }}</p>
+                <PersonAvatar
+                  :name="teacherName(teacher)"
+                  :photo-url="teacher.user.avatarUrl"
+                  size="md"
+                />
+                <div class="flex flex-col leading-tight">
+                  <span class="text-sm font-medium text-white">{{
+                    teacherName(teacher)
+                  }}</span>
+                  <span class="text-[11px] text-slate-500 mt-0.5">
+                    <span class="font-mono">{{ teacher.employeeCode }}</span>
+                    <!-- Specialization column is hidden on mobile -->
+                    <span v-if="teacher.specialization" class="md:hidden">
+                      · {{ teacher.specialization }}</span
+                    >
+                  </span>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-300 font-mono">{{ teacher.employeeCode }}</td>
-            <td class="px-6 py-4 text-sm text-slate-400 hidden md:table-cell">{{ teacher.specialization ?? '—' }}</td>
-            <td class="px-6 py-4 hidden sm:table-cell">
-              <p class="text-sm text-slate-300">{{ teacher.user?.email ?? '—' }}</p>
-              <p class="text-xs text-slate-500">{{ teacher.user?.phoneNumber ?? '—' }}</p>
+            <td
+              class="text-xs text-slate-400 hidden md:table-cell max-w-[130px] truncate"
+              :title="teacher.specialization || ''"
+            >
+              {{ teacher.specialization || "—" }}
             </td>
-            <td class="px-6 py-4">
-              <span
-class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                :class="teacher.user?.isActive ? 'bg-teal-500/20 text-teal-400' : 'bg-red-500/20 text-red-400'">
-                {{ teacher.user?.isActive ? $t('common.active') : $t('common.inactive') }}
-              </span>
+            <td
+              class="text-xs text-slate-400 hidden min-[1360px]:table-cell max-w-[160px] truncate"
+              :title="teacher.qualification || ''"
+            >
+              {{ teacher.qualification || "—" }}
             </td>
-            <td class="px-6 py-4">
+            <td
+              class="text-xs text-slate-300 hidden sm:table-cell whitespace-nowrap"
+            >
+              {{ teacher.user.phoneNumber || "—" }}
+            </td>
+            <td
+              class="text-xs text-slate-400 hidden sm:table-cell whitespace-nowrap"
+            >
+              {{ teacher.gender ? $t(`gender.${teacher.gender}`) : "—" }}
+            </td>
+            <td
+              class="text-xs text-slate-400 hidden xl:table-cell max-w-[180px] truncate"
+              :title="teacherAddress(teacher)"
+            >
+              {{ teacherAddress(teacher) }}
+            </td>
+            <td
+              class="text-xs text-slate-400 hidden min-[1800px]:table-cell max-w-[190px] truncate"
+              :title="teacher.user.email || ''"
+            >
+              {{ teacher.user.email || "—" }}
+            </td>
+            <td
+              class="text-xs text-slate-300 font-mono hidden min-[1800px]:table-cell"
+            >
+              {{ formatDate(teacher.hireDate) }}
+            </td>
+            <td>
+              <div class="flex flex-col items-start gap-1">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-medium whitespace-nowrap"
+                  :class="
+                    teacher.user.isActive
+                      ? 'bg-teal-500/20 text-teal-400'
+                      : 'bg-red-500/20 text-red-400'
+                  "
+                >
+                  {{
+                    teacher.user.isActive
+                      ? $t("common.active")
+                      : $t("common.inactive")
+                  }}
+                </span>
+                <!-- Show gender under status on mobile -->
+                <span
+                  v-if="teacher.gender"
+                  class="text-[10px] text-slate-500 sm:hidden"
+                  >{{ $t(`gender.${teacher.gender}`) }}</span
+                >
+              </div>
+            </td>
+            <td>
               <div class="flex items-center justify-end gap-2">
                 <button
-class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all"
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all"
                   :title="$t('common.edit')"
-                  @click="openEditModal(teacher)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  @click="navigateTo(`/admin/teachers/${teacher.teacherId}`)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
                   </svg>
                 </button>
                 <!-- Deactivate / reactivate (accounts are never deleted) -->
                 <button
                   :disabled="togglingId === teacher.teacherId"
                   class="p-1.5 rounded-lg text-slate-400 transition-all disabled:opacity-40"
-                  :class="teacher.user?.isActive ? 'hover:text-red-400 hover:bg-red-500/10' : 'hover:text-teal-400 hover:bg-teal-500/10'"
-                  :title="teacher.user?.isActive ? $t('common.deactivate') : $t('common.reactivate')"
-                  @click="toggleActive(teacher)">
-                  <svg v-if="teacher.user?.isActive" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  :class="
+                    teacher.user.isActive
+                      ? 'hover:text-red-400 hover:bg-red-500/10'
+                      : 'hover:text-teal-400 hover:bg-teal-500/10'
+                  "
+                  :title="
+                    teacher.user.isActive
+                      ? $t('common.deactivate')
+                      : $t('common.reactivate')
+                  "
+                  @click="toggleActive(teacher)"
+                >
+                  <svg
+                    v-if="teacher.user.isActive"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                    />
                   </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    v-else
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </button>
               </div>
@@ -102,44 +391,72 @@ class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 
       </table>
     </div>
 
-    <!-- Pagination -->
     <PaginationBar
+      :loading="adminStore.teachersLoading"
       :current-page="adminStore.teachersPage"
       :total-pages="totalPages"
       @update:page="changePage"
-    />
-
-
-
-
-    <!-- ── ADD / EDIT TEACHER MODAL ── -->
-    <TeacherFormModal
-      v-model:open="teacherModal.open"
-      v-model:form="teacherModal.form"
-      :mode="teacherModal.mode"
-      :saving="teacherModal.saving"
-      :error="teacherModal.error"
-      @submit="handleTeacherSubmit"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
-import TeacherFormModal from '../../../components/admin/TeacherFormModal.vue';
-import PaginationBar from '../../../components/PaginationBar.vue';
-import { useAdminStore } from '../../../application/stores/admin';
-import type { Teacher } from '../../../domain/models/Teacher';
+import { ref, computed, onMounted } from "vue";
+import {
+  useAdminStore,
+  TEACHERS_PER_PAGE,
+} from "../../../application/stores/admin";
+import type { Teacher } from "../../../domain/models/Teacher";
+import { GENDERS } from "../../../domain/models/Gender";
 
-definePageMeta({ layout: 'admin' });
-useHead({ title: 'Teachers — Smart School Admin' });
+definePageMeta({ layout: "admin" });
 
 const adminStore = useAdminStore();
 const { locale, t } = useI18n();
-const searchInput = ref('');
+useHead({ title: () => `${t("teachers.title")} — Smart School Admin` });
+
+const searchInput = ref(adminStore.teachersSearch);
+const statusFilter = ref(adminStore.teachersStatus);
+const statusDropdownOpen = ref(false);
+const STATUS_OPTIONS = ["", "active", "inactive"];
+const genderFilter = ref(adminStore.teachersGender);
+const genderDropdownOpen = ref(false);
+const GENDER_OPTIONS = ["", ...GENDERS];
 let searchTimeout: ReturnType<typeof setTimeout>;
 
-const totalPages = computed(() => Math.ceil(adminStore.teachersTotal / 15));
+const statusText = (s: string) =>
+  s === "active"
+    ? t("common.active")
+    : s === "inactive"
+      ? t("common.inactive")
+      : t("common.all");
+const genderText = (g: string) => (g ? t(`gender.${g}`) : t("gender.all"));
+const filters = () => ({
+  search: searchInput.value,
+  status: statusFilter.value,
+  gender: genderFilter.value,
+});
+
+const teacherName = (teacher: Teacher) =>
+  (locale.value === "lo"
+    ? teacher.user.fullNameLo
+    : teacher.user.fullNameEn) ||
+  teacher.user.fullNameEn ||
+  "";
+
+const place = (x?: { nameLo: string; nameEn: string } | null) =>
+  x ? (locale.value === "lo" ? x.nameLo : x.nameEn) || x.nameLo : "";
+const teacherAddress = (teacher: Teacher) =>
+  [teacher.village, place(teacher.district), place(teacher.province)]
+    .filter(Boolean)
+    .join(", ") || "—";
+
+const formatDate = (dateStr?: string | null) =>
+  dateStr ? new Date(dateStr).toLocaleDateString("en-GB") : "—";
+
+const totalPages = computed(() =>
+  Math.ceil(adminStore.teachersTotal / TEACHERS_PER_PAGE),
+);
 
 onMounted(() => {
   adminStore.fetchTeachers();
@@ -148,144 +465,52 @@ onMounted(() => {
 const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    adminStore.fetchTeachers({ search: searchInput.value, page: 1 });
+    adminStore.fetchTeachers({ ...filters(), page: 1 });
   }, 400);
 };
 
+const clearSearch = () => {
+  searchInput.value = "";
+  handleSearch();
+};
+
+const handleFilter = () => {
+  adminStore.fetchTeachers({ ...filters(), page: 1 });
+};
+
 const changePage = (page: number) => {
-  adminStore.fetchTeachers({ page });
-};
-
-// ── Teacher Modal (Add + Edit) ──
-const formatDate = (dateStr?: string | null): string => {
-  if (!dateStr) return '';
-  return dateStr.split('T')[0] ?? '';
-};
-
-const emptyTeacherForm = () => ({
-  fullNameEn: '',
-  fullNameLo: '',
-  email: '',
-  phoneNumber: '',
-  password: '',
-  isActive: true,
-  employeeCode: '',
-  specialization: '',
-  qualification: '',
-  hireDate: '',
-  salary: null as number | null,
-  address: '',
-  notes: ''
-});
-
-const teacherModal = reactive({
-  open: false,
-  mode: 'add' as 'add' | 'edit',
-  saving: false,
-  error: '',
-  teacherId: null as number | null,
-  form: emptyTeacherForm()
-});
-
-const openAddModal = () => {
-  teacherModal.mode = 'add';
-  teacherModal.teacherId = null;
-  teacherModal.form = emptyTeacherForm();
-  teacherModal.error = '';
-  teacherModal.open = true;
-};
-
-const openEditModal = (teacher: Teacher) => {
-  teacherModal.mode = 'edit';
-  teacherModal.teacherId = teacher.teacherId;
-  teacherModal.form = {
-    fullNameEn: teacher.user?.fullNameEn ?? '',
-    fullNameLo: teacher.user?.fullNameLo ?? '',
-    email: teacher.user?.email ?? '',
-    phoneNumber: teacher.user?.phoneNumber ?? '',
-    password: '',
-    isActive: teacher.user?.isActive ?? true,
-    employeeCode: teacher.employeeCode,
-    specialization: teacher.specialization ?? '',
-    qualification: teacher.qualification ?? '',
-    hireDate: formatDate(teacher.hireDate),
-    salary: teacher.salary ? Number(teacher.salary) : null,
-    address: teacher.address ?? '',
-    notes: teacher.notes ?? ''
-  };
-  teacherModal.error = '';
-  teacherModal.open = true;
-};
-
-const handleTeacherSubmit = async () => {
-  teacherModal.saving = true;
-  teacherModal.error = '';
-  try {
-    const payload: Record<string, unknown> = { ...teacherModal.form };
-    // Don't send empty fields or empty password on edit
-    if (teacherModal.mode === 'edit' && !payload.password) {
-      delete payload.password;
-    }
-    if (teacherModal.mode === 'add') {
-      delete payload.password;
-      if (!payload.employeeCode) delete payload.employeeCode;
-    }
-    if (!payload.hireDate) delete payload.hireDate;
-
-    if (teacherModal.mode === 'add') {
-      await adminStore.createTeacher(payload);
-    } else if (teacherModal.teacherId) {
-      await adminStore.updateTeacher(teacherModal.teacherId, payload);
-    }
-    teacherModal.open = false;
-  } catch (err) {
-    teacherModal.error = getErrorMessage(err, 'Failed to save teacher');
-  } finally {
-    teacherModal.saving = false;
-  }
+  adminStore.fetchTeachers({ ...filters(), page });
 };
 
 // ── Deactivate / reactivate ──
 // Accounts are never deleted: their top-up, leave and audit history must stay.
 const togglingId = ref<number | null>(null);
+const dialog = useDialog();
 
-const toggleActive = async (u: Teacher) => {
-  const makeActive = !u.user?.isActive;
-  const name = (locale.value === 'lo' ? u.user?.fullNameLo : u.user?.fullNameEn) || u.user?.fullNameEn || '';
-  if (!makeActive && !confirm(t('common.deactivate_confirm', { name }))) return;
-  togglingId.value = u.teacherId;
+const setActive = async (teacher: Teacher, isActive: boolean) => {
+  togglingId.value = teacher.teacherId;
   try {
-    await adminStore.updateTeacher(u.teacherId, { isActive: makeActive });
-  } catch (err) {
-    alert((err instanceof Error && err.message) || 'Failed to update status');
+    await adminStore.updateTeacher(teacher.teacherId, { isActive });
   } finally {
     togglingId.value = null;
   }
 };
+
+const toggleActive = async (teacher: Teacher) => {
+  if (teacher.user.isActive) {
+    dialog.confirm({
+      title: t("common.deactivate_title"),
+      message: t("common.deactivate_confirm", { name: teacherName(teacher) }),
+      confirmLabel: t("common.deactivate"),
+      tone: "danger",
+      onConfirm: () => setActive(teacher, false),
+    });
+    return;
+  }
+  try {
+    await setActive(teacher, true);
+  } catch (err) {
+    dialog.error(getErrorMessage(err, "Failed to update status"));
+  }
+};
 </script>
-
-<style scoped lang="postcss">
-
-/* Fix Autofill styling in modern browsers to match dark mode */
-.modal-input:-webkit-autofill,
-.modal-input:-webkit-autofill:hover, 
-.modal-input:-webkit-autofill:focus,
-.modal-input:-webkit-autofill:active {
-  -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0 1000px #080e1a inset !important;
-  box-shadow: 0 0 0 1000px #080e1a inset !important;
-  border-color: rgba(45, 212, 191, 0.4) !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

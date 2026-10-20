@@ -30,26 +30,26 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         <p>{{ $t('parentPortal.no_leaves') }}</p>
       </div>
       <div v-else class="glass-panel rounded-2xl overflow-hidden">
-        <table class="w-full min-w-max">
+        <table class="data-table w-full min-w-max">
           <thead>
-            <tr class="border-b border-slate-800 bg-slate-900/50">
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.date') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.reason') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.status') }}</th>
+            <tr>
+              <th>{{ $t('parentPortal.date') }}</th>
+              <th>{{ $t('parentPortal.reason') }}</th>
+              <th>{{ $t('parentPortal.status') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/60">
             <tr v-for="leave in parentStore.leaveRequests" :key="leave.leaveId" class="hover:bg-slate-800/30 transition-colors">
-              <td class="px-6 py-4 text-sm text-white">
+              <td class="text-sm text-white">
                 {{ fmt.date(leave.startDate) }} – {{ fmt.date(leave.endDate) }}
               </td>
-              <td class="px-6 py-4 text-sm text-slate-300">
+              <td class="text-sm text-slate-300">
                 {{ leave.reason }}
                 <div v-if="leave.documentUrl" class="mt-1">
                   <a :href="leave.documentUrl" target="_blank" class="text-xs text-teal-400 hover:underline">{{ $t('common.view_document') }}</a>
                 </div>
               </td>
-              <td class="px-6 py-4">
+              <td class="">
                 <span
 class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize"
                   :class="{

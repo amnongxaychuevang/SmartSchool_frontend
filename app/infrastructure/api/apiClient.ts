@@ -8,12 +8,14 @@ import type { ApiResponse } from './types';
 // Access tokens are short-lived (15 min) by design — see backend LoginUseCase.
 // Deduped so concurrent 401s from several in-flight requests trigger only one
 // refresh call instead of a burst of them all racing to rotate the same token.
-let refreshPromise: Promise<boolean> | null = null;
+let refreshPromise: Promise<string | null> | null = null;
+let sessionExpiring = false;
 
-async function silentRefresh(): Promise<boolean> {
+/** Returns the new access token, or null if the refresh token is gone or rejected. */
+async function silentRefresh(): Promise<string | null> {
   const refreshCookie = useCookie<string>('refresh_token');
   const rawRefreshToken = refreshCookie.value;
-  if (!rawRefreshToken) return false;
+  if (!rawRefreshToken) return null;
 
   if (!refreshPromise) {
     refreshPromise = (async () => {
@@ -23,17 +25,17 @@ async function silentRefresh(): Promise<boolean> {
           method: 'POST',
           body: { refreshToken: rawRefreshToken },
         });
-        if (!res?.success) return false;
+        if (!res?.success) return null;
 
         useCookie('auth_token', { maxAge: 60 * 30 }).value = res.data.token;
         useCookie('refresh_token', { maxAge: 60 * 60 * 24 * 30 }).value = res.data.refreshToken;
-        return true;
+        return res.data.token;
       } catch {
         // Refresh token itself is invalid/expired — clear both cookies so the
         // app treats this as a logged-out session rather than retrying forever.
         useCookie('auth_token').value = null;
         useCookie('refresh_token').value = null;
-        return false;
+        return null;
       } finally {
         refreshPromise = null;
       }
@@ -43,37 +45,59 @@ async function silentRefresh(): Promise<boolean> {
   return refreshPromise;
 }
 
+// Refresh token is dead too: sign out and send the user to the login page once,
+// even if several requests fail at the same moment.
+async function handleSessionExpired() {
+  if (!import.meta.client || sessionExpiring) return;
+  sessionExpiring = true;
+  try {
+    const { useAuthStore } = await import('../../application/stores/auth');
+    useAuthStore().logout();
+    await navigateTo('/');
+  } finally {
+    sessionExpiring = false;
+  }
+}
+
+const AUTH_ENDPOINTS = [API_ENDPOINTS.auth.login, API_ENDPOINTS.auth.refresh, API_ENDPOINTS.auth.logout];
+
 export const useApiClient = () => {
-  // Lazily create the $fetch instance when the function is invoked.
-  return $fetch.create({
+  const base = $fetch.create({
     baseURL: useRuntimeConfig().public.apiBaseUrl,
     onRequest({ options }) {
-      // Retrieve the auth token from a cookie – this runs at request time, inside a Nuxt context.
-      const token = useCookie('auth_token').value;
-      if (token) {
-        const existingHeaders = options.headers instanceof Headers
-          ? options.headers
-          : new Headers((options.headers as Record<string, string>) ?? {});
-        existingHeaders.set('Authorization', `Bearer ${token}`);
-        options.headers = existingHeaders;
+      const headers = options.headers instanceof Headers
+        ? options.headers
+        : new Headers((options.headers as Record<string, string>) ?? {});
+      // A retry after refresh already carries the new token; don't overwrite it
+      // with a cookie value that may not have been written back yet.
+      if (!headers.has('Authorization')) {
+        const token = useCookie('auth_token').value;
+        if (token) headers.set('Authorization', `Bearer ${token}`);
       }
-    },
-    async onResponseError({ request, response }) {
-      if (response.status !== 401) return;
-
-      // Never refresh in response to the auth endpoints themselves —
-      // that would loop (login/refresh legitimately return 401 on bad
-      // credentials / an already-dead refresh token).
-      const url = String(request);
-      if (url.includes(API_ENDPOINTS.auth.refresh) || url.includes(API_ENDPOINTS.auth.login)) {
-        return;
-      }
-
-      // NOTE: this refreshes the token for the *next* request — it does not
-      // transparently retry the request that just failed. The caller of this
-      // failed call still sees a rejected promise; on a page-level fetch,
-      // re-navigating or the component's own retry will pick up the new token.
-      await silentRefresh();
+      options.headers = headers;
     },
   });
+
+  // Access tokens live 15 min. When one expires mid-session, refresh it and
+  // replay the failed request once, so the user never sees the 401.
+  const client = (async (request: Parameters<typeof base>[0], options?: Parameters<typeof base>[1]) => {
+    try {
+      return await base(request, options);
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      const url = String(request);
+      if (!import.meta.client || status !== 401 || AUTH_ENDPOINTS.some((p) => url.includes(p))) throw err;
+
+      const token = await silentRefresh();
+      if (!token) {
+        void handleSessionExpired();
+        throw err;
+      }
+      const headers = new Headers((options?.headers as HeadersInit) ?? {});
+      headers.set('Authorization', `Bearer ${token}`);
+      return base(request, { ...options, headers });
+    }
+  }) as typeof base;
+
+  return client;
 };

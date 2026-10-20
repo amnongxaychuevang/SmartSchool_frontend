@@ -1,10 +1,20 @@
 <template>
   <div class="min-h-screen flex">
     <!-- ── Sidebar ─────────────────────────────────────── -->
+    <!-- Mobile Overlay -->
+    <transition name="fade">
+      <div
+        v-if="sidebarOpen && isMobile"
+        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        @click="sidebarOpen = false"
+      />
+    </transition>
+
+    <!-- Sidebar -->
     <aside
       :class="[
         'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out',
-        sidebarOpen ? 'w-64' : 'w-[68px]'
+        sidebarOpen ? 'w-64 translate-x-0' : 'w-[68px] -translate-x-full lg:translate-x-0'
       ]"
       class="bg-white dark:bg-[#080e1a] border-r border-slate-200 dark:border-slate-800"
     >
@@ -56,6 +66,7 @@ class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
                   :key="sub.to"
                   :to="sub.to"
                   :class="['flex items-center gap-2.5 py-1.5 px-3 rounded-lg text-xs transition-all duration-200 hover:bg-slate-800/40 text-slate-400', isActive(sub.to) ? 'bg-teal-500/10 text-teal-300 font-semibold border border-teal-500/15' : '']"
+                  @click="closeSidebarOnMobile"
                 >
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-600 shrink-0" :class="[isActive(sub.to) ? 'bg-teal-400' : '']"/>
                   <span>{{ $t(sub.key) }}</span>
@@ -71,6 +82,7 @@ class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
               :to="item.to"
               :class="['nav-item', isActive(item.to) ? 'active' : '']"
               :title="!sidebarOpen ? $t(item.key) : ''"
+              @click="closeSidebarOnMobile"
             >
               <component :is="item.icon" class="h-[18px] w-[18px] shrink-0" />
               <transition name="fade-slide">
@@ -101,10 +113,10 @@ v-if="sidebarOpen && isActive(item.to)"
     </aside>
 
     <!-- ── Main Content ─────────────────────────────────── -->
-    <div :class="['flex flex-col flex-1 min-h-screen transition-all duration-300', sidebarOpen ? 'ml-64' : 'ml-[68px]']">
+    <div :class="['flex flex-col flex-1 min-w-0 min-h-screen transition-all duration-300', sidebarOpen ? 'lg:ml-64' : 'lg:ml-[68px]']">
       <!-- Topbar -->
       <header
-class="h-16 flex items-center gap-4 px-6 sticky top-0 z-40 shrink-0 bg-white/90 dark:bg-[#080e1a]/85 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md">
+class="h-16 flex items-center gap-3 sm:gap-4 px-3 sm:px-4 md:px-6 sticky top-0 z-40 shrink-0 bg-white/90 dark:bg-[#080e1a]/85 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md">
         <!-- Toggle -->
         <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-all shrink-0" @click="sidebarOpen = !sidebarOpen">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,7 +178,7 @@ v-if="profileOpen"
       </header>
 
       <!-- Page Content -->
-      <main class="flex-1 p-6 overflow-auto">
+      <main class="flex-1 min-w-0 p-2 sm:p-3 md:p-4">
         <slot />
       </main>
     </div>
@@ -174,7 +186,7 @@ v-if="profileOpen"
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue';
+import { ref, computed, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../application/stores/auth';
 import LangSwitch from '../components/LangSwitch.vue';
@@ -196,8 +208,25 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { t } = useI18n();
+
+const isMobile = ref(false);
 const sidebarOpen = ref(true);
 const profileOpen = ref(false);
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 1024;
+  if (!isMobile.value) sidebarOpen.value = true;
+};
+
+onMounted(() => {
+  isMobile.value = window.innerWidth < 1024;
+  sidebarOpen.value = !isMobile.value;
+  window.addEventListener('resize', handleResize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+});
 
 const userInitial = computed((): string => {
   const fullName = authStore.user?.fullNameEn || '';
@@ -262,6 +291,13 @@ const toggleMenu = (key: string) => {
     sidebarOpen.value = true;
   }
   openMenus[key] = !openMenus[key];
+};
+
+// Close sidebar on mobile when navigating
+const closeSidebarOnMobile = () => {
+  if (isMobile.value) {
+    sidebarOpen.value = false;
+  }
 };
 
 const isActive = (to: string) => {

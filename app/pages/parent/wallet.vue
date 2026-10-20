@@ -35,9 +35,9 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
             </div>
           </div>
         </div>
-        <h2 class="text-3xl font-bold text-white">{{ fmt.kip(parentStore.wallet.balance ?? 0) }}</h2>
-        <div v-if="parentStore.spendingLimits?.dailyMax" class="text-sm text-slate-400 mt-1">
-          {{ $t('parentPortal.daily_max') }}: {{ fmt.kip(parentStore.spendingLimits.dailyMax) }}
+        <h2 class="text-3xl font-bold text-white">{{ fmt.kip(walletBalance) }}</h2>
+        <div v-if="currentDailyMax" class="text-sm text-slate-400 mt-1">
+          {{ $t('parentPortal.daily_max') }}: {{ fmt.kip(currentDailyMax) }}
         </div>
       </div>
 
@@ -48,19 +48,19 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         <div v-if="!parentStore.wallet.transactions || parentStore.wallet.transactions.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
           <p>{{ $t('parentPortal.no_transactions') }}</p>
         </div>
-        <table v-else class="w-full min-w-max">
+        <table v-else class="data-table w-full min-w-max">
           <thead>
-            <tr class="border-b border-slate-800">
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.date') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.type') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.amount') }}</th>
+            <tr>
+              <th>{{ $t('parentPortal.date') }}</th>
+              <th>{{ $t('parentPortal.type') }}</th>
+              <th>{{ $t('parentPortal.amount') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/60">
             <tr v-for="tx in parentStore.wallet.transactions" :key="tx.transactionId" class="hover:bg-slate-800/40 transition-colors">
-              <td class="px-6 py-4 text-sm text-white">{{ fmt.dateTime(tx.createdAt) }}</td>
-              <td class="px-6 py-4 text-sm text-slate-400 capitalize">{{ tx.transactionType }}</td>
-              <td class="px-6 py-4 text-sm font-bold" :class="tx.transactionType === 'top_up' ? 'text-teal-400' : 'text-pink-400'">
+              <td class="text-sm text-white">{{ fmt.dateTime(tx.createdAt) }}</td>
+              <td class="text-sm text-slate-400 capitalize">{{ tx.transactionType }}</td>
+              <td class="text-sm font-bold" :class="tx.transactionType === 'top_up' ? 'text-teal-400' : 'text-pink-400'">
                 {{ tx.transactionType === 'top_up' ? '+' : '−' }}{{ fmt.kip(tx.amount) }}
               </td>
             </tr>
@@ -88,15 +88,26 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
           
             <form class="flex flex-col gap-4" @submit.prevent="handleTopUp">
               <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.top_up_method') }}</label>
+                <select v-model="topUpModal.form.method" required class="input-field focus:border-pink-500">
+                  <option value="mobile_banking">{{ $t('parentPortal.method_mobile_banking') }}</option>
+                  <option value="cash">{{ $t('parentPortal.method_cash') }}</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.amount') }}</label>
                 <input v-model.number="topUpModal.form.amount" type="number" required min="1000" step="1000" class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_amount')" >
               </div>
-            
+
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.proof_of_payment') }}</label>
-                <input v-model="topUpModal.form.proofOfPayment" type="text" required class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_proof')" >
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.upload_slip') }}</label>
+                <input ref="slipFileInput" type="file" accept="image/jpeg,image/png,image/webp" class="input-field focus:border-pink-500 file:mr-3 file:rounded file:border-0 file:bg-pink-500/20 file:px-3 file:py-1 file:text-sm file:text-pink-300" @change="onSlipFileChange">
+                <img v-if="topUpModal.slipPreview" :src="topUpModal.slipPreview" alt="slip preview" class="mt-2 max-h-40 rounded-lg border border-slate-700 object-contain">
               </div>
-            
+
+              <p v-if="topUpModal.error" role="alert" class="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{{ topUpModal.error }}</p>
+
               <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
                 <button type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors" @click="topUpModal.open = false">{{ $t('common.cancel') }}</button>
                 <button type="submit" :disabled="topUpModal.saving" class="px-4 py-2 rounded-lg text-sm font-semibold bg-pink-500 hover:bg-pink-400 text-white transition-colors disabled:opacity-50">
@@ -124,10 +135,22 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
             <form class="flex flex-col gap-4" @submit.prevent="handleSaveLimits">
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.daily_max') }}</label>
-                <input v-model.number="limitsModal.form.dailyMax" type="number" min="0" step="1000" class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_daily')" >
+                <input v-model.number="limitsModal.form.dailyMax" type="number" min="0" step="1000" class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_daily')">
                 <span class="text-xs text-slate-500">{{ $t('parentPortal.no_limit') }}: {{ limitsModal.form.dailyMax ? '' : '✓' }}</span>
               </div>
-            
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.weekly_max') }}</label>
+                <input v-model.number="limitsModal.form.weeklyMax" type="number" min="0" step="1000" class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_weekly')">
+                <span class="text-xs text-slate-500">{{ $t('parentPortal.no_limit') }}: {{ limitsModal.form.weeklyMax ? '' : '✓' }}</span>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.per_transaction_max') }}</label>
+                <input v-model.number="limitsModal.form.perTransactionMax" type="number" min="0" step="1000" class="input-field focus:border-pink-500" :placeholder="$t('wallet_ui.ph_per_tx')">
+                <span class="text-xs text-slate-500">{{ $t('parentPortal.no_limit') }}: {{ limitsModal.form.perTransactionMax ? '' : '✓' }}</span>
+              </div>
+
               <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
                 <button type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors" @click="limitsModal.open = false">{{ $t('common.cancel') }}</button>
                 <button type="submit" :disabled="limitsModal.saving" class="px-4 py-2 rounded-lg text-sm font-semibold bg-pink-500 hover:bg-pink-400 text-white transition-colors disabled:opacity-50">
@@ -156,12 +179,19 @@ useHead({ title: computed(() => `${t('parentPortal.childs_wallet')} — ${t('par
 const parentStore = useParentStore();
 const selectedChildId = ref<number | ''>('');
 
+const slipFileInput = ref<HTMLInputElement | null>(null);
+const slipFile = ref<File | null>(null);
+const walletBalance = computed(() => parentStore.wallet ? Number(parentStore.wallet.balance) : 0);
+const currentDailyMax = computed(() => parentStore.spendingLimits?.dailyMax ? Number(parentStore.spendingLimits.dailyMax) : 0);
+
 const topUpModal = reactive({
   open: false,
   saving: false,
+  error: '',
+  slipPreview: '' as string,
   form: {
     amount: 50000,
-    proofOfPayment: ''
+    method: 'mobile_banking' as string,
   }
 });
 
@@ -169,7 +199,9 @@ const limitsModal = reactive({
   open: false,
   saving: false,
   form: {
-    dailyMax: null as number | null
+    dailyMax: null as number | null,
+    weeklyMax: null as number | null,
+    perTransactionMax: null as number | null,
   }
 });
 
@@ -191,12 +223,22 @@ const loadWallet = async () => {
   }
 };
 
-const openLimitsModal = () => {
-  if (parentStore.spendingLimits) {
-    limitsModal.form.dailyMax = parentStore.spendingLimits.dailyMax ? Number(parentStore.spendingLimits.dailyMax) : null;
+const onSlipFileChange = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0] ?? null;
+  slipFile.value = file;
+  if (file) {
+    topUpModal.slipPreview = URL.createObjectURL(file);
   } else {
-    limitsModal.form.dailyMax = null;
+    topUpModal.slipPreview = '';
   }
+};
+
+const openLimitsModal = () => {
+  const sl = parentStore.spendingLimits;
+  limitsModal.form.dailyMax = sl?.dailyMax ? Number(sl.dailyMax) : null;
+  limitsModal.form.weeklyMax = sl?.weeklyMax ? Number(sl.weeklyMax) : null;
+  limitsModal.form.perTransactionMax = sl?.perTransactionMax ? Number(sl.perTransactionMax) : null;
   limitsModal.open = true;
 };
 
@@ -206,8 +248,8 @@ const handleSaveLimits = async () => {
   try {
     await parentStore.updateSpendingLimits(Number(selectedChildId.value), {
       dailyMax: limitsModal.form.dailyMax || null,
-      weeklyMax: null,
-      perTransactionMax: null,
+      weeklyMax: limitsModal.form.weeklyMax || null,
+      perTransactionMax: limitsModal.form.perTransactionMax || null,
       alertThreshold: null
     });
     limitsModal.open = false;
@@ -221,19 +263,30 @@ const handleSaveLimits = async () => {
 };
 
 const handleTopUp = async () => {
-  if (!parentStore.wallet?.walletId) return;
+  if (!selectedChildId.value) return;
   topUpModal.saving = true;
+  topUpModal.error = '';
   try {
-    // TopUp logic typically requires walletId
-    await parentStore.requestTopUp(topUpModal.form.amount, topUpModal.form.proofOfPayment);
-    alert(t('wallet_ui.topup_submitted'));
+    let slipUrl: string | undefined;
+    if (slipFile.value) {
+      const uploadRes = await parentStore.uploadSlip(slipFile.value);
+      slipUrl = uploadRes.data.url;
+    }
+    await parentStore.requestTopUp({
+      studentId: Number(selectedChildId.value),
+      amount: topUpModal.form.amount,
+      method: topUpModal.form.method,
+      slipUrl,
+    });
     topUpModal.open = false;
     topUpModal.form.amount = 50000;
-    topUpModal.form.proofOfPayment = '';
-    // Optionally reload wallet if it updates pending state
+    topUpModal.form.method = 'mobile_banking';
+    topUpModal.slipPreview = '';
+    slipFile.value = null;
+    if (slipFileInput.value) slipFileInput.value.value = '';
     loadWallet();
   } catch (err) {
-    alert(getErrorMessage(err, 'Failed to request top up'));
+    topUpModal.error = getErrorMessage(err, 'Failed to request top up');
   } finally {
     topUpModal.saving = false;
   }

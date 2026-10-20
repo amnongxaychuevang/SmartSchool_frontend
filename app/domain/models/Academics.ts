@@ -6,6 +6,7 @@ export interface StudentRef {
   studentCode: string;
   fullNameEn: string;
   fullNameLo: string;
+  photoUrl?: string | null;
 }
 
 /** Minimal user reference (teacher, approver, author, ...). */
@@ -71,7 +72,7 @@ export interface AppNotification {
   recipientUserId: number;
   studentId: number | null;
   type: 'check_in' | 'check_out' | 'absence' | 'grade' | 'transaction' | 'general';
-  channel: 'sms' | 'line' | 'telegram' | 'app_push' | 'email';
+  channel: 'whatsapp' | 'app_push' | 'email';
   messageEn: string;
   messageLo: string;
   sentAt: string;

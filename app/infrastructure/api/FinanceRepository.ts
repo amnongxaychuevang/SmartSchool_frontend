@@ -2,7 +2,7 @@ import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
 import type { ApiResponse, Paged } from './types';
 import type { Payload } from '../../domain/models/Academics';
-import type { Wallet, WalletTransaction, TopUpRequest, Shop, SpendingLimit } from '../../domain/models/Finance';
+import type { Wallet, WalletTransaction, TopUpRequest, Shop, SpendingLimit, FeeType, FeeStructure, Invoice, FeePayment } from '../../domain/models/Finance';
 
 export const financeRepository = {
   // Wallets
@@ -121,5 +121,128 @@ export const financeRepository = {
     });
     if (!res.success) throw new Error('Failed to delete shop');
     return true;
-  }
+  },
+
+  // POS – wallet purchase
+  async processTransaction(payload: { studentId: number; amount: number; shopId: number }) {
+    const res = await useApiClient()<ApiResponse<{ success: boolean; transactionId: string; balanceBefore: number; balanceAfter: number; amount: number }>>(API_ENDPOINTS.wallets.process, {
+      method: 'POST',
+      body: payload,
+    });
+    if (!res.success) throw new Error('Transaction failed');
+    return res.data;
+  },
+
+  async getWalletByStudent(studentId: number) {
+    const res = await useApiClient()<ApiResponse<{ wallet: Wallet }>>(
+      `${API_ENDPOINTS.wallets.student}/${studentId}`,
+      { method: 'GET' },
+    );
+    return res.data.wallet;
+  },
+
+  // Fee Types
+  async getFeeTypes() {
+    const res = await useApiClient()<ApiResponse<{ feeTypes: FeeType[] }>>(API_ENDPOINTS.fees.types, { method: 'GET' });
+    return res.data.feeTypes;
+  },
+  async createFeeType(payload: Partial<FeeType>) {
+    const res = await useApiClient()<ApiResponse<{ feeType: FeeType }>>(API_ENDPOINTS.fees.types, { method: 'POST', body: payload });
+    if (!res.success) throw new Error('Failed to create fee type');
+    return res.data.feeType;
+  },
+  async updateFeeType(id: number, payload: Partial<FeeType>) {
+    const res = await useApiClient()<ApiResponse<{ feeType: FeeType }>>(`${API_ENDPOINTS.fees.types}/${id}`, { method: 'PUT', body: payload });
+    if (!res.success) throw new Error('Failed to update fee type');
+    return res.data.feeType;
+  },
+  async deleteFeeType(id: number) {
+    const res = await useApiClient()<{ success: boolean }>(`${API_ENDPOINTS.fees.types}/${id}`, { method: 'DELETE' });
+    if (!res.success) throw new Error('Failed to delete fee type');
+    return true;
+  },
+
+  // Fee Structures
+  async getFeeStructures(academicYear?: string) {
+    const query = new URLSearchParams();
+    if (academicYear) query.set('academicYear', academicYear);
+    const url = query.toString() ? `${API_ENDPOINTS.fees.structures}?${query}` : API_ENDPOINTS.fees.structures;
+    const res = await useApiClient()<ApiResponse<{ structures: FeeStructure[] }>>(url, { method: 'GET' });
+    return res.data.structures;
+  },
+  async createFeeStructure(payload: Record<string, unknown>) {
+    const res = await useApiClient()<ApiResponse<{ structure: FeeStructure }>>(API_ENDPOINTS.fees.structures, { method: 'POST', body: payload });
+    if (!res.success) throw new Error('Failed to create fee structure');
+    return res.data.structure;
+  },
+  async updateFeeStructure(id: number, payload: Record<string, unknown>) {
+    const res = await useApiClient()<ApiResponse<{ structure: FeeStructure }>>(`${API_ENDPOINTS.fees.structures}/${id}`, { method: 'PUT', body: payload });
+    if (!res.success) throw new Error('Failed to update fee structure');
+    return res.data.structure;
+  },
+  async deleteFeeStructure(id: number) {
+    const res = await useApiClient()<{ success: boolean }>(`${API_ENDPOINTS.fees.structures}/${id}`, { method: 'DELETE' });
+    if (!res.success) throw new Error('Failed to delete fee structure');
+    return true;
+  },
+  async generateInvoices(feeStructureId: number) {
+    const res = await useApiClient()<ApiResponse<{ created: number; alreadyBilled: number }>>(`${API_ENDPOINTS.fees.structures}/${feeStructureId}/generate`, { method: 'POST' });
+    if (!res.success) throw new Error('Failed to generate invoices');
+    return res.data;
+  },
+
+  // Invoices
+  async getInvoices(params: { status?: string; search?: string; academicYear?: string; classId?: number; feeStructureId?: number; page?: number; limit?: number } = {}) {
+    const query = new URLSearchParams();
+    if (params.status) query.set('status', params.status);
+    if (params.search) query.set('search', params.search);
+    if (params.academicYear) query.set('academicYear', params.academicYear);
+    if (params.classId) query.set('classId', String(params.classId));
+    if (params.feeStructureId) query.set('feeStructureId', String(params.feeStructureId));
+    if (params.page) query.set('page', String(params.page));
+    if (params.limit) query.set('limit', String(params.limit));
+    const url = query.toString() ? `${API_ENDPOINTS.fees.invoices}?${query}` : API_ENDPOINTS.fees.invoices;
+    const res = await useApiClient()<ApiResponse<Paged<'invoices', Invoice>>>(url, { method: 'GET' });
+    return res.data;
+  },
+  async updateInvoice(id: number, payload: { discount?: number; dueDate?: string; notes?: string }) {
+    const res = await useApiClient()<ApiResponse<{ invoice: Invoice }>>(`${API_ENDPOINTS.fees.invoices}/${id}`, { method: 'PUT', body: payload });
+    if (!res.success) throw new Error('Failed to update invoice');
+    return res.data.invoice;
+  },
+  async voidInvoice(id: number, reason: string) {
+    const res = await useApiClient()<ApiResponse<{ invoice: Invoice }>>(`${API_ENDPOINTS.fees.invoices}/${id}/void`, { method: 'POST', body: { reason } });
+    if (!res.success) throw new Error('Failed to void invoice');
+    return res.data.invoice;
+  },
+  async recordPayment(invoiceId: number, payload: { amount: number; method: 'cash' | 'bank_transfer'; referenceNo?: string; notes?: string }) {
+    const res = await useApiClient()<ApiResponse<{ payment: FeePayment; invoice: Invoice }>>(`${API_ENDPOINTS.fees.invoices}/${invoiceId}/payments`, { method: 'POST', body: payload });
+    if (!res.success) throw new Error('Failed to record payment');
+    return res.data;
+  },
+
+  // Shop sales report
+  async getShopSales(params: { from?: string; to?: string } = {}) {
+    const query = new URLSearchParams();
+    if (params.from) query.set('from', params.from);
+    if (params.to) query.set('to', params.to);
+    const url = query.toString() ? `${API_ENDPOINTS.reports.shopSales}?${query}` : API_ENDPOINTS.reports.shopSales;
+    const res = await useApiClient()<ApiResponse<ShopSalesReport>>(url, { method: 'GET' });
+    return res.data;
+  },
 };
+
+export interface ShopSalesSummary {
+  shopId: number;
+  shop: { shopId: number; shopNameEn: string; shopNameLo: string; locationEn: string | null; locationLo: string | null } | null;
+  totalAmount: number;
+  transactionCount: number;
+}
+
+export interface ShopSalesReport {
+  summary: ShopSalesSummary[];
+  grandTotal: number;
+  totalTransactions: number;
+  from: string;
+  to: string;
+}

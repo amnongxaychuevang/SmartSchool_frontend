@@ -76,5 +76,6 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' });
-useHead({ title: () => useNuxtApp().$i18n.t('page_titles.reports') });
+const { t } = useI18n();
+useHead({ title: () => t('page_titles.reports') });
 </script>

@@ -1,135 +1,500 @@
 <template>
   <div class="flex flex-col gap-6">
-    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-white">{{ L('Class Subjects', 'ວິຊາຂອງແຕ່ລະຫ້ອງ') }}</h1>
-        <p class="text-sm text-slate-400 mt-1">
-          {{ L('Which subject is taught to which class, by which teacher, in each term. Grades and the timetable use these.', 'ວິຊາໃດສອນຫ້ອງໃດ ໂດຍຄູຄົນໃດ ໃນແຕ່ລະພາກຮຽນ. ຄະແນນ ແລະ ຕາຕະລາງຮຽນໃຊ້ຂໍ້ມູນນີ້.') }}
-        </p>
+    <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchQuery" type="text" :placeholder="$t('classes.search_subjects')" class="search-bar">
+        <button v-if="searchQuery" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="searchQuery = ''">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <select v-model.number="termId" class="filter-select" @change="fetchRows">
-          <option v-for="t in terms" :key="t.termId" :value="t.termId">
-            {{ t.academicYear }} · {{ locale === 'lo' ? t.termNameLo : t.termNameEn }}{{ t.status === 'active' ? ' ●' : '' }}
-          </option>
-        </select>
-        <select v-model.number="classFilter" class="filter-select" @change="fetchRows">
-          <option :value="0">{{ L('All classes', 'ທຸກຫ້ອງ') }}</option>
-          <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ className(c) }}</option>
-        </select>
-        <button :disabled="!termId" class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50" @click="openModal">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-          {{ L('Assign Subject', 'ເພີ່ມວິຊາໃຫ້ຫ້ອງ') }}
+      <div
+        class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 flex-1"
+      >
+        <!-- Term Filter -->
+        <div class="relative z-50 w-full sm:w-auto">
+          <button
+            :class="[
+              'relative w-full sm:w-auto h-9 px-6 border rounded-lg text-sm focus:outline-none flex items-center justify-between gap-2 min-w-[140px] transition-colors',
+              !termId
+                ? 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                : 'bg-teal-50 dark:bg-teal-500/20 border-teal-200 dark:border-teal-500/50 text-teal-600 dark:text-teal-400 font-medium',
+            ]"
+            @click="termDropdownOpen = !termDropdownOpen"
+          >
+            <span class="flex items-center gap-2">
+              {{
+                selectedTerm
+                  ? selectedTerm.academicYear +
+                    " · " +
+                    (locale === "lo"
+                      ? selectedTerm.termNameLo
+                      : selectedTerm.termNameEn)
+                  : "—"
+              }}
+            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 transition-transform"
+              :class="[
+                termDropdownOpen ? 'rotate-180' : '',
+                !termId ? 'text-slate-400' : 'text-teal-500 dark:text-teal-400',
+              ]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-out"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <div
+              v-if="termDropdownOpen"
+              class="absolute left-0 top-full mt-2 w-max min-w-full glass-panel !p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden z-50"
+            >
+              <button
+                v-for="t in terms"
+                :key="t.termId"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
+                :class="
+                  termId === t.termId
+                    ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-medium'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                "
+                @click="
+                  termId = t.termId;
+                  fetchRows();
+                  termDropdownOpen = false;
+                "
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full"
+                  :class="
+                    termId === t.termId ? 'bg-teal-500' : 'bg-transparent'
+                  "
+                />
+                {{ t.academicYear }} ·
+                {{ locale === "lo" ? t.termNameLo : t.termNameEn
+                }}{{ t.status === "active" ? " ●" : "" }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <div
+          v-if="termDropdownOpen"
+          class="fixed inset-0 z-40"
+          @click="termDropdownOpen = false"
+        />
+
+        <!-- Class Filter -->
+        <div class="relative z-50 w-full sm:w-auto">
+          <button
+            :class="[
+              'relative w-full sm:w-auto h-9 px-3 border rounded-lg text-sm focus:outline-none flex items-center justify-between gap-2 min-w-[120px] transition-colors',
+              classFilter === 0
+                ? 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                : 'bg-teal-50 dark:bg-teal-500/20 border-teal-200 dark:border-teal-500/50 text-teal-600 dark:text-teal-400 font-medium',
+            ]"
+            @click="classDropdownOpen = !classDropdownOpen"
+          >
+            <span>{{
+              classFilter === 0
+                ? $t("classes.all_classes")
+                : className(
+                    classes.find((c) => c.classId === classFilter) || {
+                      classNameEn: "",
+                      classNameLo: "",
+                    },
+                  )
+            }}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 transition-transform"
+              :class="[
+                classDropdownOpen ? 'rotate-180' : '',
+                classFilter === 0
+                  ? 'text-slate-400'
+                  : 'text-teal-500 dark:text-teal-400',
+              ]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-out"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <div
+              v-if="classDropdownOpen"
+              class="absolute left-0 top-full mt-2 w-max min-w-full glass-panel !p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden z-50 max-h-64 overflow-y-auto"
+            >
+              <button
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
+                :class="
+                  classFilter === 0
+                    ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-medium'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                "
+                @click="
+                  classFilter = 0;
+                  fetchRows();
+                  classDropdownOpen = false;
+                "
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full"
+                  :class="classFilter === 0 ? 'bg-teal-500' : 'bg-transparent'"
+                />
+                {{ $t("classes.all_classes") }}
+              </button>
+              <button
+                v-for="c in classes"
+                :key="c.classId"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
+                :class="
+                  classFilter === c.classId
+                    ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-medium'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                "
+                @click="
+                  classFilter = c.classId;
+                  fetchRows();
+                  classDropdownOpen = false;
+                "
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full"
+                  :class="
+                    classFilter === c.classId ? 'bg-teal-500' : 'bg-transparent'
+                  "
+                />
+                {{ className(c) }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <div
+          v-if="classDropdownOpen"
+          class="fixed inset-0 z-40"
+          @click="classDropdownOpen = false"
+        />
+
+        <button
+          :disabled="!termId"
+          class="sm:ml-auto w-full sm:w-auto justify-center h-9 px-3.5 bg-teal-500 hover:bg-teal-600 dark:hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] disabled:opacity-50 disabled:shadow-none"
+          @click="modalOpen = true"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          {{ $t("classes.assign_subject") }}
         </button>
       </div>
     </div>
 
-    <div v-if="!loading && terms.length === 0" class="glass-panel p-8 text-center text-slate-400 text-sm">
-      {{ L('Create an academic term first.', 'ກະລຸນາສ້າງພາກຮຽນກ່ອນ.') }}
-      <NuxtLink to="/admin/settings/academic-terms" class="text-teal-400 hover:underline ml-1">{{ L('Academic terms →', 'ພາກຮຽນ →') }}</NuxtLink>
+    <div
+      v-if="!loading && terms.length === 0"
+      class="glass-panel p-8 text-center text-slate-500 dark:text-slate-400 dark:text-slate-400 text-sm"
+    >
+      {{ $t("classes.create_term_first") }}
+      <NuxtLink
+        to="/admin/settings/academic-terms"
+        class="text-teal-500 font-medium hover:underline ml-1"
+        >{{ $t("classes.academic_terms_link") }}</NuxtLink
+      >
     </div>
 
     <div v-else class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="loading" />
-      <div v-else-if="rows.length === 0" class="py-16 text-center text-slate-500 text-sm">
-        {{ L('No subjects assigned for this term yet.', 'ຍັງບໍ່ມີວິຊາໃນພາກຮຽນນີ້.') }}
+      <div
+        v-else-if="filteredRows.length === 0"
+        class="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-12 w-12 mb-3 opacity-40"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          />
+        </svg>
+        <p class="text-sm">{{ $t("classes.no_subjects_assigned") }}</p>
       </div>
-      <table v-else class="w-full min-w-max">
+      <table v-else class="data-table w-full min-w-max">
         <thead>
-          <tr class="border-b border-slate-800">
-            <th class="th">{{ $t('common.class') }}</th>
-            <th class="th">{{ L('Subject', 'ວິຊາ') }}</th>
-            <th class="th">{{ L('Teacher', 'ຄູສອນ') }}</th>
-            <th class="th text-right">{{ $t('common.actions') }}</th>
+          <tr>
+            <th class="w-12 text-center">#</th>
+            <th>{{ $t("common.class") }}</th>
+            <th>{{ locale === "lo" ? "ພາກຮຽນ" : "Term" }}</th>
+            <th>{{ locale === "lo" ? "ສົກຮຽນ" : "Academic Year" }}</th>
+            <th>{{ $t("classes.subject") }}</th>
+            <th>{{ $t("classes.teacher") }}</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/60">
-          <tr v-for="row in rows" :key="row.id" class="hover:bg-slate-800/40 transition-colors">
-            <td class="px-6 py-3 text-sm text-white font-medium">{{ className(row.class) }}</td>
-            <td class="px-6 py-3 text-sm text-slate-300">
-              <span v-if="row.subject.subjectCode" class="font-mono text-slate-500 mr-2">{{ row.subject.subjectCode }}</span>
-              {{ locale === 'lo' ? row.subject.subjectNameLo : row.subject.subjectNameEn }}
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+          <tr
+            v-for="(row, index) in paginatedRows"
+            :key="row.id"
+            class="hover:bg-slate-50 dark:hover:bg-slate-700/50 dark:hover:bg-slate-800/40 transition-colors"
+          >
+            <td
+              class="text-sm text-slate-500 dark:text-slate-400 !text-center align-middle"
+            >
+              {{ (currentPage - 1) * itemsPerPage + index + 1 }}
             </td>
-            <td class="px-6 py-3">
+            <td class="align-middle">
+              <span
+                class="text-sm text-slate-900 dark:text-white font-semibold"
+                >{{ className(row.class) }}</span
+              >
+            </td>
+            <td
+              class="align-middle text-sm text-slate-700 dark:text-slate-300"
+            >
+              <span v-if="row.term">{{
+                locale === "lo" ? row.term.termNameLo : row.term.termNameEn
+              }}</span>
+            </td>
+            <td
+              class="align-middle text-sm text-slate-700 dark:text-slate-300"
+            >
+              <span v-if="row.term">{{ row.term.academicYear }}</span>
+            </td>
+            <td
+              class="text-sm text-slate-700 dark:text-slate-300 font-medium align-middle"
+            >
+              {{
+                locale === "lo"
+                  ? row.subject.subjectNameLo
+                  : row.subject.subjectNameEn
+              }}
+            </td>
+            <td class="align-middle">
               <!-- Changing the teacher saves immediately. -->
-              <select :value="row.teacherId ?? 0" class="filter-select !py-1.5" @change="changeTeacher(row, Number(($event.target as HTMLSelectElement).value))">
-                <option :value="0">— {{ L('No teacher', 'ບໍ່ມີຄູ') }} —</option>
-                <option v-for="t in teachers" :key="t.userId" :value="t.userId">{{ personName(t.user) }}</option>
-              </select>
-            </td>
-            <td class="px-6 py-3">
-              <div class="flex justify-end">
-                <button class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="remove(row)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              <div
+                class="relative max-w-[200px]"
+                :class="activeTeacherDropdown === row.id ? 'z-50' : 'z-10'"
+              >
+                <button
+                  type="button"
+                  class="w-full h-8 pl-3 pr-8 bg-slate-50 dark:bg-slate-800/50 border rounded-md text-xs text-left flex items-center justify-between transition-all cursor-pointer"
+                  :class="
+                    activeTeacherDropdown === row.id
+                      ? 'border-teal-500 text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/20 ring-1 ring-teal-500/20 font-medium'
+                      : 'border-transparent text-slate-700 dark:text-slate-300 font-medium hover:border-slate-700'
+                  "
+                  @click="
+                    activeTeacherDropdown =
+                      activeTeacherDropdown === row.id ? null : row.id
+                  "
+                >
+                  <span class="truncate">{{
+                    row.teacherId
+                      ? personName(row.teacher)
+                      : $t("classes.no_teacher")
+                  }}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 transition-transform"
+                    :class="
+                      activeTeacherDropdown === row.id
+                        ? 'rotate-180 text-teal-500'
+                        : 'text-slate-500 dark:text-slate-400'
+                    "
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
+
+                <Transition
+                  enter-active-class="transition duration-100 ease-out"
+                  enter-from-class="transform scale-95 opacity-0"
+                  enter-to-class="transform scale-100 opacity-100"
+                  leave-active-class="transition duration-75 ease-out"
+                  leave-from-class="transform scale-100 opacity-100"
+                  leave-to-class="transform scale-95 opacity-0"
+                >
+                  <div
+                    v-if="activeTeacherDropdown === row.id"
+                    class="absolute left-0 top-full mt-1 w-max min-w-full max-h-48 overflow-y-auto glass-panel !p-1 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50"
+                  >
+                    <button
+                      type="button"
+                      class="w-full text-left text-xs transition-colors flex items-center gap-2 rounded-md"
+                      :class="
+                        !row.teacherId
+                          ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-medium'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                      "
+                      @click="
+                        changeTeacher(row, 0);
+                        activeTeacherDropdown = null;
+                      "
+                    >
+                      <div
+                        class="w-1.5 h-1.5 rounded-full shrink-0"
+                        :class="
+                          !row.teacherId ? 'bg-teal-500' : 'bg-transparent'
+                        "
+                      />
+                      <span class="truncate">{{
+                        $t("classes.no_teacher")
+                      }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      v-for="t in teachers"
+                      :key="t.userId"
+                      class="w-full text-left text-xs transition-colors flex items-center gap-2 rounded-md"
+                      :class="
+                        row.teacherId === t.userId
+                          ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-medium'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                      "
+                      @click="
+                        changeTeacher(row, t.userId);
+                        activeTeacherDropdown = null;
+                      "
+                    >
+                      <div
+                        class="w-1.5 h-1.5 rounded-full shrink-0"
+                        :class="
+                          row.teacherId === t.userId
+                            ? 'bg-teal-500'
+                            : 'bg-transparent'
+                        "
+                      />
+                      <span class="truncate">{{ personName(t) }}</span>
+                    </button>
+                  </div>
+                </Transition>
               </div>
+              <div
+                v-if="activeTeacherDropdown === row.id"
+                class="fixed inset-0 z-40"
+                @click="activeTeacherDropdown = null"
+              />
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <Teleport to="body">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modal.open = false"/>
-        <form class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-4" @submit.prevent="create">
-          <h2 class="text-xl font-bold text-white">{{ L('Assign Subject', 'ເພີ່ມວິຊາໃຫ້ຫ້ອງ') }}</h2>
-          <div v-if="modal.error" class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ modal.error }}</div>
-          <label class="field">
-            <span>{{ $t('common.class') }} *</span>
-            <select v-model.number="modal.form.classId" required class="modal-input">
-              <option :value="0" disabled>—</option>
-              <option v-for="c in termClasses" :key="c.classId" :value="c.classId">{{ className(c) }}</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>{{ L('Subject', 'ວິຊາ') }} *</span>
-            <select v-model.number="modal.form.subjectId" required class="modal-input">
-              <option :value="0" disabled>—</option>
-              <option v-for="s in subjects" :key="s.subjectId" :value="s.subjectId">
-                {{ s.subjectCode ? `${s.subjectCode} · ` : '' }}{{ locale === 'lo' ? s.subjectNameLo : s.subjectNameEn }}
-              </option>
-            </select>
-          </label>
-          <label class="field">
-            <span>{{ L('Teacher', 'ຄູສອນ') }}</span>
-            <select v-model.number="modal.form.teacherId" class="modal-input">
-              <option :value="0">— {{ L('Assign later', 'ກຳນົດພາຍຫຼັງ') }} —</option>
-              <option v-for="t in teachers" :key="t.userId" :value="t.userId">{{ personName(t.user) }}</option>
-            </select>
-          </label>
-          <div class="flex justify-end gap-3 pt-2">
-            <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800" @click="modal.open = false">{{ $t('common.cancel') }}</button>
-            <button type="submit" :disabled="modal.saving" class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white disabled:opacity-60">
-              {{ modal.saving ? $t('common.saving') : $t('common.save') }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </Teleport>
+    <PaginationBar
+      v-if="!loading && terms.length > 0 && filteredRows.length > 0"
+      :loading="loading"
+      :current-page="currentPage"
+      :total-pages="totalPages"
+      @update:page="(p) => (currentPage = p)"
+    />
+
+    <AdminAssignSubjectModal
+      v-model="modalOpen"
+      :term-id="termId"
+      :initial-class-id="classFilter"
+      :term-classes="termClasses"
+      :subjects="subjects"
+      :teachers="teachers"
+      @saved="fetchRows"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
-import { academicsRepository, type AcademicTerm, type ClassSubject } from '../../../infrastructure/api/AcademicsRepository';
-import { adminRepository } from '../../../infrastructure/api/AdminRepository';
+import { ref, computed, onMounted, watch } from "vue";
+import {
+  academicsRepository,
+  type AcademicTerm,
+  type ClassSubject,
+} from "../../../infrastructure/api/AcademicsRepository";
+import { adminRepository } from "../../../infrastructure/api/AdminRepository";
+import type { TeacherOption } from "../../../domain/models/SchoolClass";
 
-definePageMeta({ layout: 'admin' });
-useHead({ title: 'Class Subjects — Smart School Admin' });
+definePageMeta({ layout: "admin" });
+useHead({ title: "Class Subjects — Smart School Admin" });
 
 const { locale } = useI18n();
-const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
+const dialog = useDialog();
 
 type Named = { fullNameEn: string; fullNameLo: string };
-type ClassOption = { classId: number; classNameEn: string; classNameLo: string; academicYear: string };
-type SubjectOption = { subjectId: number; subjectCode: string | null; subjectNameEn: string; subjectNameLo: string };
-type TeacherOption = { userId: number; user: Named };
+type ClassOption = {
+  classId: number;
+  classNameEn: string;
+  classNameLo: string;
+  academicYear: string;
+};
+type SubjectOption = {
+  subjectId: number;
+  subjectCode: string | null;
+  subjectNameEn: string;
+  subjectNameLo: string;
+};
 
-const personName = (p?: Named | null) => (p ? (locale.value === 'lo' ? p.fullNameLo : p.fullNameEn) || p.fullNameEn : '—');
-const className = (c: Pick<ClassOption, 'classNameEn' | 'classNameLo'>) => (locale.value === 'lo' ? c.classNameLo : c.classNameEn) || c.classNameEn;
+const personName = (p?: Named | null) =>
+  p
+    ? (locale.value === "lo" ? p.fullNameLo : p.fullNameEn) || p.fullNameEn
+    : "—";
+const className = (c: Pick<ClassOption, "classNameEn" | "classNameLo">) =>
+  (locale.value === "lo" ? c.classNameLo : c.classNameEn) || c.classNameEn;
 const errorMessage = (err: unknown, fallback: string) =>
-  (err as { data?: { message?: string } })?.data?.message || (err instanceof Error && err.message) || fallback;
+  (err as { data?: { message?: string } })?.data?.message ||
+  (err instanceof Error && err.message) ||
+  fallback;
 
 const terms = ref<AcademicTerm[]>([]);
 const classes = ref<ClassOption[]>([]);
@@ -139,6 +504,50 @@ const rows = ref<ClassSubject[]>([]);
 const termId = ref(0);
 const classFilter = ref(0);
 const loading = ref(true);
+
+const selectedTerm = computed(() =>
+  terms.value.find((t) => t.termId === termId.value),
+);
+
+const termDropdownOpen = ref(false);
+const classDropdownOpen = ref(false);
+const searchQuery = ref("");
+const currentPage = ref(1);
+const itemsPerPage = 10;
+
+const filteredRows = computed(() => {
+  if (!searchQuery.value) return rows.value;
+  const lowerQuery = searchQuery.value.toLowerCase();
+  return rows.value.filter((row) => {
+    const code = row.subject.subjectCode?.toLowerCase() || "";
+    const nameEn = row.subject.subjectNameEn.toLowerCase();
+    const nameLo = row.subject.subjectNameLo.toLowerCase();
+    const teacherEn = row.teacher?.fullNameEn.toLowerCase() || "";
+    const teacherLo = row.teacher?.fullNameLo.toLowerCase() || "";
+    return (
+      code.includes(lowerQuery) ||
+      nameEn.includes(lowerQuery) ||
+      nameLo.includes(lowerQuery) ||
+      teacherEn.includes(lowerQuery) ||
+      teacherLo.includes(lowerQuery)
+    );
+  });
+});
+
+const totalPages = computed(
+  () => Math.ceil(filteredRows.value.length / itemsPerPage) || 1,
+);
+
+const paginatedRows = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredRows.value.slice(start, end);
+});
+
+// Reset page when search or filters change
+watch([searchQuery, classFilter, termId], () => {
+  currentPage.value = 1;
+});
 
 // Only classes of the selected term's academic year can take its subjects.
 const termClasses = computed(() => {
@@ -150,7 +559,10 @@ const fetchRows = async () => {
   if (!termId.value) return;
   loading.value = true;
   try {
-    rows.value = await academicsRepository.getClassSubjects({ termId: termId.value, classId: classFilter.value || undefined });
+    rows.value = await academicsRepository.getClassSubjects({
+      termId: termId.value,
+      classId: classFilter.value || undefined,
+    });
   } finally {
     loading.value = false;
   }
@@ -160,84 +572,37 @@ onMounted(async () => {
   try {
     const [t, c, s, te] = await Promise.all([
       academicsRepository.getTerms(),
-      adminRepository.getClasses({ limit: 500 }),
-      academicsRepository.getSubjects({ limit: 500 }),
-      adminRepository.getTeachers({ limit: 500 }),
+      adminRepository.getAllClasses(),
+      academicsRepository.getAllSubjects(),
+      adminRepository.getTeacherOptions(),
     ]);
     terms.value = t;
-    classes.value = c.classes;
-    subjects.value = s.subjects.filter((x: SubjectOption & { isActive?: boolean }) => x.isActive !== false);
-    teachers.value = te.teachers.filter((x: TeacherOption & { user: { isActive?: boolean } }) => x.user?.isActive !== false);
-    termId.value = (t.find((x) => x.status === 'active') ?? t[0])?.termId ?? 0;
+    classes.value = c;
+    subjects.value = s.filter(
+      (x: SubjectOption & { isActive?: boolean }) => x.isActive !== false,
+    );
+    teachers.value = te;
+    termId.value = (t.find((x) => x.status === "active") ?? t[0])?.termId ?? 0;
   } finally {
     loading.value = false;
   }
   await fetchRows();
 });
 
-const modal = reactive({ open: false, saving: false, error: '', form: { classId: 0, subjectId: 0, teacherId: 0 } });
-
-const openModal = () => {
-  modal.form = { classId: classFilter.value, subjectId: 0, teacherId: 0 };
-  modal.error = '';
-  modal.open = true;
-};
-
-const create = async () => {
-  modal.saving = true;
-  modal.error = '';
-  try {
-    await academicsRepository.createClassSubject({
-      classId: modal.form.classId,
-      subjectId: modal.form.subjectId,
-      termId: termId.value,
-      teacherId: modal.form.teacherId || null,
-    });
-    modal.open = false;
-    await fetchRows();
-  } catch (err) {
-    modal.error = errorMessage(err, 'Failed to assign subject');
-  } finally {
-    modal.saving = false;
-  }
-};
+const modalOpen = ref(false);
+const activeTeacherDropdown = ref<number | null>(null);
 
 const changeTeacher = async (row: ClassSubject, teacherId: number) => {
   try {
-    const updated = await academicsRepository.setClassSubjectTeacher(row.id, teacherId || null);
+    const updated = await academicsRepository.setClassSubjectTeacher(
+      row.id,
+      teacherId || null,
+    );
     Object.assign(row, updated);
   } catch (err) {
-    alert(errorMessage(err, 'Failed to change teacher'));
+    dialog.error(errorMessage(err, "Failed to change teacher"));
     await fetchRows();
-  }
-};
-
-const remove = async (row: ClassSubject) => {
-  const name = locale.value === 'lo' ? row.subject.subjectNameLo : row.subject.subjectNameEn;
-  if (!confirm(L(`Remove ${name} from ${className(row.class)}?`, `ເອົາ ${name} ອອກຈາກ ${className(row.class)}?`))) return;
-  try {
-    await academicsRepository.deleteClassSubject(row.id);
-    rows.value = rows.value.filter((r) => r.id !== row.id);
-  } catch (err) {
-    alert(errorMessage(err, 'Failed to remove'));
   }
 };
 </script>
 
-<style scoped lang="postcss">
-.th {
-  @apply text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3;
-}
-.field {
-  @apply flex flex-col gap-1.5;
-}
-.field > span {
-  @apply text-xs font-semibold text-slate-400 uppercase tracking-wider;
-}
-.filter-select {
-  @apply px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500;
-}
-.modal-input {
-  @apply w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700/60 rounded-xl text-white text-sm focus:outline-none focus:border-teal-500 transition-all;
-}
-</style>

@@ -71,3 +71,75 @@ export interface SpendingLimit {
   blockedShops: number[];
   notes: string | null;
 }
+
+export interface FeeType {
+  feeTypeId: number;
+  nameEn: string;
+  nameLo: string;
+  descriptionEn: string | null;
+  descriptionLo: string | null;
+  isActive: boolean;
+  _count?: { structures: number };
+}
+
+export interface FeeStructure {
+  feeStructureId: number;
+  feeTypeId: number;
+  academicYear: string;
+  termId: number | null;
+  classId: number | null;
+  amount: Money;
+  dueDate: string;
+  notes: string | null;
+  createdAt: string;
+  feeType?: { feeTypeId: number; nameEn: string; nameLo: string };
+  term?: { termId: number; termNameEn: string; termNameLo: string } | null;
+  class?: { classId: number; classNameEn: string; classNameLo: string } | null;
+  invoiceCount?: number;
+  billed?: number;
+  collected?: number;
+}
+
+export interface Invoice {
+  invoiceId: number;
+  invoiceNo: string;
+  studentId: number;
+  feeStructureId: number;
+  amount: number;
+  discount: number;
+  paidAmount: number;
+  amountDue: number;
+  outstanding: number;
+  overdue: boolean;
+  status: 'unpaid' | 'partial' | 'paid' | 'void';
+  dueDate: string;
+  voidReason: string | null;
+  notes: string | null;
+  issuedAt: string;
+  student?: {
+    studentId: number;
+    studentCode: string;
+    fullNameEn: string;
+    fullNameLo: string;
+    class?: { classId: number; classNameEn: string; classNameLo: string } | null;
+  };
+  feeStructure?: {
+    feeStructureId: number;
+    academicYear: string;
+    feeType?: { feeTypeId: number; nameEn: string; nameLo: string };
+    term?: { termId: number; termNameEn: string; termNameLo: string } | null;
+  };
+  payments?: FeePayment[];
+}
+
+export interface FeePayment {
+  paymentId: number;
+  receiptNo: string;
+  invoiceId: number;
+  amount: number;
+  method: 'cash' | 'bank_transfer';
+  referenceNo: string | null;
+  notes: string | null;
+  paidAt: string;
+  receiver?: { userId: number; fullNameEn: string; fullNameLo: string };
+}

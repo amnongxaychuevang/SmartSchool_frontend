@@ -97,7 +97,11 @@
     background-color: rgb(var(--surface-2));
   }
   thead th {
+    @apply px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide;
     color: rgb(var(--ink-muted));
+  }
+  tbody td {
+    @apply px-4 py-2 text-sm;
   }
   tbody tr {
     border-bottom: 1px solid rgb(var(--line));
@@ -214,13 +218,24 @@
     border-color: rgb(var(--primary));
     box-shadow: var(--focus-ring);
   }
+  /* The native arrow ignores padding and hugs the edge; draw our own, inset 12px. */
   select.input-field {
     @apply pr-10;
     text-overflow: ellipsis;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1.125rem;
+  }
+  select.input-field[multiple] {
+    @apply pr-3;
+    background-image: none;
   }
 
   .search-bar {
-    @apply input-field pl-10;
+    @apply input-field pl-9 pr-9;
+    border-radius: 0.5rem;
   }
 
   /* ── Stat card (KPI tile) ────────────────────────────── */

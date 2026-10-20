@@ -48,7 +48,17 @@ export class ParentRepository {
     return useApiClient()<ApiResponse<SpendingLimit>>(`/parents/me/children/${studentId}/spending-limits`, { method: 'PUT', body: data });
   }
 
-  async requestTopUp(data: { amount: number; proofOfPayment: string }) {
+  async getChildInvoices(studentId: number) {
+    return useApiClient()<ApiResponse<any[]>>(`/parents/me/children/${studentId}/invoices`, { method: 'GET' });
+  }
+
+  async uploadSlip(file: File) {
+    const formData = new FormData();
+    formData.append('slip', file);
+    return useApiClient()<ApiResponse<{ url: string }>>(API_ENDPOINTS.uploads.slip, { method: 'POST', body: formData });
+  }
+
+  async requestTopUp(data: { studentId: number; amount: number; method: string; slipUrl?: string }) {
     return useApiClient()<ApiResponse<{ request: TopUpRequest }>>(API_ENDPOINTS.topUps.requests, { method: 'POST', body: data });
   }
 }

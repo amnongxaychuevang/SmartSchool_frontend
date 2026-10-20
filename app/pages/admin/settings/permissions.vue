@@ -1,17 +1,16 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <!-- Header -->
-    <div class="flex flex-col gap-1">
-      <p class="text-xs font-semibold text-teal-400 uppercase tracking-widest">{{ $t('nav.settings') }}</p>
-      <h2 class="text-2xl font-bold text-white">{{ $t('settings.permissions_title') }}</h2>
-      <p class="text-sm text-slate-400">{{ $t('settings.permissions_subtitle') }}</p>
-    </div>
+    <PageHeader
+      :eyebrow="$t('nav.settings')"
+      :title="$t('settings.permissions_title')"
+      :subtitle="$t('settings.permissions_subtitle')"
+    />
 
     <!-- Main Container -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       
       <!-- Left sidebar: Roles List -->
-      <div class="lg:col-span-1 flex flex-col gap-3 bg-slate-900/20 border border-slate-800/80 p-4 rounded-2xl h-fit">
+      <div class="lg:col-span-1 panel p-4 flex flex-col gap-3 h-fit">
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2">{{ $t('settings.system_roles') }}</p>
         
         <button
@@ -31,8 +30,8 @@ v-for="role in roles" :key="role.id"
       </div>
 
       <!-- Right content: Permissions Matrix -->
-      <div class="lg:col-span-3 flex flex-col gap-5 bg-slate-900/20 border border-slate-800/80 p-6 rounded-2xl">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+      <div class="lg:col-span-3 panel p-6 flex flex-col gap-5">
+        <div class="flex items-center justify-between pb-3 border-b border-line">
           <div>
             <h3 class="text-lg font-bold text-white">{{ $t('settings.permissions_of_role', { role: $t('settings.roles.' + activeRole) }) }}</h3>
             <p class="text-xs text-slate-500 mt-0.5">{{ $t('settings.toggle_actions_desc') }}</p>
@@ -62,7 +61,7 @@ v-for="role in roles" :key="role.id"
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div
 v-for="perm in category.items" :key="perm.key"
-                class="flex items-center justify-between p-3.5 bg-[#080e1a]/85 border border-slate-800/80 hover:border-slate-700/50 transition-all rounded-xl"
+                class="flex items-center justify-between p-3.5 bg-surface-2 border border-line hover:border-line-strong transition-all rounded-lg"
               >
                 <div class="flex flex-col gap-0.5">
                   <span class="text-xs font-semibold text-slate-200">{{ perm.label }}</span>
@@ -89,7 +88,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useSettingsStore } from '../../../application/stores/settings';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: () => useNuxtApp().$i18n.t('page_titles.permissions') });
+const { t } = useI18n();
+useHead({ title: () => t('page_titles.permissions') });
 
 const settingsStore = useSettingsStore();
 

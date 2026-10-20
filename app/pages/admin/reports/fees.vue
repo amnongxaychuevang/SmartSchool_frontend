@@ -18,6 +18,9 @@
           <option value="sem1">Semester 1</option>
           <option value="sem2">Semester 2</option>
         </select>
+        <button type="button" class="filter-select hover:border-teal-500" @click="exportFees">
+          {{ $t('common.export_excel') }}
+        </button>
       </div>
     </div>
 
@@ -154,28 +157,28 @@ class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transi
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-max">
+        <table class="data-table w-full min-w-max">
           <thead>
-            <tr class="border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/10">
-              <th class="px-6 py-3.5">{{ locale === 'lo' ? 'ເລກອ້າງອີງ' : 'Ref No' }}</th>
-              <th class="px-6 py-3.5">{{ $t('common.user') }}</th>
-              <th class="px-6 py-3.5">{{ locale === 'lo' ? 'ຈຳນວນເງິນ' : 'Amount' }}</th>
-              <th class="px-6 py-3.5">{{ locale === 'lo' ? 'ຊ່ອງທາງ' : 'Payment Method' }}</th>
-              <th class="px-6 py-3.5">{{ locale === 'lo' ? 'ວັນເວລາ' : 'Date / Time' }}</th>
-              <th class="px-6 py-3.5 text-right">{{ $t('common.status') }}</th>
+            <tr>
+              <th>{{ locale === 'lo' ? 'ເລກອ້າງອີງ' : 'Ref No' }}</th>
+              <th>{{ $t('common.user') }}</th>
+              <th>{{ locale === 'lo' ? 'ຈຳນວນເງິນ' : 'Amount' }}</th>
+              <th>{{ locale === 'lo' ? 'ຊ່ອງທາງ' : 'Payment Method' }}</th>
+              <th>{{ locale === 'lo' ? 'ວັນເວລາ' : 'Date / Time' }}</th>
+              <th class="text-right">{{ $t('common.status') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/40 text-xs font-medium">
             <tr v-for="tx in filteredTransactions" :key="tx.ref" class="hover:bg-slate-800/10 transition-colors">
-              <td class="px-6 py-4 font-mono text-slate-400 font-semibold">{{ tx.ref }}</td>
-              <td class="px-6 py-4">
+              <td class="font-mono text-slate-400 font-semibold">{{ tx.ref }}</td>
+              <td class="">
                 <div>
                   <p class="font-medium text-white">{{ tx.studentName }}</p>
                   <p class="text-[10px] text-slate-500 font-mono">{{ tx.studentCode }} ({{ tx.class }})</p>
                 </div>
               </td>
-              <td class="px-6 py-4 font-mono font-bold text-slate-200">{{ formatAmount(tx.amount) }} LAK</td>
-              <td class="px-6 py-4">
+              <td class="font-mono font-bold text-slate-200">{{ formatAmount(tx.amount) }} LAK</td>
+              <td class="">
                 <span
 :class="['px-2 py-0.5 rounded-md font-semibold text-[10px]', 
                   tx.method === 'BCELOne' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'
@@ -183,8 +186,8 @@ class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transi
                   {{ tx.method }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-slate-500 font-mono text-[11px]">{{ tx.datetime }}</td>
-              <td class="px-6 py-4 text-right">
+              <td class="text-slate-500 font-mono text-[11px]">{{ tx.datetime }}</td>
+              <td class="text-right">
                 <span class="px-2 py-0.5 bg-teal-500/10 text-teal-400 text-[10px] font-bold rounded-full">
                   {{ $t('reports_detail.approved') }}
                 </span>
@@ -204,11 +207,13 @@ class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transi
 
 <script setup lang="ts">
 import { ref, computed, shallowRef } from 'vue';
+import { useExport } from '../../../composables/useExport';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Fee Reports — Smart School Admin' });
 
 const { locale } = useI18n();
+const { exportExcel } = useExport();
 
 // Icons
 const IconDatabase = shallowRef({
@@ -306,6 +311,18 @@ const filteredTransactions = computed(() => {
   if (statusFilter.value === 'all') return transactions;
   return transactions.filter(t => t.methodKey === statusFilter.value);
 });
+
+function exportFees() {
+  exportExcel(filteredTransactions.value, [
+    { key: 'ref', label: 'Reference' },
+    { key: 'studentName', label: 'Student' },
+    { key: 'studentCode', label: 'Code' },
+    { key: 'class', label: 'Class' },
+    { key: 'amount', label: 'Amount (₭)' },
+    { key: 'method', label: 'Method' },
+    { key: 'datetime', label: 'Date/Time' },
+  ], `fee-report-${selectedYear.value}-${selectedTerm.value}`);
+}
 </script>
 
 <style scoped lang="postcss">

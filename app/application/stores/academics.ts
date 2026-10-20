@@ -14,6 +14,7 @@ export const useAcademicsStore = defineStore('academics', {
     grades: [] as Grade[],
     gradesTotal: 0,
     gradesPage: 1,
+    gradesSearch: '',
     gradesLoading: false,
     gradeTypes: [] as GradeType[],
 
@@ -84,11 +85,11 @@ export const useAcademicsStore = defineStore('academics', {
     },
 
     // Grades
-    async fetchGrades(params?: { classId?: number; subjectId?: number; studentId?: number; academicYear?: string; page?: number }) {
+    async fetchGrades(params?: { classId?: number; subjectId?: number; studentId?: number; academicYear?: string; search?: string; gradeMonth?: string; page?: number }) {
       this.gradesLoading = true;
       if (params?.page !== undefined) this.gradesPage = params.page;
       try {
-        const res = await academicsRepository.getGrades({ ...params, limit: 50 });
+        const res = await academicsRepository.getGrades({ search: this.gradesSearch, ...params, limit: 10 });
         this.grades = res.grades;
         this.gradesTotal = res.total;
       } catch (err) {

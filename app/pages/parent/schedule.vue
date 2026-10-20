@@ -27,23 +27,23 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         <p>{{ $t('parentPortal.no_schedule') }}</p>
       </div>
       <div v-else class="glass-panel rounded-2xl overflow-hidden">
-        <table class="w-full min-w-max">
+        <table class="data-table w-full min-w-max">
           <thead>
-            <tr class="border-b border-slate-800 bg-slate-900/50">
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.date') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.time') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.subject') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.room') }}</th>
-              <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.teacher') }}</th>
+            <tr>
+              <th>{{ $t('parentPortal.date') }}</th>
+              <th>{{ $t('parentPortal.time') }}</th>
+              <th>{{ $t('parentPortal.subject') }}</th>
+              <th>{{ $t('parentPortal.room') }}</th>
+              <th>{{ $t('parentPortal.teacher') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/60">
             <tr v-for="sched in parentStore.childSchedule" :key="sched.scheduleId" class="hover:bg-slate-800/30 transition-colors">
-              <td class="px-6 py-4 text-sm font-medium text-indigo-400">{{ getDayName(sched.dayOfWeek) }}</td>
-              <td class="px-6 py-4 text-sm text-white">{{ formatTime(sched.startTime) }} - {{ formatTime(sched.endTime) }}</td>
-              <td class="px-6 py-4 text-sm text-slate-300">{{ sched.subject?.subjectNameEn || '-' }}</td>
-              <td class="px-6 py-4 text-sm text-slate-400">{{ sched.roomNumber || '-' }}</td>
-              <td class="px-6 py-4 text-sm text-slate-400">{{ sched.teacher?.fullNameEn || '-' }}</td>
+              <td class="text-sm font-medium text-indigo-400">{{ getDayName(sched.dayOfWeek) }}</td>
+              <td class="text-sm text-white">{{ formatTime(sched.startTime) }} - {{ formatTime(sched.endTime) }}</td>
+              <td class="text-sm text-slate-300">{{ sched.subject?.subjectNameEn || '-' }}</td>
+              <td class="text-sm text-slate-400">{{ sched.roomNumber || '-' }}</td>
+              <td class="text-sm text-slate-400">{{ sched.teacher?.fullNameEn || '-' }}</td>
             </tr>
           </tbody>
         </table>

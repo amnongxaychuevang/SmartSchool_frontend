@@ -1,7 +1,17 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader :eyebrow="$t('nav.finance')" :title="$t('limits_admin.title')" :subtitle="$t('limits_admin.subtitle')">
-      <input v-model="searchInput" type="search" class="input-field w-64" :placeholder="$t('limits_admin.search')" @input="handleSearch">
+      <div class="relative w-64">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('limits_admin.search')" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="clearSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </PageHeader>
 
     <section class="panel overflow-hidden">
@@ -30,14 +40,15 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :current-page="adminStore.studentsPage" :total-pages="totalPages" @update:page="changePage" />
+      <PaginationBar :loading="adminStore.studentsLoading" :current-page="adminStore.studentsPage" :total-pages="totalPages" @update:page="changePage" />
     </section>
 
     <AppModal
-      v-model:open="modal.open"
+      :open="modal.open"
       :title="modal.student ? $t('limits_admin.modal_title', { name: studentName(modal.student) }) : ''"
       :subtitle="$t('limits_admin.empty_means')"
       size="lg"
+      @update:open="modal.open = $event"
     >
       <LoadingSpinner v-if="modal.loading" padding="py-8" />
       <form v-else id="limits-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4" @submit.prevent="handleSubmit">
@@ -80,7 +91,7 @@ import type { Student } from '../../../domain/models/Student';
 import type { Shop } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useAdminStore } from '../../../application/stores/admin';
+import { useAdminStore, STUDENTS_PER_PAGE } from '../../../application/stores/admin';
 import { financeRepository } from '../../../infrastructure/api/FinanceRepository';
 import PageHeader from '../../../components/PageHeader.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
@@ -94,7 +105,7 @@ useHead({ title: () => t('limits_admin.title') });
 
 const adminStore = useAdminStore();
 const searchInput = ref('');
-const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / 15));
+const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / STUDENTS_PER_PAGE));
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 const studentName = (s: Student) => (locale.value === 'lo' ? s.fullNameLo : s.fullNameEn) || s.fullNameEn;
@@ -112,6 +123,7 @@ const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => adminStore.fetchStudents({ search: searchInput.value, page: 1 }), 400);
 };
+const clearSearch = () => { searchInput.value = ''; adminStore.fetchStudents({ page: 1 }); };
 const changePage = (page: number) => adminStore.fetchStudents({ search: searchInput.value, page });
 
 type MoneyKey = 'dailyMax' | 'weeklyMax' | 'perTransactionMax' | 'alertThreshold';

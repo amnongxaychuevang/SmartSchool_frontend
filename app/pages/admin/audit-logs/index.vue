@@ -1,6 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('navSection.system')" :title="$t('audit_admin.title')" :subtitle="$t('audit_admin.subtitle')" />
 
     <div class="flex flex-wrap items-end gap-3">
       <div class="w-72">
@@ -15,7 +14,11 @@
         <option value="">{{ $t('audit_admin.all_entities') }}</option>
         <option v-for="e in entities" :key="e" :value="e">{{ $t(`audit_admin.entities.${e}`) }}</option>
       </select>
-      <button v-if="hasFilters" type="button" class="btn-ghost" @click="clearFilters">{{ $t('audit_admin.clear') }}</button>
+      <button v-if="hasFilters" type="button" class="p-2.5 rounded-lg text-slate-400 hover:text-danger hover:bg-danger-soft transition-colors self-end" :title="$t('audit_admin.clear')" @click="clearFilters">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     <section class="panel overflow-hidden">
@@ -25,6 +28,7 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
               <th>{{ $t('audit_admin.col_time') }}</th>
               <th>{{ $t('audit_admin.col_actor') }}</th>
               <th>{{ $t('audit_admin.col_action') }}</th>
@@ -34,7 +38,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="log in adminStore.auditLogs" :key="log.auditId">
+            <tr v-for="(log, index) in adminStore.auditLogs" :key="log.auditId">
+              <td class="text-center text-ink-subtle tnum">{{ (adminStore.auditLogsPage - 1) * 15 + index + 1 }}</td>
               <td class="tnum whitespace-nowrap">{{ f.dateTime(log.createdAt) }}</td>
               <td>
                 <span v-if="log.user" class="font-semibold">{{ locale === 'lo' ? log.user.fullNameLo : log.user.fullNameEn }}</span>
@@ -53,7 +58,7 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :current-page="adminStore.auditLogsPage" :total-pages="totalPages" @update:page="(page) => adminStore.fetchAuditLogs({ page })" />
+      <PaginationBar :loading="adminStore.auditLogsLoading" :current-page="adminStore.auditLogsPage" :total-pages="totalPages" @update:page="(page) => adminStore.fetchAuditLogs({ page })" />
     </section>
   </div>
 </template>
@@ -62,7 +67,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAdminStore } from '../../../application/stores/admin';
-import PageHeader from '../../../components/PageHeader.vue';
+
 import PaginationBar from '../../../components/PaginationBar.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import UserPicker from '../../../components/UserPicker.vue';
@@ -82,16 +87,16 @@ const entities = ['user', 'wallet', 'wallet_transaction', 'top_up_request', 'spe
 
 const actorId = ref<number | null>(null);
 const pickerKey = ref(0); // remounts the picker to clear its text
-const filters = reactive({ action: '', entityType: '' });
-const totalPages = computed(() => Math.ceil(adminStore.auditLogsTotal / 20));
-const hasFilters = computed(() => !!(actorId.value || filters.action || filters.entityType));
+const filters = reactive({ search: '', action: '', entityType: '' });
+const totalPages = computed(() => Math.ceil(adminStore.auditLogsTotal / 15));
+const hasFilters = computed(() => !!(filters.search || actorId.value || filters.action || filters.entityType));
 
 onMounted(() => adminStore.fetchAuditLogs());
 const apply = () => adminStore.fetchAuditLogs({ ...filters, userId: actorId.value ? String(actorId.value) : '', page: 1 });
 const clearFilters = () => {
   actorId.value = null;
   pickerKey.value++;
-  Object.assign(filters, { action: '', entityType: '' });
+  Object.assign(filters, { search: '', action: '', entityType: '' });
   apply();
 };
 

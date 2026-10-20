@@ -23,19 +23,19 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         </svg>
         <p>{{ $t('parentPortal.no_grades') }}</p>
       </div>
-      <table v-else class="w-full min-w-max">
+      <table v-else class="data-table w-full min-w-max">
         <thead>
-          <tr class="border-b border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.subject') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.class') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('parentPortal.score') }}</th>
+          <tr>
+            <th>{{ $t('parentPortal.subject') }}</th>
+            <th>{{ $t('parentPortal.class') }}</th>
+            <th>{{ $t('parentPortal.score') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr v-for="grade in parentStore.childGrades" :key="grade.gradeId" class="hover:bg-slate-800/40 transition-colors">
-            <td class="px-6 py-4 text-sm text-white font-medium">{{ grade.subject?.subjectNameEn || 'Unknown Subject' }}</td>
-            <td class="px-6 py-4 text-sm text-slate-400">{{ grade.class?.classNameEn || 'Unknown Class' }}</td>
-            <td class="px-6 py-4 text-sm text-teal-400 font-bold">{{ grade.score }}</td>
+            <td class="text-sm text-white font-medium">{{ grade.subject?.subjectNameEn || 'Unknown Subject' }}</td>
+            <td class="text-sm text-slate-400">{{ grade.class?.classNameEn || 'Unknown Class' }}</td>
+            <td class="text-sm text-teal-400 font-bold">{{ grade.score }}</td>
           </tr>
         </tbody>
       </table>

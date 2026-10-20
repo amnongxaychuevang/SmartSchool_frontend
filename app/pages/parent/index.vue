@@ -2,11 +2,25 @@
   <div class="flex flex-col gap-6">
     <PageHeader :title="$t('parentPortal.dashboard')" />
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <StatCard :title="$t('parentPortal.my_children')" :value="f.number(parentStore.children.length)" color-class="bg-primary">
         <template #icon>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </template>
+      </StatCard>
+      <StatCard :title="$t('parentPortal.total_balance')" :value="f.kip(totalBalance)" color-class="bg-emerald-600">
+        <template #icon>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        </template>
+      </StatCard>
+      <StatCard :title="$t('parentPortal.unpaid_invoices')" :value="f.number(unpaidCount)" color-class="bg-amber-600">
+        <template #icon>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
           </svg>
         </template>
       </StatCard>
@@ -29,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue';
+import { reactive, ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useParentStore } from '../../application/stores/parent';
 import { parentRepository } from '../../infrastructure/api/ParentRepository';
@@ -46,6 +60,9 @@ useHead({ title: () => `${t('parentPortal.dashboard')} — ${t('parentPortal.tit
 
 const parentStore = useParentStore();
 const rates = reactive<Record<number, number | null>>({});
+const walletBalances = reactive<Record<number, number>>({});
+const totalBalance = computed(() => Object.values(walletBalances).reduce((s, b) => s + b, 0));
+const unpaidCount = ref(0);
 
 onMounted(async () => {
   await parentStore.fetchChildren();
@@ -56,6 +73,14 @@ onMounted(async () => {
     } catch {
       rates[child.studentId] = null;
     }
+    try {
+      const wRes = await parentRepository.getChildWallet(child.studentId);
+      walletBalances[child.studentId] = Number(wRes.data?.balance ?? 0);
+    } catch { /* wallet may not exist */ }
+    try {
+      const iRes = await parentRepository.getChildInvoices(child.studentId);
+      unpaidCount.value += (iRes.data ?? []).filter((inv: any) => inv.status === 'unpaid' || inv.status === 'partial').length;
+    } catch { /* no invoices */ }
   }));
 });
 </script>

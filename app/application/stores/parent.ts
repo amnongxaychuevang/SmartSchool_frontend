@@ -72,8 +72,12 @@ export const useParentStore = defineStore('parent', () => {
     }
   }
 
-  async function requestTopUp(amount: number, proofOfPayment: string) {
-    return parentRepository.requestTopUp({ amount, proofOfPayment });
+  async function uploadSlip(file: File) {
+    return parentRepository.uploadSlip(file);
+  }
+
+  async function requestTopUp(data: { studentId: number; amount: number; method: string; slipUrl?: string }) {
+    return parentRepository.requestTopUp(data);
   }
 
   const announcements = ref<Announcement[]>([]);
@@ -161,6 +165,7 @@ export const useParentStore = defineStore('parent', () => {
     childGrades,
     loadingGrades,
     fetchChildGrades,
+    uploadSlip,
     requestTopUp,
     announcements,
     loadingAnnouncements,

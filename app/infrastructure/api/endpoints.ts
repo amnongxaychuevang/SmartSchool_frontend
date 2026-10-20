@@ -9,22 +9,34 @@ export const API_ENDPOINTS = {
   },
   dashboard: {
     stats: '/dashboard/stats',
+    financeOverview: '/dashboard/finance/overview',
+    topPerformers: '/dashboard/classes/top-performers',
+    announcements: '/dashboard/announcements',
+    upcomingEvents: '/dashboard/events/upcoming',
   },
   students: {
     list: '/students',
     metaStatuses: '/students/meta/statuses',
+    metaBloodTypes: '/students/meta/blood-types',
   },
   users: {
     list: '/users',
+    teacherCandidates: '/users/teacher-candidates',
+    teacherAccount: '/users/teacher-account',
   },
   teachers: {
     list: '/teachers',
+    options: '/teachers/options',
   },
+  ethnicities: '/ethnicities',
+  provinces: '/provinces',
   parents: {
     list: '/parents',
+    options: '/parents/options',
   },
   classes: {
     list: '/classes',
+    academicYears: '/classes/academic-years',
   },
   attendance: {
     base: '/attendance',
@@ -36,7 +48,8 @@ export const API_ENDPOINTS = {
     list: '/wallets',
     student: '/wallets/student',
     topUp: '/wallets/:id/topup',
-    status: '/wallets/:id/status'
+    status: '/wallets/:id/status',
+    process: '/wallet/process',
   },
   topUps: {
     requests: '/topup-requests'
@@ -84,8 +97,17 @@ export const API_ENDPOINTS = {
   reports: {
     attendance: '/reports/attendance',
     notifyAbsence: '/reports/attendance/notify',
+    shopSales: '/reports/shop-sales',
   },
   auditLogs: {
     list: '/audit-logs'
+  },
+  uploads: {
+    slip: '/uploads/slip',
+  },
+  fees: {
+    types: '/fee-types',
+    structures: '/fee-structures',
+    invoices: '/invoices',
   }
 } as const;

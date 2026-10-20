@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { financeRepository } from '../../infrastructure/api/FinanceRepository';
 import type { Payload } from '../../domain/models/Academics';
-import type { Wallet, TopUpRequest, Shop } from '../../domain/models/Finance';
+import type { Wallet, TopUpRequest, Shop, FeeType, FeeStructure, Invoice } from '../../domain/models/Finance';
 import { getErrorMessage } from '../../utils/errors';
 
 export const useFinanceStore = defineStore('finance', {
@@ -24,6 +24,21 @@ export const useFinanceStore = defineStore('finance', {
     shopsPage: 1,
     shopsSearch: '',
     shopsLoading: false,
+
+    feeTypes: [] as FeeType[],
+    feeTypesLoading: false,
+
+    feeStructures: [] as FeeStructure[],
+    feeStructuresLoading: false,
+    feeStructuresYear: '',
+
+    invoices: [] as Invoice[],
+    invoicesTotal: 0,
+    invoicesPage: 1,
+    invoicesSearch: '',
+    invoicesStatus: '',
+    invoicesYear: '',
+    invoicesLoading: false,
 
     error: null as string | null,
   }),
@@ -145,6 +160,98 @@ export const useFinanceStore = defineStore('finance', {
         this.error = getErrorMessage(err);
         throw err;
       }
-    }
+    },
+
+    // Fee Types
+    async fetchFeeTypes() {
+      this.feeTypesLoading = true;
+      try {
+        this.feeTypes = await financeRepository.getFeeTypes();
+      } catch (err) {
+        this.error = getErrorMessage(err);
+      } finally {
+        this.feeTypesLoading = false;
+      }
+    },
+    async createFeeType(payload: Partial<FeeType>) {
+      const ft = await financeRepository.createFeeType(payload);
+      this.feeTypes.unshift(ft);
+      return ft;
+    },
+    async updateFeeType(id: number, payload: Partial<FeeType>) {
+      const ft = await financeRepository.updateFeeType(id, payload);
+      const idx = this.feeTypes.findIndex(t => t.feeTypeId === id);
+      if (idx !== -1) this.feeTypes[idx] = ft;
+      return ft;
+    },
+    async deleteFeeType(id: number) {
+      await financeRepository.deleteFeeType(id);
+      this.feeTypes = this.feeTypes.filter(t => t.feeTypeId !== id);
+    },
+
+    // Fee Structures
+    async fetchFeeStructures(academicYear?: string) {
+      this.feeStructuresLoading = true;
+      if (academicYear !== undefined) this.feeStructuresYear = academicYear;
+      try {
+        this.feeStructures = await financeRepository.getFeeStructures(this.feeStructuresYear || undefined);
+      } catch (err) {
+        this.error = getErrorMessage(err);
+      } finally {
+        this.feeStructuresLoading = false;
+      }
+    },
+    async createFeeStructure(payload: Record<string, unknown>) {
+      const s = await financeRepository.createFeeStructure(payload);
+      await this.fetchFeeStructures();
+      return s;
+    },
+    async updateFeeStructure(id: number, payload: Record<string, unknown>) {
+      const s = await financeRepository.updateFeeStructure(id, payload);
+      await this.fetchFeeStructures();
+      return s;
+    },
+    async deleteFeeStructure(id: number) {
+      await financeRepository.deleteFeeStructure(id);
+      this.feeStructures = this.feeStructures.filter(s => s.feeStructureId !== id);
+    },
+    async generateInvoices(feeStructureId: number) {
+      const result = await financeRepository.generateInvoices(feeStructureId);
+      await this.fetchFeeStructures();
+      return result;
+    },
+
+    // Invoices
+    async fetchInvoices(params?: { search?: string; status?: string; academicYear?: string; page?: number }) {
+      this.invoicesLoading = true;
+      if (params?.search !== undefined) this.invoicesSearch = params.search;
+      if (params?.status !== undefined) this.invoicesStatus = params.status;
+      if (params?.academicYear !== undefined) this.invoicesYear = params.academicYear;
+      if (params?.page !== undefined) this.invoicesPage = params.page;
+      try {
+        const res = await financeRepository.getInvoices({
+          search: this.invoicesSearch, status: this.invoicesStatus, academicYear: this.invoicesYear,
+          page: this.invoicesPage, limit: 20,
+        });
+        this.invoices = res.invoices;
+        this.invoicesTotal = res.total;
+      } catch (err) {
+        this.error = getErrorMessage(err);
+      } finally {
+        this.invoicesLoading = false;
+      }
+    },
+    async voidInvoice(id: number, reason: string) {
+      const inv = await financeRepository.voidInvoice(id, reason);
+      const idx = this.invoices.findIndex(i => i.invoiceId === id);
+      if (idx !== -1) this.invoices[idx] = inv;
+      return inv;
+    },
+    async recordPayment(invoiceId: number, payload: { amount: number; method: 'cash' | 'bank_transfer'; referenceNo?: string; notes?: string }) {
+      const { invoice } = await financeRepository.recordPayment(invoiceId, payload);
+      const idx = this.invoices.findIndex(i => i.invoiceId === invoiceId);
+      if (idx !== -1) this.invoices[idx] = invoice;
+      return invoice;
+    },
   }
 });

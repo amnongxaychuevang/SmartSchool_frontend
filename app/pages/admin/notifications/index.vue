@@ -36,10 +36,10 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :current-page="academicsStore.notificationsPage" :total-pages="totalPages" @update:page="load" />
+      <PaginationBar :loading="academicsStore.notificationsLoading" :current-page="academicsStore.notificationsPage" :total-pages="totalPages" @update:page="load" />
     </section>
 
-    <AppModal v-model:open="modal.open" :title="$t('notifications_admin.send')" :subtitle="$t('notifications_admin.queued_note')">
+    <AppModal :open="modal.open" :title="$t('notifications_admin.send')" :subtitle="$t('notifications_admin.queued_note')" @update:open="modal.open = $event">
       <form id="notify-form" class="grid grid-cols-2 gap-4" @submit.prevent="handleSubmit">
         <div class="col-span-2">
           <label for="n-recipient" class="block mb-1.5 text-sm font-semibold">{{ $t('notifications_admin.recipient') }}</label>
@@ -107,7 +107,7 @@ onMounted(() => load(1));
 
 // Must match the API's enums.
 const types: AppNotification['type'][] = ['general', 'absence', 'grade', 'transaction', 'check_in', 'check_out'];
-const channels: AppNotification['channel'][] = ['app_push', 'sms', 'telegram', 'line', 'email'];
+const channels: AppNotification['channel'][] = ['whatsapp', 'app_push', 'email'];
 const emptyForm = () => ({
   recipientUserId: null as number | null,
   type: 'general' as AppNotification['type'],

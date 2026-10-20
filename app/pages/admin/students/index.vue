@@ -3,32 +3,22 @@
     <!-- Header + Search -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
       <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <input
-          v-model="searchInput"
-          type="text"
-          :placeholder="$t('students.search')"
-          class="w-full pl-9 pr-10 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
-          @input="handleSearch"
-        >
-        <button
-          v-if="searchInput"
-          class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
-          @click="searchInput = ''; handleSearch()"
-        >
+        <input v-model="searchInput" type="text" :placeholder="$t('students.search')" class="search-bar" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="searchInput = ''; handleSearch()">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <div class="flex items-center gap-4">
+      <div class="flex flex-1 flex-wrap items-center gap-3">
         <!-- Status Dropdown Menu -->
         <div class="relative z-50">
           <button
 :class="[
-              'relative px-4 py-2.5 border rounded-lg text-sm focus:outline-none flex items-center justify-between min-w-[160px] transition-colors',
+              'relative h-9 px-3 border rounded-lg text-sm focus:outline-none flex items-center justify-between min-w-[140px] transition-colors',
               statusFilter === '' 
                 ? 'bg-transparent border-slate-700 text-slate-400 hover:border-slate-600'
                 : 'bg-teal-500/20 border-teal-500/50 text-teal-400'
@@ -64,11 +54,41 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
         <!-- Backdrop -->
         <div v-if="statusDropdownOpen" class="fixed inset-0 z-40" @click="statusDropdownOpen = false"/>
 
-        <NuxtLink to="/admin/students/create" class="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]">
+        <!-- Gender Dropdown Menu -->
+        <div class="relative z-50">
+          <button
+            :class="[
+              'relative h-9 px-3 border rounded-lg text-sm focus:outline-none flex items-center justify-between min-w-[120px] transition-colors',
+              genderFilter === ''
+                ? 'bg-transparent border-slate-700 text-slate-400 hover:border-slate-600'
+                : 'bg-teal-500/20 border-teal-500/50 text-teal-400'
+            ]"
+            @click="genderDropdownOpen = !genderDropdownOpen">
+            <span>{{ genderFilter === '' ? $t('gender.all') : $t(`gender.${genderFilter}`) }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform" :class="[genderDropdownOpen ? 'rotate-180' : '', genderFilter === '' ? 'text-slate-400' : 'text-teal-400']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </button>
+
+          <Transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-out" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+            <div v-if="genderDropdownOpen" class="absolute left-0 top-full mt-2 w-max min-w-full glass-panel !p-1 border border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] overflow-hidden z-50">
+              <button
+                v-for="g in genderOptions"
+                :key="g"
+                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
+                :class="genderFilter === g ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
+                @click="genderFilter = g; handleFilter(); genderDropdownOpen = false">
+                <div class="w-1.5 h-1.5 rounded-full" :class="genderFilter === g ? 'bg-teal-500' : 'bg-transparent'"/>
+                {{ g === '' ? $t('gender.all') : $t(`gender.${g}`) }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <div v-if="genderDropdownOpen" class="fixed inset-0 z-40" @click="genderDropdownOpen = false"/>
+
+        <NuxtLink to="/admin/students/create" class="ml-auto h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          {{ $t('students.add_student') }}
+          {{ $t('common.add') }}
         </NuxtLink>
       </div>
     </div>
@@ -87,56 +107,55 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
       </div>
 
       <!-- Data Table -->
-      <table v-else class="w-full min-w-max">
+      <table v-else class="data-table w-full min-w-max">
         <thead>
-          <tr class="border-b border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5">{{ $t('common.code') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5">{{ $t('common.name') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5 hidden md:table-cell">{{ $t('common.class') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5 hidden sm:table-cell">{{ $t('common.date_of_birth') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5 hidden sm:table-cell">{{ $t('common.gender') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5 hidden 2xl:table-cell">{{ $t('common.address') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5">{{ $t('common.status') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5 hidden lg:table-cell">{{ $t('common.parent') }}</th>
-            <th class="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5 hidden xl:table-cell">{{ $t('common.parent_phone') }}</th>
-            <th class="text-right text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-1.5">{{ $t('common.actions') }}</th>
+          <tr>
+            <th>{{ $t('common.name') }}</th>
+            <th class="hidden md:table-cell">{{ $t('common.class') }}</th>
+            <th class="hidden sm:table-cell">{{ $t('common.date_of_birth') }}</th>
+            <th class="hidden sm:table-cell">{{ $t('common.gender') }}</th>
+            <th class="hidden 2xl:table-cell">{{ $t('common.address') }}</th>
+            <th>{{ $t('common.status') }}</th>
+            <th class="hidden lg:table-cell">{{ $t('common.parent') }}</th>
+            <th class="hidden xl:table-cell">{{ $t('common.parent_phone') }}</th>
+            <th class="text-right">{{ $t('common.actions') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr
 v-for="student in adminStore.students" :key="student.studentId"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-            <td class="px-4 py-1.5 text-sm text-slate-300 font-mono">{{ student.studentCode }}</td>
-            <td class="px-4 py-1.5">
+            <td>
               <div class="flex items-center gap-3">
-                <div class="w-7 h-7 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-sm font-bold shrink-0">
-                  {{ studentName(student)[0] }}
-                </div>
-                <div class="flex flex-col">
+                <PersonAvatar :name="studentName(student)" :photo-url="student.photoUrl" size="md" />
+                <div class="flex flex-col leading-tight">
                   <span class="text-sm font-medium text-white">{{ studentName(student) }}</span>
-                  <!-- Show class under name on mobile since class column is hidden -->
-                  <span class="text-xs text-slate-500 md:hidden mt-0.5">{{ currentClassName(student) }}</span>
+                  <span class="text-[11px] text-slate-500 mt-0.5 whitespace-nowrap">
+                    <span class="font-mono">{{ student.studentCode }}</span>
+                    <!-- Class column is hidden on mobile -->
+                    <span class="md:hidden"> · {{ currentClassName(student) }}</span>
+                  </span>
                 </div>
               </div>
             </td>
-            <td class="px-4 py-1.5 text-sm text-slate-400 hidden md:table-cell">
+            <td class="text-xs text-slate-400 hidden md:table-cell">
               {{ currentClassName(student) }}
             </td>
-            <td class="px-4 py-1.5 hidden sm:table-cell">
-              <div v-if="student.dateOfBirth" class="flex flex-col">
-                <span class="text-sm text-slate-300 font-mono">{{ formatDate(student.dateOfBirth) }}</span>
-                <span class="text-xs text-slate-500 mt-0.5">{{ studentAge(student.dateOfBirth) }} {{ $t('common.years_old') }}</span>
+            <td class="hidden sm:table-cell">
+              <div v-if="student.dateOfBirth" class="flex items-baseline gap-1.5 whitespace-nowrap">
+                <span class="text-xs text-slate-300 font-mono">{{ formatDate(student.dateOfBirth) }}</span>
+                <span class="text-[11px] text-slate-500">({{ studentAge(student.dateOfBirth) }} {{ $t('common.years_old') }})</span>
               </div>
               <span v-else class="text-slate-500">—</span>
             </td>
-            <td class="px-4 py-1.5 text-sm text-slate-400 capitalize hidden sm:table-cell">{{ student.gender ? $t(`gender.${student.gender}`) : '—' }}</td>
-            <td class="px-4 py-1.5 text-sm text-slate-400 hidden 2xl:table-cell max-w-[250px] truncate" :title="studentAddress(student)">
+            <td class="text-xs text-slate-400 capitalize hidden sm:table-cell">{{ student.gender ? $t(`gender.${student.gender}`) : '—' }}</td>
+            <td class="text-xs text-slate-400 hidden 2xl:table-cell max-w-[250px] truncate" :title="studentAddress(student)">
               {{ studentAddress(student) }}
             </td>
-            <td class="px-4 py-1.5">
+            <td>
               <div class="flex flex-col items-start gap-1">
                 <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-medium"
                   :class="{
                     'bg-teal-500/20 text-teal-400': student.status === 'active',
                     'bg-blue-500/20 text-blue-400': student.status === 'graduated',
@@ -149,20 +168,20 @@ v-for="student in adminStore.students" :key="student.studentId"
                 <span class="text-[10px] text-slate-500 sm:hidden capitalize">{{ student.gender ? $t(`gender.${student.gender}`) : '' }}</span>
               </div>
             </td>
-            <td class="px-4 py-1.5 text-sm text-slate-300 hidden lg:table-cell">
-              <span v-if="student.parentStudents?.[0]?.parent">{{ parentName(student.parentStudents[0].parent) }}</span>
+            <td class="text-xs text-slate-300 hidden lg:table-cell">
+              <span v-if="(student.parentStudents?.[0]?.parent)">{{ parentName(student.parentStudents[0].parent) }}</span>
               <span v-else class="text-slate-500">—</span>
             </td>
-            <td class="px-4 py-1.5 text-xs text-slate-400 hidden xl:table-cell whitespace-nowrap">
+            <td class="text-xs text-slate-400 hidden xl:table-cell whitespace-nowrap">
               {{ student.parentStudents?.[0]?.parent?.phoneNumber || '—' }}
             </td>
-            <td class="px-4 py-1.5">
+            <td>
               <div class="flex items-center justify-end gap-2">
                 <!-- Edit -->
                 <button
                   class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all"
                   :title="$t('common.edit')"
-                  @click="navigateTo(`/admin/students/create?id=${student.studentId}`)"
+                  @click="navigateTo(`/admin/students/${student.studentId}`)"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -191,7 +210,7 @@ v-for="student in adminStore.students" :key="student.studentId"
     </div>
 
     <!-- Pagination -->
-    <PaginationBar
+    <PaginationBar :loading="adminStore.studentsLoading"
       :current-page="adminStore.studentsPage"
       :total-pages="totalPages"
       @update:page="changePage"
@@ -201,7 +220,9 @@ v-for="student in adminStore.students" :key="student.studentId"
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useAdminStore } from '../../../application/stores/admin';
+import { useAdminStore, STUDENTS_PER_PAGE } from '../../../application/stores/admin';
+import { useDialog } from '../../../composables/useDialog';
+import { getErrorMessage } from '../../../utils/errors';
 import type { Student } from '../../../domain/models/Student';
 
 definePageMeta({ layout: 'admin' });
@@ -212,6 +233,9 @@ const { locale, t } = useI18n();
 const searchInput = ref('');
 const statusFilter = ref('');
 const statusDropdownOpen = ref(false);
+const genderFilter = ref(adminStore.studentsGender);
+const genderDropdownOpen = ref(false);
+const genderOptions = ['', 'male', 'female', 'other'];
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 // Name in the current UI language, falling back to the other one if empty.
@@ -252,11 +276,13 @@ const formatDate = (dateStr?: string) => {
 };
 
 const studentAddress = (student: Student) => {
-  const parts = [student.village, student.district, student.province].filter(Boolean);
+  const place = (x?: { nameLo: string; nameEn: string } | null) =>
+    x ? (locale.value === 'lo' ? x.nameLo : x.nameEn) || x.nameLo : '';
+  const parts = [student.village, place(student.district), place(student.province)].filter(Boolean);
   return parts.length > 0 ? parts.join(', ') : '—';
 };
 
-const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / 15));
+const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / STUDENTS_PER_PAGE));
 
 onMounted(() => {
   adminStore.fetchStudentStatuses();
@@ -266,33 +292,48 @@ onMounted(() => {
 const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value });
+    adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value, gender: genderFilter.value });
   }, 400);
 };
 
 const handleFilter = () => {
-  adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value });
+  adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value, gender: genderFilter.value });
 };
 
 const changePage = (page: number) => {
-  adminStore.fetchStudents({ page, status: statusFilter.value, search: searchInput.value });
+  adminStore.fetchStudents({ page, status: statusFilter.value, search: searchInput.value, gender: genderFilter.value });
 };
 
 // ── Deactivate / reactivate ──
 // Students are never deleted (their wallet, grades and attendance history must stay);
 // admins switch them to "inactive" instead.
 const togglingId = ref<number | null>(null);
+const dialog = useDialog();
 
-const toggleActive = async (student: Student) => {
-  const next = student.status === 'inactive' ? 'active' : 'inactive';
-  if (next === 'inactive' && !confirm(t('students.deactivate_confirm', { name: studentName(student) }))) return;
+const setStatus = async (student: Student, status: 'active' | 'inactive') => {
   togglingId.value = student.studentId;
   try {
-    await adminStore.updateStudent(student.studentId, { status: next });
-  } catch (err) {
-    alert((err instanceof Error && err.message) || 'Failed to update student status');
+    await adminStore.updateStudent(student.studentId, { status });
   } finally {
     togglingId.value = null;
+  }
+};
+
+const toggleActive = async (student: Student) => {
+  if (student.status !== 'inactive') {
+    dialog.confirm({
+      title: t('common.deactivate_title'),
+      message: t('students.deactivate_confirm', { name: studentName(student) }),
+      confirmLabel: t('common.deactivate'),
+      tone: 'danger',
+      onConfirm: () => setStatus(student, 'inactive'),
+    });
+    return;
+  }
+  try {
+    await setStatus(student, 'active');
+  } catch (err) {
+    dialog.error(getErrorMessage(err, 'Failed to update student status'));
   }
 };
 </script>

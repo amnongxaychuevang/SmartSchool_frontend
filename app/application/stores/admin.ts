@@ -11,6 +11,11 @@ import type { Teacher } from '../../domain/models/Teacher';
 import type { Parent } from '../../domain/models/Parent';
 import { getErrorMessage } from '../../utils/errors';
 
+export const STUDENTS_PER_PAGE = 10;
+export const TEACHERS_PER_PAGE = 10;
+export const PARENTS_PER_PAGE = 10;
+export const CLASSES_PER_PAGE = 10;
+
 export const useAdminStore = defineStore('admin', {
   state: () => ({
     // Dashboard
@@ -23,6 +28,7 @@ export const useAdminStore = defineStore('admin', {
     studentsPage: 1,
     studentsSearch: '',
     studentsStatus: '',
+    studentsGender: '',
     studentsLoading: false,
     studentStatuses: [] as { code: string; labelKey: string }[],
 
@@ -39,6 +45,8 @@ export const useAdminStore = defineStore('admin', {
     teachersTotal: 0,
     teachersPage: 1,
     teachersSearch: '',
+    teachersStatus: '',
+    teachersGender: '',
     teachersLoading: false,
 
     // Parents
@@ -46,6 +54,7 @@ export const useAdminStore = defineStore('admin', {
     parentsTotal: 0,
     parentsPage: 1,
     parentsSearch: '',
+    parentsStatus: '',
     parentsLoading: false,
 
     // Classes
@@ -53,6 +62,7 @@ export const useAdminStore = defineStore('admin', {
     classesTotal: 0,
     classesPage: 1,
     classesSearch: '',
+    classesYear: '',
     classesLoading: false,
 
     // Genders
@@ -65,7 +75,7 @@ export const useAdminStore = defineStore('admin', {
     auditLogs: [] as AuditLog[],
     auditLogsTotal: 0,
     auditLogsPage: 1,
-    auditLogsFilters: { userId: '', entityType: '', action: '' } as { userId: string; entityType: string; action: string },
+    auditLogsFilters: { search: '', userId: '', entityType: '', action: '' } as { search: string; userId: string; entityType: string; action: string },
     auditLogsLoading: false,
 
     error: null as string | null,
@@ -109,13 +119,14 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchStudents(params?: { search?: string; page?: number; status?: string }) {
+    async fetchStudents(params?: { search?: string; page?: number; status?: string; gender?: string }) {
       this.studentsLoading = true;
       if (params?.search !== undefined) this.studentsSearch = params.search;
       if (params?.page !== undefined) this.studentsPage = params.page;
       if (params?.status !== undefined) this.studentsStatus = params.status;
+      if (params?.gender !== undefined) this.studentsGender = params.gender;
       try {
-        const res = await adminRepository.getStudents({ search: this.studentsSearch, page: this.studentsPage, limit: 15, status: this.studentsStatus });
+        const res = await adminRepository.getStudents({ search: this.studentsSearch, page: this.studentsPage, limit: STUDENTS_PER_PAGE, status: this.studentsStatus, gender: this.studentsGender });
         this.students = res.students;
         this.studentsTotal = res.total;
       } catch (err) {
@@ -165,7 +176,7 @@ export const useAdminStore = defineStore('admin', {
       if (params?.search !== undefined) this.usersSearch = params.search;
       if (params?.page !== undefined) this.usersPage = params.page;
       try {
-        const res = await adminRepository.getUsers({ role: this.usersRoleFilter, search: this.usersSearch, page: this.usersPage, limit: 15 });
+        const res = await adminRepository.getUsers({ role: this.usersRoleFilter, search: this.usersSearch, page: this.usersPage, limit: 10 });
         this.users = res.users;
         this.usersTotal = res.total;
       } catch (err) {
@@ -202,12 +213,14 @@ export const useAdminStore = defineStore('admin', {
     },
 
     // Teachers
-    async fetchTeachers(params?: { search?: string; page?: number }) {
+    async fetchTeachers(params?: { search?: string; page?: number; status?: string; gender?: string }) {
       this.teachersLoading = true;
       if (params?.search !== undefined) this.teachersSearch = params.search;
       if (params?.page !== undefined) this.teachersPage = params.page;
+      if (params?.status !== undefined) this.teachersStatus = params.status;
+      if (params?.gender !== undefined) this.teachersGender = params.gender;
       try {
-        const res = await adminRepository.getTeachers({ search: this.teachersSearch, page: this.teachersPage, limit: 15 });
+        const res = await adminRepository.getTeachers({ search: this.teachersSearch, page: this.teachersPage, limit: TEACHERS_PER_PAGE, status: this.teachersStatus, gender: this.teachersGender });
         this.teachers = res.teachers;
         this.teachersTotal = res.total;
       } catch (err) {
@@ -244,12 +257,13 @@ export const useAdminStore = defineStore('admin', {
     },
 
     // Parents
-    async fetchParents(params?: { search?: string; page?: number }) {
+    async fetchParents(params?: { search?: string; page?: number; status?: string }) {
       this.parentsLoading = true;
       if (params?.search !== undefined) this.parentsSearch = params.search;
       if (params?.page !== undefined) this.parentsPage = params.page;
+      if (params?.status !== undefined) this.parentsStatus = params.status;
       try {
-        const res = await adminRepository.getParents({ search: this.parentsSearch, page: this.parentsPage, limit: 15 });
+        const res = await adminRepository.getParents({ search: this.parentsSearch, page: this.parentsPage, limit: PARENTS_PER_PAGE, status: this.parentsStatus });
         this.parents = res.parents;
         this.parentsTotal = res.total;
       } catch (err) {
@@ -285,12 +299,13 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchClasses(params?: { search?: string; page?: number }) {
+    async fetchClasses(params?: { search?: string; page?: number; academicYear?: string }) {
       this.classesLoading = true;
       if (params?.search !== undefined) this.classesSearch = params.search;
       if (params?.page !== undefined) this.classesPage = params.page;
+      if (params?.academicYear !== undefined) this.classesYear = params.academicYear;
       try {
-        const res = await adminRepository.getClasses({ search: this.classesSearch, page: this.classesPage, limit: 15 });
+        const res = await adminRepository.getClasses({ search: this.classesSearch, page: this.classesPage, limit: CLASSES_PER_PAGE, academicYear: this.classesYear });
         this.classes = res.classes;
         this.classesTotal = res.total;
       } catch (err) {
@@ -337,19 +352,21 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchAuditLogs(params?: { userId?: string; entityType?: string; action?: string; page?: number }) {
+    async fetchAuditLogs(params?: { search?: string; userId?: string; entityType?: string; action?: string; page?: number }) {
       this.auditLogsLoading = true;
+      if (params?.search !== undefined) this.auditLogsFilters.search = params.search;
       if (params?.userId !== undefined) this.auditLogsFilters.userId = params.userId;
       if (params?.entityType !== undefined) this.auditLogsFilters.entityType = params.entityType;
       if (params?.action !== undefined) this.auditLogsFilters.action = params.action;
       if (params?.page !== undefined) this.auditLogsPage = params.page;
       try {
         const res = await adminRepository.getAuditLogs({
+          search: this.auditLogsFilters.search || undefined,
           userId: this.auditLogsFilters.userId || undefined,
           entityType: this.auditLogsFilters.entityType || undefined,
           action: this.auditLogsFilters.action || undefined,
           page: this.auditLogsPage,
-          limit: 20,
+          limit: 15,
         });
         this.auditLogs = res.logs;
         this.auditLogsTotal = res.total;

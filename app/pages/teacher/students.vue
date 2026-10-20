@@ -8,7 +8,7 @@
     <LoadingSpinner v-if="loading" color="amber" padding="py-12" />
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="student in students" :key="student.studentId" class="glass-panel p-6 rounded-2xl flex items-start gap-4">
-        <img :src="student.photoUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(locale === 'lo' ? student.fullNameLo : student.fullNameEn) + '&background=f59e0b&color=fff'" alt="" class="w-16 h-16 rounded-xl object-cover shrink-0" >
+        <PersonAvatar :name="locale === 'lo' ? student.fullNameLo : student.fullNameEn" :photo-url="student.photoUrl" size="lg" />
         <div class="flex flex-col gap-1">
           <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ locale === 'lo' ? student.fullNameLo : student.fullNameEn }}</h3>
           <p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('teacherPortal.code') }} {{ student.studentCode }}</p>

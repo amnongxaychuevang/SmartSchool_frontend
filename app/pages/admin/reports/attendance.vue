@@ -20,6 +20,9 @@
       <button type="button" class="btn-secondary" :disabled="loading" @click="load">
         {{ $t('common.refresh') }}
       </button>
+      <button type="button" class="btn-secondary" :disabled="!report" @click="exportAttendance">
+        {{ $t('common.export_excel') }}
+      </button>
     </PageHeader>
 
     <div v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm flex items-center justify-between gap-4">
@@ -182,6 +185,7 @@ import { useI18n } from 'vue-i18n';
 import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import { useFormat } from '../../../composables/useFormat';
+import { useExport } from '../../../composables/useExport';
 import { getErrorMessage } from '../../../utils/errors';
 import {
   reportRepository,
@@ -192,6 +196,7 @@ definePageMeta({ layout: 'admin' });
 
 const { t, locale } = useI18n();
 const f = useFormat();
+const { exportExcel } = useExport();
 useHead({ title: () => t('reports_detail.attendance_analytics') });
 
 const ranges: ReportRange[] = ['today', '7d', '30d'];
@@ -256,6 +261,28 @@ const filteredAbsentees = computed(() => {
     [a.fullNameEn, a.fullNameLo, a.studentCode, a.classNameEn, a.classNameLo].some((v) => v?.toLowerCase().includes(q)));
 });
 const visibleAbsentees = computed(() => filteredAbsentees.value.slice(0, 100));
+
+function exportAttendance() {
+  if (!report.value) return;
+  const data = report.value.absentees.map((a) => ({
+    studentName: studentName(a),
+    studentCode: a.studentCode,
+    className: className(a) ?? '',
+    date: a.date,
+    status: a.status,
+    reason: a.leaveReason ?? '',
+    notification: a.notification ?? 'none',
+  }));
+  exportExcel(data, [
+    { key: 'studentName', label: t('attendance_report.col_student') },
+    { key: 'studentCode', label: t('students.student_code') },
+    { key: 'className', label: t('attendance_report.col_class') },
+    { key: 'date', label: t('attendance_report.col_date') },
+    { key: 'status', label: t('attendance_report.col_status') },
+    { key: 'reason', label: t('attendance_report.col_reason') },
+    { key: 'notification', label: t('attendance_report.col_notice') },
+  ], `attendance-report-${range.value}`);
+}
 
 const key = (a: AbsenceEntry) => `${a.studentId}:${a.date}`;
 const notifying = reactive(new Set<string>());

@@ -1,7 +1,17 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader :eyebrow="$t('nav.finance')" :title="$t('wallets_admin.title')" :subtitle="$t('wallets_admin.subtitle')">
-      <input v-model="searchInput" type="search" class="input-field w-64" :placeholder="$t('wallets_admin.search')" @input="handleSearch">
+      <div class="relative w-64">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('wallets_admin.search')" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="clearSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
       <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="load(1)">
         <option value="">{{ $t('wallets_admin.all_status') }}</option>
         <option value="active">{{ $t('status.active') }}</option>
@@ -28,14 +38,14 @@
             <tr v-for="w in financeStore.wallets" :key="w.walletId">
               <td>
                 <p class="font-semibold">{{ studentName(w) }}</p>
-                <p class="text-xs text-ink-subtle font-mono">{{ w.student?.studentCode }}</p>
+                <p class="text-xs text-ink-subtle font-mono">{{ w.student ? w.student.studentCode : '' }}</p>
               </td>
               <td class="text-right font-semibold tnum">{{ f.kip(w.balance) }}</td>
               <td class="text-right tnum text-ink-muted">
-                {{ w.student?.spendingLimit?.dailyMax ? f.kip(w.student.spendingLimit.dailyMax) : $t('wallets_admin.no_limit') }}
+                {{ w.student && w.student.spendingLimit && w.student.spendingLimit.dailyMax ? f.kip(w.student.spendingLimit.dailyMax) : $t('wallets_admin.no_limit') }}
               </td>
               <td><span :class="w.status === 'active' ? 'badge-success' : 'badge-danger'">{{ $t(`status.${w.status}`) }}</span></td>
-              <td class="max-w-xs truncate text-ink-muted" :title="w.notes ?? undefined">{{ w.notes || '—' }}</td>
+              <td class="max-w-xs truncate text-ink-muted" :title="w.notes || undefined">{{ w.notes || '—' }}</td>
               <td class="text-right">
                 <div class="inline-flex gap-2">
                   <button type="button" :class="w.status === 'active' ? 'btn-danger' : 'btn-secondary'" class="min-h-8 px-3" @click="openStatus(w)">
@@ -48,14 +58,15 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :current-page="financeStore.walletsPage" :total-pages="totalPages" @update:page="load" />
+      <PaginationBar :loading="financeStore.walletsLoading" :current-page="financeStore.walletsPage" :total-pages="totalPages" @update:page="load" />
     </section>
 
     <AppModal
-      v-model:open="topUp.open"
+      :open="topUp.open"
       :title="$t('wallets_admin.top_up_title')"
       :subtitle="topUp.wallet ? $t('wallets_admin.top_up_for', { name: studentName(topUp.wallet), balance: f.kip(topUp.wallet.balance) }) : ''"
       size="sm"
+      @update:open="topUp.open = $event"
     >
       <form id="topup-form" class="flex flex-col gap-4" @submit.prevent="handleTopUp">
         <div>
@@ -77,13 +88,14 @@
     </AppModal>
 
     <ConfirmDialog
-      v-model:open="status.open"
-      :tone="status.wallet?.status === 'active' ? 'danger' : 'primary'"
-      :title="status.wallet?.status === 'active' ? $t('wallets_admin.freeze_title') : $t('wallets_admin.unfreeze_title')"
+      :open="status.open"
+      :tone="status.wallet && status.wallet.status === 'active' ? 'danger' : 'primary'"
+      :title="status.wallet && status.wallet.status === 'active' ? $t('wallets_admin.freeze_title') : $t('wallets_admin.unfreeze_title')"
       :message="status.wallet ? $t(status.wallet.status === 'active' ? 'wallets_admin.freeze_msg' : 'wallets_admin.unfreeze_msg', { name: studentName(status.wallet) }) : ''"
-      :confirm-label="status.wallet?.status === 'active' ? $t('wallets_admin.freeze') : $t('wallets_admin.unfreeze')"
+      :confirm-label="status.wallet && status.wallet.status === 'active' ? $t('wallets_admin.freeze') : $t('wallets_admin.unfreeze')"
       :busy="status.busy"
       :error="status.error"
+      @update:open="status.open = $event"
       @confirm="handleStatus"
     />
   </div>
@@ -121,6 +133,7 @@ const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => load(1), 400);
 };
+const clearSearch = () => { searchInput.value = ''; load(1); };
 
 const topUp = reactive({ open: false, saving: false, error: '', wallet: null as Wallet | null, amount: 0, notes: '' });
 const openTopUp = (w: Wallet) => Object.assign(topUp, { open: true, saving: false, error: '', wallet: w, amount: 0, notes: '' });

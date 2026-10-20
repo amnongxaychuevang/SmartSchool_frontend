@@ -1,15 +1,22 @@
 <template>
-  <div class="flex flex-col gap-6 page-enter">
-    <!-- Header & Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <p class="text-xs font-semibold text-teal-400 uppercase tracking-widest">{{ $t('nav.announcements') }}</p>
-        <h2 class="text-2xl font-bold text-white">{{ $t('admin.manage_announcements') }}</h2>
-        <p class="text-sm text-slate-400">{{ $t('admin.manage_announcements_desc') }}</p>
+  <div class="flex flex-col gap-6">
+    <!-- Header + Search -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" :placeholder="$t('common.search')" class="search-bar" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="searchInput = ''; handleSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-      <div class="flex items-center gap-3">
-        <button class="btn-primary flex items-center gap-2 shadow-[0_4px_15px_rgba(45,212,191,0.25)] hover:shadow-[0_6px_20px_rgba(45,212,191,0.4)]" @click="openCreateModal">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      
+      <div class="flex flex-1 flex-wrap items-center gap-3">
+        <button class="ml-auto h-9 px-3.5 btn-primary flex items-center gap-2 shadow-[0_4px_15px_rgba(45,212,191,0.25)] hover:shadow-[0_6px_20px_rgba(45,212,191,0.4)]" @click="openCreateModal">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           {{ $t('admin.new_announcement') }}
@@ -18,7 +25,7 @@
     </div>
 
     <!-- Loading State -->
-    <LoadingSpinner v-if="loading" padding="p-12" />
+    <LoadingSpinner v-if="loading" class="my-12" />
 
     <!-- Empty State -->
     <div v-else-if="announcements.length === 0" class="glass-panel p-16 flex flex-col items-center justify-center text-center">
@@ -27,139 +34,110 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
         </svg>
       </div>
-      <h3 class="text-lg text-white font-bold mb-2">{{ $t('admin.no_announcements_found') }}</h3>
-      <p class="text-slate-400 text-sm max-w-sm">{{ $t('admin.create_first_announcement') }}</p>
+      <h3 class="text-lg text-white font-bold mb-2">{{ announcements.length === 0 ? $t('admin.no_announcements_found') : $t('common.no_data') }}</h3>
+      <p class="text-slate-400 text-sm max-w-sm">{{ announcements.length === 0 ? $t('admin.create_first_announcement') : '' }}</p>
     </div>
 
-    <!-- Data Grid -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="item in announcements" :key="item.announcementId" class="glass-panel-hover p-6 flex flex-col gap-4">
-        <div class="flex justify-between items-start gap-3">
-          <h3 class="text-white font-semibold line-clamp-2">{{ locale === 'lo' ? item.titleLo : item.titleEn }}</h3>
-          <span class="badge-teal shrink-0">
-            {{ audienceLabel(item) }}
-          </span>
-        </div>
-        <p class="text-sm text-slate-400 line-clamp-3 flex-1 leading-relaxed">{{ locale === 'lo' ? item.contentLo : item.contentEn }}</p>
-
-        <div class="flex items-center justify-between border-t border-slate-800/50 pt-4 mt-2">
-          <div class="flex flex-col">
-            <span class="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">{{ $t('admin.published') }}</span>
-            <span class="text-xs text-slate-300 font-medium">{{ formatDate(item.publishDate) }}</span>
-          </div>
-          <div class="flex gap-2">
-            <button class="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-red-500/80 transition-all shadow-sm" @click="deleteItem(item.announcementId)">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+    <!-- Data Grid -> Table -->
+    <div v-else class="glass-panel overflow-x-auto">
+      <table class="data-table w-full min-w-max">
+        <thead>
+          <tr>
+            <th class="w-12 text-center">#</th>
+            <th>{{ $t('common.title') }}</th>
+            <th class="hidden md:table-cell">{{ $t('common.content') }}</th>
+            <th>{{ $t('admin.audience') }}</th>
+            <th class="hidden sm:table-cell">{{ $t('admin.published') }}</th>
+            <th class="text-right">{{ $t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60">
+          <tr v-for="(item, index) in announcements" :key="item.announcementId" class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
+              {{ (currentPage - 1) * limit + index + 1 }}
+            </td>
+            <td class="px-4 py-3">
+              <p class="text-sm font-medium text-slate-900 dark:text-white line-clamp-2 max-w-[200px]">
+                {{ locale === 'lo' ? item.titleLo : item.titleEn }}
+              </p>
+            </td>
+            <td class="hidden md:table-cell">
+              <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 max-w-md pr-4">
+                {{ locale === 'lo' ? item.contentLo : item.contentEn }}
+              </p>
+            </td>
+            <td class="px-4 py-3">
+              <span class="badge-teal">{{ audienceLabel(item) }}</span>
+            </td>
+            <td class="hidden sm:table-cell">
+              <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ formatDate(item.publishDate) }}</span>
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center justify-end gap-2">
+                <button class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openEditModal(item)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="confirmDelete(item)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+
+    <!-- Pagination -->
+    <PaginationBar
+      v-if="!loading && totalItems > 0"
+      :current-page="currentPage"
+      :total-pages="totalPages"
+      :total-items="totalItems"
+      @page-changed="handlePageChange"
+    />
 
     <!-- Create Modal -->
-    <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="closeModal"/>
-        
-        <div class="relative glass-panel w-full max-w-2xl max-h-[90vh] flex flex-col animate-[fadeSlideUp_0.3s_ease]">
-          <div class="p-6 border-b border-slate-800/50 flex justify-between items-center shrink-0">
-            <h3 class="text-xl font-bold text-white">{{ $t('admin.new_announcement') }}</h3>
-            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" @click="closeModal">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+    <AdminAnnouncementModal
+      v-model="showModal"
+      :is-edit-mode="isEditMode"
+      :saving="saving"
+      :form="form"
+      :class-options="classOptions"
+      @save="saveAnnouncement"
+    />
 
-          <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
-            <form id="announcementForm" class="flex flex-col gap-5" @submit.prevent="saveAnnouncement">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div class="flex flex-col gap-2">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.title_lo') }}</label>
-                  <input v-model="form.titleLo" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_lo')" >
-                </div>
-                <div class="flex flex-col gap-2">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.title_en') }}</label>
-                  <input v-model="form.titleEn" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_en')" >
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.content_lo') }}</label>
-                <textarea v-model="form.contentLo" required rows="4" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_lo')"/>
-              </div>
-
-              <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.content_en') }}</label>
-                <textarea v-model="form.contentEn" required rows="4" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_en')"/>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div class="flex flex-col gap-2">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.audience') }}</label>
-                  <select v-model="form.targetAudience" class="input-field cursor-pointer">
-                    <option value="all">{{ $t('admin.everyone') }}</option>
-                    <option value="teachers">{{ $t('admin.teachers_only') }}</option>
-                    <option value="parents">{{ $t('admin.parents_only') }}</option>
-                    <option value="class">{{ $t('admin.class_only') }}</option>
-                  </select>
-                </div>
-                <div v-if="form.targetAudience === 'class'" class="flex flex-col gap-2">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('common.class') }} *</label>
-                  <select v-model="form.classId" required class="input-field cursor-pointer">
-                    <option :value="null" disabled>—</option>
-                    <option v-for="cls in adminStore.classes" :key="cls.classId" :value="cls.classId">
-                      {{ locale === 'lo' ? cls.classNameLo : cls.classNameEn }} ({{ cls.academicYear }})
-                    </option>
-                  </select>
-                </div>
-                <div class="flex flex-col gap-2">
-                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.expiry_date') }}</label>
-                  <input v-model="form.expiryDate" type="date" class="input-field" >
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <div class="p-6 border-t border-slate-800/50 flex justify-end gap-3 shrink-0 bg-slate-900/20 rounded-b-2xl">
-            <button type="button" class="btn-ghost" @click="closeModal">
-              {{ $t('common.cancel') }}
-            </button>
-            <button form="announcementForm" type="submit" :disabled="saving" class="btn-primary flex items-center gap-2">
-              <svg v-if="saving" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
-              <span v-else>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </span>
-              {{ $t('admin.publish_announcement') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDialog
+      :open="del.open"
+      tone="danger"
+      :title="$t('announcements_admin.delete_title') || $t('common.delete')"
+      :message="del.item ? $t('announcements_admin.delete_confirm') : ''"
+      :confirm-label="$t('common.delete')"
+      :busy="del.busy"
+      :error="del.error"
+      @update:open="del.open = $event"
+      @confirm="handleDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ApiResponse } from '../../../infrastructure/api/types';
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
-import { useAdminStore } from '../../../application/stores/admin';
+import { adminRepository } from '../../../infrastructure/api/AdminRepository';
+import type { SchoolClass } from '../../../domain/models/SchoolClass';
 
 definePageMeta({
   layout: 'admin'
 });
 
 const { locale, t } = useI18n();
-const adminStore = useAdminStore();
 const apiClient = useApiClient();
 interface Announcement {
   announcementId: string | number;
@@ -175,6 +153,41 @@ interface Announcement {
 }
 
 const announcements = ref<Announcement[]>([]);
+
+const searchInput = ref('');
+const currentPage = ref(1);
+const limit = ref(10);
+const totalItems = ref(0);
+const totalPages = ref(1);
+
+const isEditMode = ref(false);
+const editingId = ref<string | number | null>(null);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const handleSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    fetchAnnouncements();
+  }, 300);
+};
+
+const handlePageChange = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    fetchAnnouncements();
+  }
+};
+
+// Every active class (not the paginated/filtered list of the Classes page).
+const classOptions = ref<SchoolClass[]>([]);
+const loadClassOptions = async () => {
+  try {
+    classOptions.value = await adminRepository.getAllClasses();
+  } catch (error) {
+    console.error('Failed to fetch classes:', error);
+  }
+};
 
 const audienceLabel = (item: Announcement) => {
   if (item.targetAudience === 'class') {
@@ -200,9 +213,12 @@ const form = ref({
 const fetchAnnouncements = async () => {
   try {
     loading.value = true;
-    const res = await apiClient<ApiResponse<Announcement[]>>(API_ENDPOINTS.announcements.base);
+    const searchParam = searchInput.value ? `&search=${encodeURIComponent(searchInput.value)}` : '';
+    const res = await apiClient<ApiResponse<Announcement[]>>(`${API_ENDPOINTS.announcements.base}?page=${currentPage.value}&limit=${limit.value}${searchParam}`);
     if (res?.success) {
       announcements.value = res.data;
+      totalItems.value = res.meta?.total || 0;
+      totalPages.value = res.meta?.totalPages || 1;
     }
   } catch (error) {
     console.error('Failed to fetch announcements:', error);
@@ -212,6 +228,8 @@ const fetchAnnouncements = async () => {
 };
 
 const openCreateModal = () => {
+  isEditMode.value = false;
+  editingId.value = null;
   form.value = {
     titleLo: '',
     titleEn: '',
@@ -221,7 +239,23 @@ const openCreateModal = () => {
     classId: null,
     expiryDate: ''
   };
-  if (adminStore.classes.length === 0) adminStore.fetchClasses();
+  if (classOptions.value.length === 0) loadClassOptions();
+  showModal.value = true;
+};
+
+const openEditModal = (item: Announcement) => {
+  isEditMode.value = true;
+  editingId.value = item.announcementId;
+  form.value = {
+    titleLo: item.titleLo,
+    titleEn: item.titleEn,
+    contentLo: item.contentLo,
+    contentEn: item.contentEn,
+    targetAudience: item.targetAudience,
+    classId: item.classId || null,
+    expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0]! : ''
+  };
+  if (classOptions.value.length === 0) loadClassOptions();
   showModal.value = true;
 };
 
@@ -232,8 +266,10 @@ const closeModal = () => {
 const saveAnnouncement = async () => {
   try {
     saving.value = true;
-    const res = await apiClient<ApiResponse<Announcement>>(API_ENDPOINTS.announcements.base, {
-      method: 'POST',
+    const method = isEditMode.value ? 'PUT' : 'POST';
+    const url = isEditMode.value ? `${API_ENDPOINTS.announcements.base}/${editingId.value}` : API_ENDPOINTS.announcements.base;
+    const res = await apiClient<ApiResponse<Announcement>>(url, {
+      method,
       body: {
         ...form.value,
         classId: form.value.targetAudience === 'class' ? form.value.classId : undefined,
@@ -252,14 +288,32 @@ const saveAnnouncement = async () => {
   }
 };
 
-const deleteItem = async (id: string | number) => {
-  if (confirm(t('announcements_admin.delete_confirm'))) {
-    try {
-      await apiClient(`${API_ENDPOINTS.announcements.base}/${id}`, { method: 'DELETE' });
-      await fetchAnnouncements();
-    } catch (error) {
-      console.error('Failed to delete announcement:', error);
-    }
+const del = reactive({
+  open: false,
+  item: null as Announcement | null,
+  busy: false,
+  error: ''
+});
+
+const confirmDelete = (item: Announcement) => {
+  del.item = item;
+  del.open = true;
+  del.error = '';
+};
+
+const handleDelete = async () => {
+  if (!del.item) return;
+  try {
+    del.busy = true;
+    del.error = '';
+    await apiClient(`${API_ENDPOINTS.announcements.base}/${del.item.announcementId}`, { method: 'DELETE' });
+    del.open = false;
+    await fetchAnnouncements();
+  } catch (error: any) {
+    console.error('Failed to delete announcement:', error);
+    del.error = error.message || t('common.error');
+  } finally {
+    del.busy = false;
   }
 };
 

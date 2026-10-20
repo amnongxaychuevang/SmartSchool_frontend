@@ -1,94 +1,104 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('nav.finance')" :title="$t('shops_admin.title')" :subtitle="$t('shops_admin.subtitle')">
-      <input v-model="searchInput" type="search" class="input-field w-64" :placeholder="$t('shops_admin.search')" @input="handleSearch">
-      <button type="button" class="btn-primary" @click="openCreate">{{ $t('shops_admin.add') }}</button>
-    </PageHeader>
-
-    <section class="panel overflow-hidden">
-      <LoadingSpinner v-if="financeStore.shopsLoading" />
-      <p v-else-if="!financeStore.shops.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('shops_admin.empty') }}</p>
-      <div v-else class="overflow-x-auto">
-        <table class="data-table w-full min-w-max">
-          <thead>
-            <tr>
-              <th>{{ $t('shops_admin.col_name') }}</th>
-              <th>{{ $t('shops_admin.col_location') }}</th>
-              <th>{{ $t('shops_admin.col_description') }}</th>
-              <th>{{ $t('common.status') }}</th>
-              <th class="text-right">{{ $t('common.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="shop in financeStore.shops" :key="shop.shopId">
-              <td>
-                <p class="font-semibold">{{ pick(shop.shopNameLo, shop.shopNameEn) }}</p>
-                <p class="text-xs text-ink-subtle">{{ pick(shop.shopNameEn, shop.shopNameLo) }}</p>
-              </td>
-              <td class="text-ink-muted">{{ pick(shop.locationLo, shop.locationEn) || '—' }}</td>
-              <td class="max-w-xs truncate text-ink-muted">{{ pick(shop.descriptionLo, shop.descriptionEn) || '—' }}</td>
-              <td>
-                <span :class="shop.isActive ? 'badge-success' : 'badge-neutral'">{{ shop.isActive ? $t('status.active') : $t('status.inactive') }}</span>
-              </td>
-              <td class="text-right">
-                <div class="inline-flex gap-2">
-                  <button type="button" class="btn-secondary min-h-8 px-3" @click="openEdit(shop)">{{ $t('common.edit') }}</button>
-                  <button type="button" class="btn-danger min-h-8 px-3" @click="openDelete(shop)">{{ $t('common.delete') }}</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Header + Search -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" :placeholder="$t('shops_admin.search')" class="search-bar" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="searchInput = ''; handleSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-      <PaginationBar :current-page="financeStore.shopsPage" :total-pages="totalPages" @update:page="changePage" />
-    </section>
+      <div class="flex flex-1 flex-wrap items-center gap-3">
+        <button
+          type="button" class="ml-auto h-9 px-3.5 bg-teal-500 hover:bg-teal-600 dark:hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] disabled:opacity-50 disabled:shadow-none"
+          @click="openCreate">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          {{ $t('shops_admin.add') }}
+        </button>
+      </div>
+    </div>
 
-    <AppModal v-model:open="modal.open" :title="modal.shopId ? $t('shops_admin.edit') : $t('shops_admin.add')" size="lg">
-      <form id="shop-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4" @submit.prevent="handleSubmit">
-        <div>
-          <label for="sh-name-lo" class="block mb-1.5 text-sm font-semibold">{{ $t('shops_admin.name_lo') }}</label>
-          <input id="sh-name-lo" v-model.trim="modal.form.shopNameLo" required maxlength="100" lang="lo" class="input-field">
-        </div>
-        <div>
-          <label for="sh-name-en" class="block mb-1.5 text-sm font-semibold">{{ $t('shops_admin.name_en') }}</label>
-          <input id="sh-name-en" v-model.trim="modal.form.shopNameEn" required maxlength="100" lang="en" class="input-field">
-        </div>
-        <div>
-          <label for="sh-loc-lo" class="block mb-1.5 text-sm font-semibold">{{ $t('shops_admin.location_lo') }}</label>
-          <input id="sh-loc-lo" v-model.trim="modal.form.locationLo" maxlength="100" lang="lo" class="input-field">
-        </div>
-        <div>
-          <label for="sh-loc-en" class="block mb-1.5 text-sm font-semibold">{{ $t('shops_admin.location_en') }}</label>
-          <input id="sh-loc-en" v-model.trim="modal.form.locationEn" maxlength="100" lang="en" class="input-field">
-        </div>
-        <div>
-          <label for="sh-desc-lo" class="block mb-1.5 text-sm font-semibold">{{ $t('shops_admin.description_lo') }}</label>
-          <textarea id="sh-desc-lo" v-model.trim="modal.form.descriptionLo" rows="2" lang="lo" class="input-field" />
-        </div>
-        <div>
-          <label for="sh-desc-en" class="block mb-1.5 text-sm font-semibold">{{ $t('shops_admin.description_en') }}</label>
-          <textarea id="sh-desc-en" v-model.trim="modal.form.descriptionEn" rows="2" lang="en" class="input-field" />
-        </div>
-        <label class="sm:col-span-2 flex items-center gap-2 text-sm">
-          <input v-model="modal.form.isActive" type="checkbox" class="h-4 w-4 rounded border-line-strong">
-          {{ $t('shops_admin.active') }}
-        </label>
-        <p v-if="modal.error" role="alert" class="sm:col-span-2 rounded border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">{{ modal.error }}</p>
-      </form>
-      <template #footer>
-        <button type="button" class="btn-secondary" :disabled="modal.saving" @click="modal.open = false">{{ $t('common.cancel') }}</button>
-        <button type="submit" form="shop-form" class="btn-primary" :disabled="modal.saving">{{ modal.saving ? $t('common.saving') : $t('common.save') }}</button>
-      </template>
-    </AppModal>
+    <div class="glass-panel overflow-x-auto">
+      <LoadingSpinner v-if="financeStore.shopsLoading" class="my-12" />
+      <div v-else-if="!financeStore.shops.length" class="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <p>{{ $t('shops_admin.empty') }}</p>
+      </div>
+      <table v-else class="data-table w-full min-w-max">
+        <thead>
+          <tr>
+            <th class="w-12 text-center">#</th>
+            <th>{{ $t('shops_admin.col_name') }}</th>
+            <th>{{ $t('shops_admin.col_location') }}</th>
+            <th>{{ $t('shops_admin.col_description') }}</th>
+            <th>{{ $t('common.status') }}</th>
+            <th class="text-right">{{ $t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60">
+          <tr v-for="(shop, index) in financeStore.shops" :key="shop.shopId" class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
+              {{ (financeStore.shopsPage - 1) * 15 + index + 1 }}
+            </td>
+            <td class="text-sm font-medium text-slate-900 dark:text-white">
+              {{ pick(shop.shopNameLo, shop.shopNameEn) }}
+            </td>
+            <td class="text-sm text-slate-500 dark:text-slate-400">{{ pick(shop.locationLo, shop.locationEn) || '—' }}</td>
+            <td class="text-sm text-slate-500 dark:text-slate-400 max-w-xs truncate">{{ pick(shop.descriptionLo, shop.descriptionEn) || '—' }}</td>
+            <td>
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                :class="shop.isActive ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20' : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20'"
+              >
+                {{ shop.isActive ? $t('status.active') : $t('status.inactive') }}
+              </span>
+            </td>
+            <td>
+              <div class="flex items-center justify-end gap-1">
+                <button
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all"
+                  :title="$t('common.edit')"
+                  @click="openEdit(shop)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  :title="$t('common.delete')"
+                  @click="openDelete(shop)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <PaginationBar :loading="financeStore.shopsLoading" :current-page="financeStore.shopsPage" :total-pages="totalPages" @update:page="changePage" />
+
+    <ShopFormModal :open="modal.open" :shop="modal.shop" @update:open="modal.open = $event" />
 
     <ConfirmDialog
-      v-model:open="del.open"
+      :open="del.open"
       tone="danger"
       :title="$t('shops_admin.delete_title')"
       :message="del.shop ? $t('shops_admin.delete_msg', { name: pick(del.shop.shopNameLo, del.shop.shopNameEn) }) : ''"
       :confirm-label="$t('common.delete')"
       :busy="del.busy"
       :error="del.error"
+      @update:open="del.open = $event"
       @confirm="handleDelete"
     />
   </div>
@@ -99,11 +109,10 @@ import type { Shop } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceStore } from '../../../application/stores/finance';
-import PageHeader from '../../../components/PageHeader.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
-import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
+import ShopFormModal from '../../../components/admin/ShopFormModal.vue';
 
 definePageMeta({ layout: 'admin' });
 
@@ -125,30 +134,9 @@ const handleSearch = () => {
 };
 const changePage = (page: number) => financeStore.fetchShops({ search: searchInput.value, page });
 
-const emptyForm = () => ({ shopNameEn: '', shopNameLo: '', locationEn: '', locationLo: '', descriptionEn: '', descriptionLo: '', isActive: true });
-const modal = reactive({ open: false, saving: false, error: '', shopId: null as number | null, form: emptyForm() });
-const openCreate = () => Object.assign(modal, { open: true, saving: false, error: '', shopId: null, form: emptyForm() });
-const openEdit = (s: Shop) => Object.assign(modal, {
-  open: true, saving: false, error: '', shopId: s.shopId,
-  form: {
-    shopNameEn: s.shopNameEn, shopNameLo: s.shopNameLo, locationEn: s.locationEn ?? '', locationLo: s.locationLo ?? '',
-    descriptionEn: s.descriptionEn ?? '', descriptionLo: s.descriptionLo ?? '', isActive: s.isActive,
-  },
-});
-
-async function handleSubmit() {
-  modal.saving = true;
-  modal.error = '';
-  try {
-    if (modal.shopId) await financeStore.updateShop(modal.shopId, modal.form);
-    else await financeStore.createShop(modal.form);
-    modal.open = false;
-  } catch (err) {
-    modal.error = getErrorMessage(err, t('common.error'));
-  } finally {
-    modal.saving = false;
-  }
-}
+const modal = reactive({ open: false, shop: null as Shop | null });
+const openCreate = () => Object.assign(modal, { open: true, shop: null });
+const openEdit = (s: Shop) => Object.assign(modal, { open: true, shop: s });
 
 const del = reactive({ open: false, busy: false, error: '', shop: null as Shop | null });
 const openDelete = (shop: Shop) => Object.assign(del, { open: true, busy: false, error: '', shop });

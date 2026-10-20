@@ -1,156 +1,92 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <p class="text-xs font-semibold text-indigo-400 uppercase tracking-widest">{{ $t('nav.reports') }}</p>
-        <h2 class="text-2xl font-bold text-white">{{ locale === 'lo' ? 'ບົດລາຍງານຜົນການຮຽນ' : 'Academic Grades Report' }}</h2>
-        <p class="text-sm text-slate-400">{{ locale === 'lo' ? 'ວິເຄາະຜົນການຮຽນ ແລະ ຄະແນນຂອງນັກຮຽນ' : 'Analyze academic performance and student grades' }}</p>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex items-center gap-3">
-        <button class="btn-secondary" @click="refreshData">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          {{ $t('common.refresh') }}
-        </button>
-      </div>
-    </div>
+    <PageHeader :eyebrow="$t('nav.reports')" :title="t('grades_report.title')" :subtitle="t('grades_report.subtitle')" />
 
     <!-- Stats Row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ຄະແນນທັງໝົດ' : 'Total Grades' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ totalRecords }}</span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-indigo-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-        </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="panel px-4 py-3">
+        <p class="text-xs font-semibold text-ink-subtle uppercase tracking-wider">{{ t('grades_report.total') }}</p>
+        <p class="mt-1 text-2xl font-bold tnum">{{ totalRecords }}</p>
       </div>
-
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ອັດຕາຜ່ານສະເລ່ຍ' : 'Average Pass Rate' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ averagePassRate }}%</span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-emerald-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
+      <div class="panel px-4 py-3">
+        <p class="text-xs font-semibold text-ink-subtle uppercase tracking-wider">{{ t('grades_report.pass_rate') }}</p>
+        <p class="mt-1 text-2xl font-bold tnum">{{ averagePassRate }}%</p>
       </div>
-
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ປະກາດແລ້ວ' : 'Published' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ publishedCount }}</span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-blue-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
+      <div class="panel px-4 py-3">
+        <p class="text-xs font-semibold text-ink-subtle uppercase tracking-wider">{{ t('grades_report.published') }}</p>
+        <p class="mt-1 text-2xl font-bold tnum">{{ publishedCount }}</p>
       </div>
-
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ຍັງບໍ່ປະກາດ' : 'Unpublished' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ unpublishedCount }}</span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-amber-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
+      <div class="panel px-4 py-3">
+        <p class="text-xs font-semibold text-ink-subtle uppercase tracking-wider">{{ t('grades_report.unpublished') }}</p>
+        <p class="mt-1 text-2xl font-bold tnum">{{ unpublishedCount }}</p>
       </div>
     </div>
 
-    <!-- Filters & Table -->
-    <div class="glass-panel overflow-hidden flex flex-col">
-      <div class="p-5 border-b border-slate-800/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <h3 class="text-lg font-bold text-white">{{ locale === 'lo' ? 'ຂໍ້ມູນຄະແນນລາຍບຸກຄົນ' : 'Detailed Grade Records' }}</h3>
-        
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <!-- Filter by Status -->
-          <select v-model="filterStatus" class="bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-indigo-500">
-            <option value="all">{{ locale === 'lo' ? 'ທັງໝົດ' : 'All Status' }}</option>
-            <option value="published">{{ locale === 'lo' ? 'ປະກາດແລ້ວ' : 'Published' }}</option>
-            <option value="unpublished">{{ locale === 'lo' ? 'ຍັງບໍ່ປະກາດ' : 'Unpublished' }}</option>
-          </select>
-          
-          <!-- Month filter -->
-          <input v-model="filterMonth" type="month" class="bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-indigo-500" >
-        </div>
-      </div>
-
-      <div class="overflow-x-auto relative min-h-[300px]">
-        <!-- Loading State -->
-        <div v-if="academicsStore.gradesLoading" class="absolute inset-0 z-10 bg-[#0a101d]/60 backdrop-blur-sm flex flex-col items-center justify-center text-indigo-400">
-          <svg class="animate-spin h-8 w-8 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+    <!-- Search + Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" :placeholder="t('grades_report.search_placeholder')" class="search-bar" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear')" @click="clearSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span class="text-sm font-semibold tracking-wider animate-pulse">{{ $t('common.loading') }}</span>
-        </div>
+        </button>
+      </div>
+      <div class="flex items-center gap-3">
+        <select v-model="filterStatus" class="input-field w-auto" @change="applyFilters">
+          <option value="all">{{ t('grades_report.all_status') }}</option>
+          <option value="published">{{ t('grades_report.published') }}</option>
+          <option value="unpublished">{{ t('grades_report.unpublished') }}</option>
+        </select>
+        <input v-model="filterMonth" type="month" class="input-field w-auto" @change="applyFilters">
+      </div>
+      <button class="btn-secondary ml-auto" @click="exportGrades">
+        {{ $t('common.export_excel') }}
+      </button>
+    </div>
 
-        <table class="w-full text-left border-collapse min-w-max">
+    <!-- Table -->
+    <section class="panel overflow-hidden">
+      <LoadingSpinner v-if="academicsStore.gradesLoading && !academicsStore.grades.length" />
+      <p v-else-if="!filteredGrades.length" class="py-12 text-center text-sm text-ink-subtle">{{ t('grades_report.empty') }}</p>
+      <div v-else class="overflow-x-auto">
+
+        <table class="data-table w-full min-w-max">
           <thead>
-            <tr class="border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/20">
-              <th class="px-6 py-3">{{ locale === 'lo' ? 'ນັກຮຽນ' : 'Student' }}</th>
-              <th class="px-6 py-3">{{ locale === 'lo' ? 'ວິຊາຮຽນ' : 'Subject' }}</th>
-              <th class="px-6 py-3">{{ locale === 'lo' ? 'ປະເພດຄະແນນ' : 'Grade Type' }}</th>
-              <th class="px-6 py-3 text-right">{{ locale === 'lo' ? 'ຄະແນນ' : 'Score' }}</th>
-              <th class="px-6 py-3 text-center">{{ locale === 'lo' ? 'ສະຖານະ' : 'Status' }}</th>
-              <th class="px-6 py-3 text-right">{{ locale === 'lo' ? 'ວັນທີບັນທຶກ' : 'Date' }}</th>
+            <tr>
+              <th>{{ locale === 'lo' ? 'ນັກຮຽນ' : 'Student' }}</th>
+              <th>{{ locale === 'lo' ? 'ວິຊາຮຽນ' : 'Subject' }}</th>
+              <th>{{ locale === 'lo' ? 'ປະເພດຄະແນນ' : 'Grade Type' }}</th>
+              <th class="text-right">{{ locale === 'lo' ? 'ຄະແນນ' : 'Score' }}</th>
+              <th class="text-center">{{ locale === 'lo' ? 'ສະຖານະ' : 'Status' }}</th>
+              <th class="text-right">{{ locale === 'lo' ? 'ວັນທີບັນທຶກ' : 'Date' }}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-800/40 text-xs">
-            <tr v-for="grade in filteredGrades" :key="grade.gradeId" class="hover:bg-slate-800/10 transition-colors">
-              <td class="px-6 py-3">
-                <div class="flex flex-col">
-                  <span class="font-bold text-white">{{ locale === 'lo' ? grade.student?.fullNameLo : grade.student?.fullNameEn }}</span>
-                  <span class="text-[10px] text-slate-500 font-mono">{{ grade.student?.studentCode }}</span>
-                </div>
+          <tbody>
+            <tr v-for="grade in filteredGrades" :key="grade.gradeId">
+              <td>
+                <p class="font-semibold">{{ studentName(grade) }}</p>
+                <p class="text-xs text-ink-subtle">{{ studentCode(grade) }}</p>
               </td>
-              <td class="px-6 py-3 font-medium text-slate-300">
-                {{ locale === 'lo' ? grade.subject?.subjectNameLo : grade.subject?.subjectNameEn }}
-              </td>
-              <td class="px-6 py-3 text-slate-400">
-                {{ locale === 'lo' ? grade.gradeType?.typeNameLo : grade.gradeType?.typeNameEn }}
-              </td>
-              <td class="px-6 py-3 text-right">
-                <span class="font-bold font-mono text-[13px]" :class="getScoreColor(Number(grade.score ?? 0), Number(grade.maxScore))">
-                  {{ Number(grade.score).toFixed(1) }} <span class="text-slate-600 text-[10px]">/ {{ Number(grade.maxScore).toFixed(0) }}</span>
+              <td>{{ subjectName(grade) }}</td>
+              <td class="text-ink-muted">{{ gradeTypeName(grade) }}</td>
+              <td class="text-right">
+                <span class="font-bold tnum" :class="getScoreColor(Number(grade.score || 0), Number(grade.maxScore))">
+                  {{ Number(grade.score).toFixed(1) }} <span class="text-ink-subtle text-xs">/ {{ Number(grade.maxScore).toFixed(0) }}</span>
                 </span>
               </td>
-              <td class="px-6 py-3 text-center">
-                <span
-:class="[
-                  'px-2 py-0.5 rounded text-[10px] font-bold tracking-wide',
-                  grade.isPublished ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-400'
-                ]">
+              <td class="text-center">
+                <span :class="grade.isPublished ? 'badge-success' : 'badge-warning'">
                   {{ grade.isPublished ? (locale === 'lo' ? 'ປະກາດແລ້ວ' : 'Published') : (locale === 'lo' ? 'ລໍຖ້າປະກາດ' : 'Pending') }}
                 </span>
               </td>
-              <td class="px-6 py-3 text-right text-slate-500 font-mono text-[11px]">
-                {{ fmt.date(grade.recordedAt) }}
-              </td>
+              <td class="text-right tnum whitespace-nowrap">{{ fmt.date(grade.recordedAt) }}</td>
             </tr>
             <tr v-if="filteredGrades.length === 0 && !academicsStore.gradesLoading">
-              <td colspan="6" class="text-center py-10 text-slate-500 font-medium">
+              <td colspan="6" class="text-center py-8 text-ink-subtle">
                 {{ locale === 'lo' ? 'ບໍ່ພົບຂໍ້ມູນຄະແນນ' : 'No grade records found' }}
               </td>
             </tr>
@@ -158,42 +94,44 @@
         </table>
       </div>
       
-      <!-- Pagination -->
-      <div class="p-4 border-t border-slate-800/50 flex items-center justify-between text-xs text-slate-400 bg-slate-900/20">
-        <span>{{ locale === 'lo' ? 'ສະແດງ' : 'Showing' }} {{ filteredGrades.length }} {{ locale === 'lo' ? 'ລາຍການ' : 'records' }}</span>
-        <div class="flex items-center gap-1">
-          <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors" :disabled="currentPage === 1" @click="changePage(-1)">
-             &laquo; {{ $t('common.prev') }}
-          </button>
-          <span class="px-3 text-white font-mono">{{ currentPage }}</span>
-          <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors" :disabled="academicsStore.grades.length < 50" @click="changePage(1)">
-            {{ $t('common.next') }} &raquo;
-          </button>
-        </div>
-      </div>
-    </div>
+      <PaginationBar :loading="academicsStore.gradesLoading" :current-page="currentPage" :total-pages="totalPages" @update:page="onPageChange" />
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAcademicsStore } from '~/application/stores/academics';
+import { useExport } from '../../../composables/useExport';
+import PageHeader from '../../../components/PageHeader.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
+import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: () => t('page_titles.grades_report') });
 
 const { locale, t } = useI18n();
+useHead({ title: () => t('page_titles.grades_report') });
 const fmt = useFormat();
+const { exportExcel } = useExport();
 const academicsStore = useAcademicsStore();
 
+const searchInput = ref('');
 const filterStatus = ref('all');
 const filterMonth = ref('');
 const currentPage = ref(1);
+const PAGE_SIZE = 50;
+const totalPages = computed(() => Math.ceil((academicsStore.gradesTotal || 1) / PAGE_SIZE));
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+const handleSearch = () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { currentPage.value = 1; }, 300);
+};
+const clearSearch = () => { searchInput.value = ''; currentPage.value = 1; };
+const applyFilters = () => { currentPage.value = 1; };
 
 const refreshData = async () => {
-  await academicsStore.fetchGrades({ 
-    page: currentPage.value
-  });
+  await academicsStore.fetchGrades({ page: currentPage.value });
 };
 
 onMounted(() => {
@@ -204,15 +142,39 @@ watch([currentPage], () => {
   refreshData();
 });
 
-const changePage = (step: number) => {
-  if (currentPage.value + step > 0) {
-    currentPage.value += step;
-  }
+const onPageChange = (page: number) => {
+  currentPage.value = page;
+};
+
+const studentName = (g: any) => {
+  const s = g.student;
+  if (!s) return '—';
+  return (locale.value === 'lo' ? s.fullNameLo : s.fullNameEn) || s.fullNameEn;
+};
+const studentCode = (g: any) => g.student ? g.student.studentCode : '';
+const subjectName = (g: any) => {
+  const s = g.subject;
+  if (!s) return '—';
+  return (locale.value === 'lo' ? s.subjectNameLo : s.subjectNameEn) || s.subjectNameEn;
+};
+const gradeTypeName = (g: any) => {
+  const gt = g.gradeType;
+  if (!gt) return '—';
+  return (locale.value === 'lo' ? gt.typeNameLo : gt.typeNameEn) || gt.typeNameEn;
 };
 
 const filteredGrades = computed(() => {
   let result = academicsStore.grades || [];
-  
+
+  if (searchInput.value) {
+    const q = searchInput.value.toLowerCase();
+    result = result.filter((g: any) => {
+      const sn = g.student ? (g.student.fullNameLo + ' ' + g.student.fullNameEn + ' ' + g.student.studentCode).toLowerCase() : '';
+      const sub = g.subject ? (g.subject.subjectNameLo + ' ' + g.subject.subjectNameEn).toLowerCase() : '';
+      return sn.includes(q) || sub.includes(q);
+    });
+  }
+
   if (filterStatus.value === 'published') {
     result = result.filter(g => g.isPublished);
   } else if (filterStatus.value === 'unpublished') {
@@ -238,6 +200,31 @@ const averagePassRate = computed(() => {
   const passes = grades.filter(g => Number(g.score) >= (Number(g.maxScore) / 2));
   return Math.round((passes.length / grades.length) * 100);
 });
+
+function exportGrades() {
+  const data = filteredGrades.value.map((g: any) => ({
+    student: locale.value === 'lo' ? g.student?.fullNameLo : g.student?.fullNameEn,
+    studentCode: g.student?.studentCode,
+    subject: locale.value === 'lo' ? g.classSubject?.subject?.subjectNameLo : g.classSubject?.subject?.subjectNameEn,
+    class: locale.value === 'lo' ? g.classSubject?.class?.classNameLo : g.classSubject?.class?.classNameEn,
+    gradeType: locale.value === 'lo' ? g.gradeType?.typeNameLo : g.gradeType?.typeNameEn,
+    score: g.score,
+    maxScore: g.maxScore,
+    percent: g.maxScore > 0 ? Math.round((g.score / g.maxScore) * 100) : 0,
+    published: g.isPublished ? 'Yes' : 'No',
+  }));
+  exportExcel(data, [
+    { key: 'student', label: 'Student' },
+    { key: 'studentCode', label: 'Code' },
+    { key: 'subject', label: 'Subject' },
+    { key: 'class', label: 'Class' },
+    { key: 'gradeType', label: 'Grade Type' },
+    { key: 'score', label: 'Score' },
+    { key: 'maxScore', label: 'Max Score' },
+    { key: 'percent', label: '%' },
+    { key: 'published', label: 'Published' },
+  ], 'grades-report');
+}
 
 const getScoreColor = (score: number, maxScore: number) => {
   const percent = (Number(score) / Number(maxScore)) * 100;

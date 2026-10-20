@@ -54,6 +54,11 @@ export const academicsRepository = {
     return res.data;
   },
 
+  async getAllSubjects() {
+    const res = await useApiClient()<ApiResponse<Subject[]>>(`${API_ENDPOINTS.subjects.list}/all`, { method: 'GET' });
+    return res.data;
+  },
+
   async createSubject(payload: Payload) {
     const res = await useApiClient()<ApiResponse<{ subject: Subject }>>(API_ENDPOINTS.subjects.list, {
       method: 'POST',
@@ -81,8 +86,10 @@ export const academicsRepository = {
   },
 
   // Grades
-  async getGrades(params: { classId?: number; subjectId?: number; studentId?: number; academicYear?: string; page?: number; limit?: number } = {}) {
+  async getGrades(params: { classId?: number; subjectId?: number; studentId?: number; academicYear?: string; search?: string; gradeMonth?: string; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();
+    if (params.search) query.set('search', params.search);
+    if (params.gradeMonth) query.set('gradeMonth', params.gradeMonth);
     if (params.classId) query.set('classId', String(params.classId));
     if (params.subjectId) query.set('subjectId', String(params.subjectId));
     if (params.studentId) query.set('studentId', String(params.studentId));

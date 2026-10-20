@@ -50,23 +50,23 @@
         <p>{{ $t('teacherPortal.no_students_in_class') }}</p>
       </div>
 
-      <table v-else class="w-full min-w-max">
+      <table v-else class="data-table w-full min-w-max">
         <thead>
-          <tr class="border-b border-slate-200 dark:border-slate-800">
-            <th class="text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('teacherPortal.student_name') }}</th>
-            <th class="text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-6 py-3">{{ $t('teacherPortal.student_code') }}</th>
-            <th class="text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-6 py-3 w-48">{{ $t('teacherPortal.score') }}</th>
+          <tr>
+            <th>{{ $t('teacherPortal.student_name') }}</th>
+            <th>{{ $t('teacherPortal.student_code') }}</th>
+            <th class="w-48">{{ $t('teacherPortal.score') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
           <tr v-for="student in students" :key="student.studentId" class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-            <td class="px-6 py-4">
+            <td class="">
               <p class="text-sm font-medium text-slate-900 dark:text-white">{{ locale === 'lo' ? student.fullNameLo : student.fullNameEn }}</p>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">
+            <td class="text-sm text-slate-700 dark:text-slate-300">
               {{ student.studentCode }}
             </td>
-            <td class="px-6 py-4">
+            <td class="">
               <input v-model.number="gradesMap[student.studentId]" type="number" step="0.01" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-amber-500" placeholder="0 - 100" >
             </td>
           </tr>

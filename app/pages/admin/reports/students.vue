@@ -16,6 +16,9 @@
           </svg>
           {{ $t('common.refresh') }}
         </button>
+        <button class="btn-secondary" @click="exportStudents">
+          {{ $t('common.export_excel') }}
+        </button>
       </div>
     </div>
 
@@ -167,12 +170,14 @@ class="bg-pink-500 h-full flex items-center justify-center text-[10px] font-bold
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useAdminStore } from '~/application/stores/admin';
+import { useExport } from '../../../composables/useExport';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: () => t('page_titles.students_report') });
 
 const { locale, t } = useI18n();
+useHead({ title: () => t('page_titles.students_report') });
 const adminStore = useAdminStore();
+const { exportExcel } = useExport();
 
 const refreshData = async () => {
   // Fetch up to 1000 students to get a good demographic overview
