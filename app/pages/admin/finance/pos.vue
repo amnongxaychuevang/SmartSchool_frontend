@@ -40,9 +40,7 @@
         <!-- Student info + amount -->
         <section v-if="student" class="panel p-5 flex flex-col gap-4">
           <div class="flex items-center gap-4">
-            <div class="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold" style="color: rgb(var(--primary))">
-              {{ studentInitial }}
-            </div>
+            <PersonAvatar :name="studentDisplayName" :photo-url="student.photoUrl" size="lg" />
             <div class="flex-1 min-w-0">
               <p class="text-lg font-bold truncate">{{ studentDisplayName }}</p>
               <p class="text-sm text-ink-muted font-mono">{{ student.studentCode }}</p>
@@ -50,14 +48,17 @@
             </div>
             <div class="text-right">
               <p class="text-xs font-semibold text-ink-subtle uppercase">{{ $t('pos.balance') }}</p>
-              <p class="text-2xl font-bold tnum" :class="walletFrozen ? 'text-danger' : 'text-success'">
-                {{ f.kip(walletBalance) }}
-              </p>
-              <p v-if="walletFrozen" class="text-xs text-danger font-semibold">{{ $t('pos.frozen') }}</p>
+              <template v-if="wallet">
+                <p class="text-2xl font-bold tnum" :class="wallet.status === 'frozen' ? 'text-danger' : 'text-success'">
+                  {{ f.kip(wallet.balance) }}
+                </p>
+                <p v-if="wallet.status === 'frozen'" class="text-xs text-danger font-semibold">{{ $t('pos.frozen') }}</p>
+              </template>
+              <p v-else class="text-sm text-danger font-semibold">{{ $t('pos.no_wallet') }}</p>
             </div>
           </div>
 
-          <div v-if="!walletFrozen" class="flex flex-col gap-3 pt-4 border-t border-line">
+          <div v-if="wallet && wallet.status !== 'frozen'" class="flex flex-col gap-3 pt-4 border-t border-line">
             <label class="text-sm font-semibold">{{ $t('pos.amount') }}</label>
             <input
               ref="amountInput"
@@ -138,8 +139,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
 import type { Shop } from '../../../domain/models/Finance';
-import { financeRepository } from '../../../infrastructure/api/FinanceRepository';
-import { academicsRepository } from '../../../infrastructure/api/AcademicsRepository';
+import { financeRepository, type PosCard } from '../../../infrastructure/api/FinanceRepository';
 import PageHeader from '../../../components/PageHeader.vue';
 import { useFormat } from '../../../composables/useFormat';
 
@@ -148,14 +148,6 @@ definePageMeta({ layout: 'admin' });
 const { t, locale } = useI18n();
 const f = useFormat();
 useHead({ title: () => t('pos.title') });
-
-interface StudentInfo {
-  studentId: number;
-  studentCode: string;
-  fullNameEn: string;
-  fullNameLo: string;
-  class?: { classId: number; classNameEn: string; classNameLo: string } | null;
-}
 
 interface HistoryEntry {
   studentName: string;
@@ -177,9 +169,10 @@ const shopId = ref(0);
 const cardUid = ref('');
 const lookingUp = ref(false);
 const lookupError = ref('');
-const student = ref<StudentInfo | null>(null);
-const walletBalance = ref(0);
-const walletFrozen = ref(false);
+const student = ref<PosCard['student'] | null>(null);
+const wallet = ref<PosCard['wallet']>(null);
+// The UID the server matched, so editing the input after a lookup can't change who is charged.
+const scannedUid = ref('');
 const amount = ref<number | null>(null);
 const processing = ref(false);
 const lastResult = ref<LastResult | null>(null);
@@ -193,20 +186,30 @@ const studentDisplayName = computed(() => {
   return (locale.value === 'lo' ? student.value.fullNameLo : student.value.fullNameEn) || student.value.fullNameEn;
 });
 
-const studentInitial = computed(() => {
-  const name = studentDisplayName.value;
-  return name ? name.charAt(0).toUpperCase() : '?';
-});
-
 const sessionTotal = computed(() =>
   history.value.filter(h => h.ok).reduce((sum, h) => sum + h.amount, 0),
 );
 
 const successCount = computed(() => history.value.filter(h => h.ok).length);
 
-const getErrorMessage = (err: unknown, fallback: string): string => {
-  const e = err as { data?: { message?: string } };
-  return (e && e.data && e.data.message) || (err instanceof Error ? err.message : fallback);
+// Known server refusals, shown in the cashier's language.
+const SERVER_ERRORS: Record<string, string> = {
+  'Card not found': 'pos.card_not_found',
+  'Card has expired': 'pos.card_expired',
+  'Insufficient balance': 'pos.err_insufficient',
+  'This student has no wallet yet': 'pos.no_wallet',
+  'Wallet is frozen. Cannot process transaction.': 'pos.frozen',
+  'This shop is blocked for this student': 'pos.err_shop_blocked',
+  'Amount exceeds the per-transaction spending limit': 'pos.err_per_tx',
+  'This purchase would exceed the daily spending limit': 'pos.err_daily',
+  'This purchase would exceed the weekly spending limit': 'pos.err_weekly',
+  'Wallet balance changed concurrently — please retry the transaction': 'pos.err_retry',
+};
+const posError = (err: unknown, fallbackKey: string) => {
+  const message = getErrorMessage(err, '');
+  if (message.startsWith('Card is ')) return t('pos.card_inactive');
+  const key = SERVER_ERRORS[message];
+  return key ? t(key) : message || t(fallbackKey);
 };
 
 onMounted(async () => {
@@ -221,30 +224,19 @@ async function lookupCard() {
   lookingUp.value = true;
   lookupError.value = '';
   student.value = null;
+  wallet.value = null;
+  scannedUid.value = '';
   lastResult.value = null;
-
   try {
-    const cardsRes = await academicsRepository.getCards({ search: cardUid.value, status: 'active', limit: 1 });
-    const cards = cardsRes.cards || [];
-    if (!cards.length) {
-      lookupError.value = t('pos.card_not_found');
-      return;
-    }
-    const card = cards[0];
-    if (card.status !== 'active') {
-      lookupError.value = t('pos.card_inactive');
-      return;
-    }
-
-    const wallet = await financeRepository.getWalletByStudent(card.studentId);
-    student.value = wallet.student as StudentInfo || { studentId: card.studentId, studentCode: '', fullNameEn: 'Student', fullNameLo: 'ນັກຮຽນ' };
-    walletBalance.value = Number(wallet.balance) || 0;
-    walletFrozen.value = wallet.status === 'frozen';
+    const res = await financeRepository.lookupPosCard(cardUid.value);
+    student.value = res.student;
+    wallet.value = res.wallet;
+    scannedUid.value = res.cardUid;
 
     await nextTick();
     if (amountInput.value) amountInput.value.focus();
   } catch (err) {
-    lookupError.value = getErrorMessage(err, t('pos.lookup_failed'));
+    lookupError.value = posError(err, 'pos.lookup_failed');
   } finally {
     lookingUp.value = false;
   }
@@ -263,13 +255,12 @@ async function handlePurchase() {
 
   try {
     const res = await financeRepository.processTransaction({
-      studentId: student.value.studentId,
+      cardUid: scannedUid.value,
       amount: amount.value,
       shopId: shopId.value,
     });
 
     lastResult.value = { ok: true, amount: res.amount, balanceAfter: res.balanceAfter };
-    walletBalance.value = res.balanceAfter;
 
     history.value.unshift({
       studentName: studentDisplayName.value,
@@ -282,11 +273,13 @@ async function handlePurchase() {
     amount.value = null;
     cardUid.value = '';
     student.value = null;
+    wallet.value = null;
+    scannedUid.value = '';
 
     await nextTick();
     if (uidInput.value) uidInput.value.focus();
   } catch (err) {
-    const errorMsg = getErrorMessage(err, t('pos.transaction_failed'));
+    const errorMsg = posError(err, 'pos.transaction_failed');
     lastResult.value = { ok: false, error: errorMsg };
 
     history.value.unshift({

@@ -3,6 +3,9 @@ import { academicsRepository } from '../../infrastructure/api/AcademicsRepositor
 import type { Subject, Grade, GradeType, Card, AppNotification, Payload } from '../../domain/models/Academics';
 import { getErrorMessage } from '../../utils/errors';
 
+export const GRADES_PER_PAGE = 10;
+export const NOTIFICATIONS_PER_PAGE = 15;
+
 export const useAcademicsStore = defineStore('academics', {
   state: () => ({
     subjects: [] as Subject[],
@@ -89,7 +92,7 @@ export const useAcademicsStore = defineStore('academics', {
       this.gradesLoading = true;
       if (params?.page !== undefined) this.gradesPage = params.page;
       try {
-        const res = await academicsRepository.getGrades({ search: this.gradesSearch, ...params, limit: 10 });
+        const res = await academicsRepository.getGrades({ search: this.gradesSearch, ...params, limit: GRADES_PER_PAGE });
         this.grades = res.grades;
         this.gradesTotal = res.total;
       } catch (err) {
@@ -199,7 +202,7 @@ export const useAcademicsStore = defineStore('academics', {
       if (params?.search !== undefined) this.notificationsSearch = params.search;
       if (params?.page !== undefined) this.notificationsPage = params.page;
       try {
-        const res = await academicsRepository.getNotifications({ search: this.notificationsSearch, status: params?.status, page: this.notificationsPage, limit: 15 });
+        const res = await academicsRepository.getNotifications({ search: this.notificationsSearch, status: params?.status, page: this.notificationsPage, limit: NOTIFICATIONS_PER_PAGE });
         this.notifications = res.notifications;
         this.notificationsTotal = res.total;
       } catch (err) {

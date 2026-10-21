@@ -449,11 +449,11 @@ const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
 const dash = '—';
 
 const studentId = computed(() => Number(route.params.id));
-useHead({ title: computed(() => `${editing.value ? t('students.edit_title') : t('students.detail_title')} — Smart School Admin`) });
 
 const student = ref<Student | null>(null);
 const loading = ref(true);
 const editing = ref(false);
+useHead({ title: computed(() => `${editing.value ? t('students.edit_title') : t('students.detail_title')} — Smart School Admin`) });
 const isSubmitting = ref(false);
 const errorMsg = ref('');
 

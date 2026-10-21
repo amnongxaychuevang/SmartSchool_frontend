@@ -4,6 +4,10 @@ import type { Payload } from '../../domain/models/Academics';
 import type { Wallet, TopUpRequest, Shop, FeeType, FeeStructure, Invoice } from '../../domain/models/Finance';
 import { getErrorMessage } from '../../utils/errors';
 
+export const INVOICES_PER_PAGE = 10;
+export const WALLETS_PER_PAGE = 10;
+export const TOPUPS_PER_PAGE = 10;
+
 export const useFinanceStore = defineStore('finance', {
   state: () => ({
     wallets: [] as Wallet[],
@@ -17,6 +21,7 @@ export const useFinanceStore = defineStore('finance', {
     topUpRequestsTotal: 0,
     topUpRequestsPage: 1,
     topUpRequestsStatusFilter: '',
+    topUpRequestsSearch: '',
     topUpRequestsLoading: false,
 
     shops: [] as Shop[],
@@ -49,7 +54,7 @@ export const useFinanceStore = defineStore('finance', {
       if (params?.status !== undefined) this.walletsStatusFilter = params.status;
       if (params?.page !== undefined) this.walletsPage = params.page;
       try {
-        const res = await financeRepository.getWallets({ search: this.walletsSearch, status: this.walletsStatusFilter, page: this.walletsPage, limit: 15 });
+        const res = await financeRepository.getWallets({ search: this.walletsSearch, status: this.walletsStatusFilter, page: this.walletsPage, limit: WALLETS_PER_PAGE });
         this.wallets = res.wallets;
         this.walletsTotal = res.total;
       } catch (err) {
@@ -79,12 +84,18 @@ export const useFinanceStore = defineStore('finance', {
         throw err;
       }
     },
-    async fetchTopUpRequests(params?: { status?: string; page?: number }) {
+    async fetchTopUpRequests(params?: { status?: string; search?: string; page?: number }) {
       this.topUpRequestsLoading = true;
       if (params?.status !== undefined) this.topUpRequestsStatusFilter = params.status;
+      if (params?.search !== undefined) this.topUpRequestsSearch = params.search;
       if (params?.page !== undefined) this.topUpRequestsPage = params.page;
       try {
-        const res = await financeRepository.getTopUpRequests({ status: this.topUpRequestsStatusFilter, page: this.topUpRequestsPage, limit: 15 });
+        const res = await financeRepository.getTopUpRequests({
+          status: this.topUpRequestsStatusFilter,
+          search: this.topUpRequestsSearch,
+          page: this.topUpRequestsPage,
+          limit: TOPUPS_PER_PAGE,
+        });
         this.topUpRequests = res.requests;
         this.topUpRequestsTotal = res.total;
       } catch (err) {
@@ -231,7 +242,7 @@ export const useFinanceStore = defineStore('finance', {
       try {
         const res = await financeRepository.getInvoices({
           search: this.invoicesSearch, status: this.invoicesStatus, academicYear: this.invoicesYear,
-          page: this.invoicesPage, limit: 20,
+          page: this.invoicesPage, limit: INVOICES_PER_PAGE,
         });
         this.invoices = res.invoices;
         this.invoicesTotal = res.total;

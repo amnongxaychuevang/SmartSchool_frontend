@@ -4,6 +4,20 @@ import type { ApiResponse, Paged } from './types';
 import type { Payload } from '../../domain/models/Academics';
 import type { Wallet, WalletTransaction, TopUpRequest, Shop, SpendingLimit, FeeType, FeeStructure, Invoice, FeePayment } from '../../domain/models/Finance';
 
+export interface PosCard {
+  cardUid: string;
+  student: {
+    studentId: number;
+    studentCode: string;
+    fullNameEn: string;
+    fullNameLo: string;
+    photoUrl: string | null;
+    class: { classId: number; classNameEn: string; classNameLo: string } | null;
+  };
+  /** null until the student's first top-up creates a wallet. */
+  wallet: { balance: number; status: 'active' | 'frozen' } | null;
+}
+
 export const financeRepository = {
   // Wallets
   async getWallets(params: { search?: string; page?: number; limit?: number; status?: string } = {}) {
@@ -37,9 +51,10 @@ export const financeRepository = {
   },
 
   // Top Up Requests
-  async getTopUpRequests(params: { status?: string; page?: number; limit?: number } = {}) {
+  async getTopUpRequests(params: { status?: string; search?: string; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();
     if (params.status) query.set('status', params.status);
+    if (params.search) query.set('search', params.search);
     if (params.page) query.set('page', String(params.page));
     if (params.limit) query.set('limit', String(params.limit));
 
@@ -123,22 +138,22 @@ export const financeRepository = {
     return true;
   },
 
-  // POS – wallet purchase
-  async processTransaction(payload: { studentId: number; amount: number; shopId: number }) {
+  // POS – exact card lookup, then a purchase charged to that card's student
+  async lookupPosCard(cardUid: string) {
+    const res = await useApiClient()<ApiResponse<PosCard>>(
+      `${API_ENDPOINTS.wallets.card}/${encodeURIComponent(cardUid)}`,
+      { method: 'GET' },
+    );
+    return res.data;
+  },
+
+  async processTransaction(payload: { cardUid: string; amount: number; shopId: number }) {
     const res = await useApiClient()<ApiResponse<{ success: boolean; transactionId: string; balanceBefore: number; balanceAfter: number; amount: number }>>(API_ENDPOINTS.wallets.process, {
       method: 'POST',
       body: payload,
     });
     if (!res.success) throw new Error('Transaction failed');
     return res.data;
-  },
-
-  async getWalletByStudent(studentId: number) {
-    const res = await useApiClient()<ApiResponse<{ wallet: Wallet }>>(
-      `${API_ENDPOINTS.wallets.student}/${studentId}`,
-      { method: 'GET' },
-    );
-    return res.data.wallet;
   },
 
   // Fee Types

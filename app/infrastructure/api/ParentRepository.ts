@@ -6,6 +6,7 @@ import type { Student } from '../../domain/models/Student';
 import type { Grade } from '../../domain/models/Academics';
 import type { Wallet, SpendingLimit, TopUpRequest } from '../../domain/models/Finance';
 import type { Announcement, DailyAttendance, LeaveRequest } from '../../domain/models/School';
+import type { PaymentInfo } from '../../application/stores/settings';
 
 export class ParentRepository {
   async getMyChildren() {
@@ -60,6 +61,20 @@ export class ParentRepository {
 
   async requestTopUp(data: { studentId: number; amount: number; method: string; slipUrl?: string }) {
     return useApiClient()<ApiResponse<{ request: TopUpRequest }>>(API_ENDPOINTS.topUps.requests, { method: 'POST', body: data });
+  }
+
+  /** The signed-in parent's own requests for one child (the server scopes it to this parent). */
+  async getTopUpRequests(studentId: number) {
+    const res = await useApiClient()<ApiResponse<{ requests: TopUpRequest[] }>>(
+      `${API_ENDPOINTS.topUps.requests}?studentId=${studentId}&limit=10`,
+      { method: 'GET' },
+    );
+    return res.data.requests;
+  }
+
+  async getPaymentInfo() {
+    const res = await useApiClient()<ApiResponse<PaymentInfo | null>>('/parents/me/payment-info', { method: 'GET' });
+    return res.data;
   }
 }
 

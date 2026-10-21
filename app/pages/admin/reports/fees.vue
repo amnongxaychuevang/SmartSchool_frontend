@@ -1,332 +1,256 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <p class="text-xs font-semibold text-teal-400 uppercase tracking-widest">{{ $t('nav.reports') }}</p>
-        <h2 class="text-2xl font-bold text-white">{{ $t('reports_detail.fees_analytics') }}</h2>
-        <p class="text-sm text-slate-400">{{ $t('reports_detail.fees_subtitle') }}</p>
-      </div>
+    <PageHeader :eyebrow="$t('nav.reports')" :title="$t('reports_detail.fees_analytics')" :subtitle="$t('reports_detail.fees_subtitle')">
+      <select v-model="year" class="input-field w-auto" :aria-label="$t('fee_report.year')" @change="load">
+        <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
+      </select>
+      <button type="button" class="btn-secondary" :disabled="!report" @click="exportReport">{{ $t('common.export_excel') }}</button>
+    </PageHeader>
 
-      <!-- Term & Year Filters -->
-      <div class="flex items-center gap-3">
-        <select v-model="selectedYear" class="filter-select font-mono font-medium">
-          <option value="2025-2026">2025 - 2026</option>
-          <option value="2026-2027">2026 - 2027</option>
-        </select>
-        <select v-model="selectedTerm" class="filter-select font-mono font-medium">
-          <option value="sem1">Semester 1</option>
-          <option value="sem2">Semester 2</option>
-        </select>
-        <button type="button" class="filter-select hover:border-teal-500" @click="exportFees">
-          {{ $t('common.export_excel') }}
-        </button>
-      </div>
-    </div>
+    <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
 
-    <!-- Stats Row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div
-v-for="stat in summaryStats" :key="stat.titleEn" 
-        class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider font-semibold">
-            {{ locale === 'lo' ? stat.titleLo : stat.titleEn }}
-          </span>
-          <span class="text-xl font-bold text-white font-mono shrink-0">{{ stat.value }}</span>
-          <span class="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
-            {{ stat.sub }}
-          </span>
+    <LoadingSpinner v-if="loading && !report" />
+
+    <template v-else-if="report">
+      <!-- Totals -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="stat-card">
+          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('fee_report.billed') }}</p>
+          <p class="text-2xl font-bold tnum">{{ f.kip(report.totals.billed) }}</p>
+          <p class="text-xs text-ink-subtle tnum">{{ $t('fee_report.invoices', { count: f.number(report.totals.invoices) }) }}</p>
         </div>
-        <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60', stat.colorClass]">
-          <component :is="stat.icon" class="h-5 w-5" />
+        <div class="stat-card">
+          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('fee_report.collected') }}</p>
+          <p class="text-2xl font-bold tnum">{{ f.kip(report.totals.collected) }}</p>
+          <p class="text-xs text-ink-subtle tnum">{{ $t('fee_report.paid_invoices', { paid: f.number(report.totals.paidCount), total: f.number(report.totals.invoices) }) }}</p>
         </div>
-      </div>
-    </div>
-
-    <!-- Charts Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      <!-- Monthly Collections SVG Line Chart -->
-      <div class="lg:col-span-2 glass-panel p-5 border border-slate-800/80 flex flex-col gap-4">
-        <div>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">
-            {{ $t('reports_detail.collection_trend') }}
-          </h3>
-          <p class="text-xs text-slate-500 mt-0.5">
-            {{ $t('reports_detail.collection_trend_sub') }}
+        <div class="stat-card">
+          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('fee_report.outstanding') }}</p>
+          <p class="text-2xl font-bold tnum">{{ f.kip(report.totals.outstanding) }}</p>
+          <p :class="['text-xs tnum', report.totals.overdueCount ? 'text-danger font-semibold' : 'text-ink-subtle']">
+            {{ $t('fee_report.overdue', { count: f.number(report.totals.overdueCount), amount: f.kip(report.totals.overdueAmount) }) }}
           </p>
         </div>
-
-        <!-- Custom SVG Line Chart -->
-        <div class="relative w-full h-[180px] mt-4 select-none">
-          <svg viewBox="0 0 500 180" class="w-full h-full">
-            <!-- Grid Lines -->
-            <line x1="40" y1="20" x2="480" y2="20" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="40" y1="70" x2="480" y2="70" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="40" y1="120" x2="480" y2="120" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="40" y1="150" x2="480" y2="150" stroke="#334155" stroke-width="1" />
-
-            <!-- Y Axis Label -->
-            <text x="5" y="25" fill="#64748b" font-size="8" font-family="monospace">40M</text>
-            <text x="5" y="75" fill="#64748b" font-size="8" font-family="monospace">25M</text>
-            <text x="5" y="125" fill="#64748b" font-size="8" font-family="monospace">10M</text>
-            <text x="5" y="153" fill="#64748b" font-size="8" font-family="monospace">0</text>
-
-            <!-- Gradient Area under Line -->
-            <path d="M 60,130 Q 130,50 200,90 T 340,30 T 460,70 L 460,150 L 60,150 Z" fill="url(#chartGrad)" opacity="0.1" />
-
-            <!-- Smooth Spline Path -->
-            <path d="M 60,130 Q 130,50 200,90 T 340,30 T 460,70" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round" />
-
-            <!-- Data Nodes -->
-            <circle cx="60" cy="130" r="5" fill="#a855f7" stroke="#0d1626" stroke-width="2" />
-            <circle cx="140" cy="72" r="5" fill="#a855f7" stroke="#0d1626" stroke-width="2" />
-            <circle cx="220" cy="98" r="5" fill="#a855f7" stroke="#0d1626" stroke-width="2" />
-            <circle cx="300" cy="54" r="5" fill="#a855f7" stroke="#0d1626" stroke-width="2" />
-            <circle cx="380" cy="42" r="5" fill="#a855f7" stroke="#0d1626" stroke-width="2" />
-            <circle cx="460" cy="70" r="5" fill="#a855f7" stroke="#0d1626" stroke-width="2" />
-
-            <!-- X Axis Labels -->
-            <text x="50" y="168" fill="#64748b" font-size="8">Oct</text>
-            <text x="130" y="168" fill="#64748b" font-size="8">Nov</text>
-            <text x="210" y="168" fill="#64748b" font-size="8">Dec</text>
-            <text x="290" y="168" fill="#64748b" font-size="8">Jan</text>
-            <text x="370" y="168" fill="#64748b" font-size="8">Feb</text>
-            <text x="450" y="168" fill="#64748b" font-size="8">Mar</text>
-
-            <!-- Definitions -->
-            <defs>
-              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#a855f7" />
-                <stop offset="100%" stop-color="#a855f7" stop-opacity="0" />
-              </linearGradient>
-            </defs>
-          </svg>
+        <div class="stat-card">
+          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('fee_report.rate') }}</p>
+          <p class="text-2xl font-bold tnum">{{ report.totals.collectionRate === null ? '—' : f.percent(report.totals.collectionRate) }}</p>
+          <p class="text-xs text-ink-subtle">{{ $t('fee_report.rate_sub') }}</p>
         </div>
       </div>
 
-      <!-- Payment Progress by Class -->
-      <div class="glass-panel p-5 border border-slate-800/80 flex flex-col gap-4">
-        <div>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">
-            {{ $t('reports_detail.payment_by_grade') }}
-          </h3>
-          <p class="text-xs text-slate-500 mt-0.5">
-            {{ $t('reports_detail.tuition_completion_sub') }}
-          </p>
-        </div>
-
-        <div class="flex flex-col gap-4 mt-2">
-          <div v-for="item in progressStats" :key="item.grade" class="flex flex-col gap-1.5">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-semibold text-slate-300">{{ item.grade }}</span>
-              <span class="text-slate-400 font-mono">{{ item.paid }}/{{ item.total }} {{ locale === 'lo' ? 'ຄົນ' : 'Paid' }}</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="h-2 flex-1 bg-slate-800 rounded-full overflow-hidden">
-                <div
-class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-1000"
-                  :style="{ width: item.percent + '%' }"/>
-              </div>
-              <span class="text-[10px] font-bold text-purple-400 font-mono shrink-0 w-8 text-right">{{ item.percent }}%</span>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <!-- Monthly collections -->
+        <section class="lg:col-span-2 panel p-5 flex flex-col gap-4">
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wider">{{ $t('reports_detail.collection_trend') }}</h3>
+            <p class="text-xs text-ink-muted mt-0.5">{{ $t('reports_detail.collection_trend_sub') }}</p>
+          </div>
+          <div class="flex items-end gap-3 h-48 pt-6" role="img" :aria-label="$t('reports_detail.collection_trend')">
+            <div v-for="m in months" :key="m.month" class="flex-1 h-full flex flex-col items-center justify-end gap-1.5 group">
+              <span class="text-[11px] tnum text-ink-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{{ f.kip(m.amount) }}</span>
+              <div
+                class="w-full max-w-12 rounded-t bg-primary transition-colors group-hover:bg-primary-hover"
+                :style="{ height: barHeight(m.amount) }"
+                :title="`${m.label}: ${f.kip(m.amount)}`"
+              />
+              <span class="text-xs text-ink-muted">{{ m.label }}</span>
             </div>
           </div>
-        </div>
+        </section>
+
+        <!-- By fee type -->
+        <section class="panel p-5 flex flex-col gap-4">
+          <h3 class="text-sm font-bold uppercase tracking-wider">{{ $t('fee_report.by_type') }}</h3>
+          <p v-if="!report.byFeeType.length" class="text-sm text-ink-subtle">{{ $t('fee_report.no_data') }}</p>
+          <div v-for="ft in report.byFeeType" :key="ft.feeTypeId" class="flex flex-col gap-1.5" :title="`${f.kip(ft.collected)} / ${f.kip(ft.billed)}`">
+            <div class="flex justify-between gap-3 text-sm">
+              <span class="font-semibold truncate">{{ pick(ft.nameLo, ft.nameEn) }}</span>
+              <span class="tnum text-ink-muted shrink-0">{{ ft.collectionRate === null ? '—' : f.percent(ft.collectionRate) }}</span>
+            </div>
+            <div class="h-2 rounded-full bg-surface-2 overflow-hidden">
+              <div class="h-full rounded-full bg-primary" :style="{ width: `${ft.collectionRate ?? 0}%` }" />
+            </div>
+          </div>
+        </section>
       </div>
 
-    </div>
-
-    <!-- Recent Billings Log -->
-    <div class="glass-panel overflow-hidden flex flex-col gap-4">
-      <div class="p-5 pb-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">
-            {{ $t('reports_detail.recent_billings') }}
-          </h3>
-          <p class="text-xs text-slate-500 mt-0.5">
-            {{ $t('reports_detail.recent_billings_sub') }}
-          </p>
+      <!-- By class -->
+      <section class="panel overflow-hidden">
+        <h3 class="px-5 py-4 text-sm font-bold uppercase tracking-wider border-b border-line">{{ $t('fee_report.by_class') }}</h3>
+        <p v-if="!report.byClass.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('fee_report.no_data') }}</p>
+        <div v-else class="overflow-x-auto">
+          <table class="data-table w-full min-w-max">
+            <thead>
+              <tr>
+                <th class="w-12 text-center">#</th>
+                <th>{{ $t('fee_report.col_class') }}</th>
+                <th class="text-right">{{ $t('fee_report.billed') }}</th>
+                <th class="text-right">{{ $t('fee_report.collected') }}</th>
+                <th class="text-right">{{ $t('fee_report.col_paid') }}</th>
+                <th class="w-56">{{ $t('fee_report.rate') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(c, i) in report.byClass" :key="c.classId">
+                <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
+                <td class="font-semibold">{{ pick(c.classNameLo, c.classNameEn) }}</td>
+                <td class="text-right tnum">{{ f.kip(c.billed) }}</td>
+                <td class="text-right tnum">{{ f.kip(c.collected) }}</td>
+                <td class="text-right tnum text-ink-muted">{{ c.paid }} / {{ c.students }}</td>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="h-2 flex-1 rounded-full bg-surface-2 overflow-hidden">
+                      <div class="h-full rounded-full bg-primary" :style="{ width: `${c.collectionRate ?? 0}%` }" />
+                    </div>
+                    <span class="w-12 text-right text-xs tnum text-ink-muted">{{ c.collectionRate === null ? '—' : f.percent(c.collectionRate) }}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </section>
 
-        <div class="flex items-center gap-2">
-          <button :class="['px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all', statusFilter === 'all' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-slate-500 hover:text-slate-300']" @click="statusFilter = 'all'">All</button>
-          <button :class="['px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all', statusFilter === 'mobile_banking' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-slate-500 hover:text-slate-300']" @click="statusFilter = 'mobile_banking'">BCELOne</button>
-          <button :class="['px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all', statusFilter === 'cash' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-slate-500 hover:text-slate-300']" @click="statusFilter = 'cash'">Cash</button>
+      <!-- Recent payments -->
+      <section class="panel overflow-hidden">
+        <div class="px-5 py-4 border-b border-line">
+          <h3 class="text-sm font-bold uppercase tracking-wider">{{ $t('reports_detail.recent_billings') }}</h3>
+          <p class="text-xs text-ink-muted mt-0.5">{{ $t('reports_detail.recent_billings_sub') }}</p>
         </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="data-table w-full min-w-max">
-          <thead>
-            <tr>
-              <th>{{ locale === 'lo' ? 'ເລກອ້າງອີງ' : 'Ref No' }}</th>
-              <th>{{ $t('common.user') }}</th>
-              <th>{{ locale === 'lo' ? 'ຈຳນວນເງິນ' : 'Amount' }}</th>
-              <th>{{ locale === 'lo' ? 'ຊ່ອງທາງ' : 'Payment Method' }}</th>
-              <th>{{ locale === 'lo' ? 'ວັນເວລາ' : 'Date / Time' }}</th>
-              <th class="text-right">{{ $t('common.status') }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-800/40 text-xs font-medium">
-            <tr v-for="tx in filteredTransactions" :key="tx.ref" class="hover:bg-slate-800/10 transition-colors">
-              <td class="font-mono text-slate-400 font-semibold">{{ tx.ref }}</td>
-              <td class="">
-                <div>
-                  <p class="font-medium text-white">{{ tx.studentName }}</p>
-                  <p class="text-[10px] text-slate-500 font-mono">{{ tx.studentCode }} ({{ tx.class }})</p>
-                </div>
-              </td>
-              <td class="font-mono font-bold text-slate-200">{{ formatAmount(tx.amount) }} LAK</td>
-              <td class="">
-                <span
-:class="['px-2 py-0.5 rounded-md font-semibold text-[10px]', 
-                  tx.method === 'BCELOne' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'
-                ]">
-                  {{ tx.method }}
-                </span>
-              </td>
-              <td class="text-slate-500 font-mono text-[11px]">{{ tx.datetime }}</td>
-              <td class="text-right">
-                <span class="px-2 py-0.5 bg-teal-500/10 text-teal-400 text-[10px] font-bold rounded-full">
-                  {{ $t('reports_detail.approved') }}
-                </span>
-              </td>
-            </tr>
-            <tr v-if="filteredTransactions.length === 0">
-              <td colspan="6" class="text-center py-8 text-slate-500">
-                No billing logs found.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <p v-if="!report.recentPayments.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('fee_report.no_payments') }}</p>
+        <div v-else class="overflow-x-auto">
+          <table class="data-table w-full min-w-max">
+            <thead>
+              <tr>
+                <th class="w-12 text-center">#</th>
+                <th>{{ $t('fee_report.col_receipt') }}</th>
+                <th>{{ $t('fee_report.col_code') }}</th>
+                <th>{{ $t('fee_report.col_student') }}</th>
+                <th>{{ $t('fee_report.col_invoice') }}</th>
+                <th class="text-right">{{ $t('fee_report.col_amount') }}</th>
+                <th>{{ $t('fee_report.col_method') }}</th>
+                <th>{{ $t('fee_report.col_received_by') }}</th>
+                <th class="text-right">{{ $t('fee_report.col_date') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(p, i) in report.recentPayments" :key="p.paymentId">
+                <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
+                <td class="font-mono text-xs whitespace-nowrap">{{ p.receiptNo }}</td>
+                <td class="tnum whitespace-nowrap text-ink-muted">{{ p.invoice.student.studentCode || '—' }}</td>
+                <td class="font-semibold">{{ pick(p.invoice.student.fullNameLo, p.invoice.student.fullNameEn) }}</td>
+                <td class="font-mono text-xs whitespace-nowrap text-ink-muted">{{ p.invoice.invoiceNo }}</td>
+                <td class="text-right font-semibold tnum">{{ f.kip(p.amount) }}</td>
+                <td>{{ methodLabel(p.method) }}</td>
+                <td class="text-ink-muted">{{ p.receiver ? pick(p.receiver.fullNameLo, p.receiver.fullNameEn) : '—' }}</td>
+                <td class="text-right tnum whitespace-nowrap">{{ f.dateTime(p.paidAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, shallowRef } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useApiClient } from '../../../infrastructure/api/apiClient';
+import { adminRepository } from '../../../infrastructure/api/AdminRepository';
+import type { ApiResponse } from '../../../infrastructure/api/types';
 import { useExport } from '../../../composables/useExport';
 
+interface Named { nameEn: string; nameLo: string }
+interface FeeReport {
+  academicYear: string;
+  totals: {
+    invoices: number; billed: number; collected: number; outstanding: number;
+    overdueCount: number; overdueAmount: number; paidCount: number; collectionRate: number | null;
+  };
+  byClass: { classId: number; classNameEn: string; classNameLo: string; billed: number; collected: number; students: number; paid: number; collectionRate: number | null }[];
+  byFeeType: (Named & { feeTypeId: number; billed: number; collected: number; collectionRate: number | null })[];
+  monthly: { month: string; amount: number }[];
+  recentPayments: {
+    paymentId: number; receiptNo: string; amount: number; method: 'cash' | 'bank_transfer'; paidAt: string;
+    invoice: { invoiceNo: string; student: { studentCode: string; fullNameEn: string; fullNameLo: string } };
+    receiver: { fullNameEn: string; fullNameLo: string } | null;
+  }[];
+}
+
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Fee Reports — Smart School Admin' });
-
-const { locale } = useI18n();
+const { t, locale } = useI18n();
+const f = useFormat();
+const api = useApiClient();
 const { exportExcel } = useExport();
+useHead({ title: () => t('reports_detail.fees_analytics') });
 
-// Icons
-const IconDatabase = shallowRef({
-  template: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.58 4 8 4s8-1.79 8-4M4 7c0-2.21 3.58-4 8-4s8 1.79 8 4m0 5c0 2.21-3.58 4-8 4s-8-1.79-8-4"/></svg>`
-});
-const IconCheckCircle = shallowRef({
-  template: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
-});
-const IconTrendingDown = shallowRef({
-  template: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>`
-});
-const IconPercent = shallowRef({
-  template: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h-3a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3m-7.707-1.707l7-7m0 0h-3m3 0v3"/></svg>`
-});
+const report = ref<FeeReport | null>(null);
+const years = ref<string[]>([]);
+const year = ref('');
+const loading = ref(true);
+const error = ref('');
 
-const selectedYear = ref('2025-2026');
-const selectedTerm = ref('sem1');
-const statusFilter = ref('all');
+const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) || '';
+const methodLabel = (m: string) => (m === 'cash' ? t('invoice_print.method_cash') : t('invoice_print.method_bank_transfer'));
 
-// Formats big cash sums
-const formatAmount = (num: number): string => {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// The last six months up to now, empty months included, so the bars keep their places.
+const months = computed(() => {
+  const byMonth = new Map((report.value?.monthly ?? []).map((m) => [m.month, m.amount]));
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, k) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + k, 1);
+    const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return {
+      month,
+      amount: byMonth.get(month) ?? 0,
+      label: d.toLocaleDateString(locale.value === 'lo' ? 'lo-LA' : 'en-US', { month: 'short' }),
+    };
+  });
+});
+const maxMonth = computed(() => Math.max(...months.value.map((m) => m.amount), 0));
+const barHeight = (amount: number) => (maxMonth.value ? `${Math.max((amount / maxMonth.value) * 100, amount ? 2 : 0)}%` : '0%');
+
+const load = async () => {
+  loading.value = true;
+  error.value = '';
+  try {
+    const query = year.value ? `?academicYear=${encodeURIComponent(year.value)}` : '';
+    const res = await api<ApiResponse<FeeReport>>(`/reports/fees${query}`);
+    report.value = res.data;
+    year.value = res.data.academicYear;
+    if (!years.value.includes(year.value)) years.value = [year.value, ...years.value];
+  } catch (err) {
+    error.value = getErrorMessage(err);
+  } finally {
+    loading.value = false;
+  }
 };
 
-// Summary stats dependent on filter
-const summaryStats = computed(() => {
-  const isSem1 = selectedTerm.value === 'sem1';
-  return [
-    {
-      titleEn: 'Total Invoiced',
-      titleLo: 'ຍອດອອກໃບບິນທັງໝົດ',
-      value: isSem1 ? '180,000,000' : '220,000,000',
-      sub: 'Tuition + Material fees',
-      trendingUp: true,
-      icon: IconDatabase,
-      colorClass: 'text-purple-400'
-    },
-    {
-      titleEn: 'Total Collected',
-      titleLo: 'ຍອດເກັບເງິນໄດ້ແລ້ວ',
-      value: isSem1 ? '142,500,000' : '110,000,000',
-      sub: isSem1 ? '79.2% collection rate' : '50.0% collection rate',
-      trendingUp: true,
-      icon: IconCheckCircle,
-      colorClass: 'text-teal-400'
-    },
-    {
-      titleEn: 'Outstanding Balance',
-      titleLo: 'ຍອດຄ້າງຊຳລະ',
-      value: isSem1 ? '37,500,000' : '110,000,000',
-      sub: 'Unpaid invoice balance',
-      trendingUp: false,
-      icon: IconTrendingDown,
-      colorClass: 'text-rose-400'
-    },
-    {
-      titleEn: 'Payment Completion',
-      titleLo: 'ອັດຕາຊຳລະສຳເລັດ',
-      value: isSem1 ? '79.2%' : '50.0%',
-      sub: isSem1 ? '+2.4% vs last year' : 'Under billing phase',
-      trendingUp: true,
-      icon: IconPercent,
-      colorClass: 'text-indigo-400'
-    }
-  ];
+onMounted(async () => {
+  years.value = await adminRepository.getClassAcademicYears().catch(() => [] as string[]);
+  await load();
 });
 
-// Grade payment progress stats
-const progressStats = computed(() => {
-  if (selectedTerm.value === 'sem1') {
-    return [
-      { grade: 'Grade 10', paid: 34, total: 40, percent: 85 },
-      { grade: 'Grade 11', paid: 31, total: 40, percent: 78 },
-      { grade: 'Grade 12', paid: 29, total: 40, percent: 74 }
-    ];
-  } else {
-    return [
-      { grade: 'Grade 10', paid: 22, total: 40, percent: 55 },
-      { grade: 'Grade 11', paid: 20, total: 40, percent: 50 },
-      { grade: 'Grade 12', paid: 18, total: 40, percent: 45 }
-    ];
-  }
-});
-
-// Mock transaction history
-const transactions = [
-  { ref: 'TX-50493', studentName: 'Somsack Keola', studentCode: 'ST-045', class: '10A', amount: 1500000, method: 'BCELOne', methodKey: 'mobile_banking', datetime: '2026-07-03 11:20' },
-  { ref: 'TX-50492', studentName: 'Anoulack Sengdara', studentCode: 'ST-089', class: '10A', amount: 1500000, method: 'Cash', methodKey: 'cash', datetime: '2026-07-03 09:45' },
-  { ref: 'TX-50489', studentName: 'Keo Outhaivong', studentCode: 'ST-103', class: '11A', amount: 1500000, method: 'BCELOne', methodKey: 'mobile_banking', datetime: '2026-07-02 16:30' },
-  { ref: 'TX-50487', studentName: 'Malayphone Chanthasack', studentCode: 'ST-294', class: '12B', amount: 2000000, method: 'BCELOne', methodKey: 'mobile_banking', datetime: '2026-07-02 14:15' },
-  { ref: 'TX-50485', studentName: 'Phouthone Vongsay', studentCode: 'ST-201', class: '11B', amount: 1500000, method: 'Cash', methodKey: 'cash', datetime: '2026-07-02 10:05' }
-];
-
-const filteredTransactions = computed(() => {
-  if (statusFilter.value === 'all') return transactions;
-  return transactions.filter(t => t.methodKey === statusFilter.value);
-});
-
-function exportFees() {
-  exportExcel(filteredTransactions.value, [
-    { key: 'ref', label: 'Reference' },
-    { key: 'studentName', label: 'Student' },
-    { key: 'studentCode', label: 'Code' },
-    { key: 'class', label: 'Class' },
-    { key: 'amount', label: 'Amount (₭)' },
-    { key: 'method', label: 'Method' },
-    { key: 'datetime', label: 'Date/Time' },
-  ], `fee-report-${selectedYear.value}-${selectedTerm.value}`);
+function exportReport() {
+  if (!report.value) return;
+  exportExcel(
+    report.value.byClass.map((c) => ({
+      class: pick(c.classNameLo, c.classNameEn),
+      billed: c.billed,
+      collected: c.collected,
+      outstanding: c.billed - c.collected,
+      paid: `${c.paid} / ${c.students}`,
+      rate: c.collectionRate ?? '',
+    })),
+    [
+      { key: 'class', label: t('fee_report.col_class') },
+      { key: 'billed', label: t('fee_report.billed') },
+      { key: 'collected', label: t('fee_report.collected') },
+      { key: 'outstanding', label: t('fee_report.outstanding') },
+      { key: 'paid', label: t('fee_report.col_paid') },
+      { key: 'rate', label: `${t('fee_report.rate')} (%)` },
+    ],
+    `fee-report-${report.value.academicYear}`,
+  );
 }
 </script>
-
-<style scoped lang="postcss">
-.filter-select {
-  @apply px-3 py-1.5 bg-[#0d1626]/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer;
-}
-</style>

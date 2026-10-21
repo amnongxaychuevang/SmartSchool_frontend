@@ -57,20 +57,21 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
-              <th>{{ locale === 'lo' ? 'ນັກຮຽນ' : 'Student' }}</th>
-              <th>{{ locale === 'lo' ? 'ວິຊາຮຽນ' : 'Subject' }}</th>
-              <th>{{ locale === 'lo' ? 'ປະເພດຄະແນນ' : 'Grade Type' }}</th>
-              <th class="text-right">{{ locale === 'lo' ? 'ຄະແນນ' : 'Score' }}</th>
-              <th class="text-center">{{ locale === 'lo' ? 'ສະຖານະ' : 'Status' }}</th>
-              <th class="text-right">{{ locale === 'lo' ? 'ວັນທີບັນທຶກ' : 'Date' }}</th>
+              <th class="w-12 text-center">#</th>
+              <th>{{ t('grades_report.col_code') }}</th>
+              <th>{{ t('grades_report.col_student') }}</th>
+              <th>{{ t('grades_report.col_subject') }}</th>
+              <th>{{ t('grades_report.col_type') }}</th>
+              <th class="text-right">{{ t('grades_report.col_score') }}</th>
+              <th class="text-center">{{ t('grades_report.col_status') }}</th>
+              <th class="text-right">{{ t('grades_report.col_date') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="grade in filteredGrades" :key="grade.gradeId">
-              <td>
-                <p class="font-semibold">{{ studentName(grade) }}</p>
-                <p class="text-xs text-ink-subtle">{{ studentCode(grade) }}</p>
-              </td>
+            <tr v-for="(grade, i) in filteredGrades" :key="grade.gradeId">
+              <td class="text-center tnum text-ink-subtle">{{ (currentPage - 1) * GRADES_PER_PAGE + i + 1 }}</td>
+              <td class="tnum whitespace-nowrap text-ink-muted">{{ studentCode(grade) || '—' }}</td>
+              <td class="font-semibold">{{ studentName(grade) }}</td>
               <td>{{ subjectName(grade) }}</td>
               <td class="text-ink-muted">{{ gradeTypeName(grade) }}</td>
               <td class="text-right">
@@ -80,15 +81,10 @@
               </td>
               <td class="text-center">
                 <span :class="grade.isPublished ? 'badge-success' : 'badge-warning'">
-                  {{ grade.isPublished ? (locale === 'lo' ? 'ປະກາດແລ້ວ' : 'Published') : (locale === 'lo' ? 'ລໍຖ້າປະກາດ' : 'Pending') }}
+                  {{ grade.isPublished ? t('grades_report.published') : t('grades_report.unpublished') }}
                 </span>
               </td>
               <td class="text-right tnum whitespace-nowrap">{{ fmt.date(grade.recordedAt) }}</td>
-            </tr>
-            <tr v-if="filteredGrades.length === 0 && !academicsStore.gradesLoading">
-              <td colspan="6" class="text-center py-8 text-ink-subtle">
-                {{ locale === 'lo' ? 'ບໍ່ພົບຂໍ້ມູນຄະແນນ' : 'No grade records found' }}
-              </td>
             </tr>
           </tbody>
         </table>
@@ -101,7 +97,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { useAcademicsStore } from '~/application/stores/academics';
+import { useAcademicsStore, GRADES_PER_PAGE } from '~/application/stores/academics';
 import { useExport } from '../../../composables/useExport';
 import PageHeader from '../../../components/PageHeader.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
@@ -119,8 +115,7 @@ const searchInput = ref('');
 const filterStatus = ref('all');
 const filterMonth = ref('');
 const currentPage = ref(1);
-const PAGE_SIZE = 50;
-const totalPages = computed(() => Math.ceil((academicsStore.gradesTotal || 1) / PAGE_SIZE));
+const totalPages = computed(() => Math.ceil((academicsStore.gradesTotal || 1) / GRADES_PER_PAGE));
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 const handleSearch = () => {
@@ -211,18 +206,18 @@ function exportGrades() {
     score: g.score,
     maxScore: g.maxScore,
     percent: g.maxScore > 0 ? Math.round((g.score / g.maxScore) * 100) : 0,
-    published: g.isPublished ? 'Yes' : 'No',
+    published: g.isPublished ? t('grades_report.published') : t('grades_report.unpublished'),
   }));
   exportExcel(data, [
-    { key: 'student', label: 'Student' },
-    { key: 'studentCode', label: 'Code' },
-    { key: 'subject', label: 'Subject' },
-    { key: 'class', label: 'Class' },
-    { key: 'gradeType', label: 'Grade Type' },
-    { key: 'score', label: 'Score' },
-    { key: 'maxScore', label: 'Max Score' },
+    { key: 'studentCode', label: t('grades_report.col_code') },
+    { key: 'student', label: t('grades_report.col_student') },
+    { key: 'subject', label: t('grades_report.col_subject') },
+    { key: 'class', label: t('grades_report.col_class') },
+    { key: 'gradeType', label: t('grades_report.col_type') },
+    { key: 'score', label: t('grades_report.col_score') },
+    { key: 'maxScore', label: t('grades_report.col_max_score') },
     { key: 'percent', label: '%' },
-    { key: 'published', label: 'Published' },
+    { key: 'published', label: t('grades_report.col_status') },
   ], 'grades-report');
 }
 

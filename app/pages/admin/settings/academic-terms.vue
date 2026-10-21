@@ -22,6 +22,7 @@
         <table v-else class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
               <th>{{ $t('academic_terms_ui.col_academic_year') }}</th>
               <th>{{ $t('academic_terms_ui.col_term') }}</th>
               <th class="hidden sm:table-cell">{{ $t('academic_terms_ui.col_dates') }}</th>
@@ -30,7 +31,8 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60">
-            <tr v-for="term in terms" :key="term.termId" class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <tr v-for="(term, i) in terms" :key="term.termId" class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+              <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
               <td class="text-sm font-semibold text-slate-900 dark:text-white">{{ term.academicYear }}</td>
               <td class="text-sm text-slate-700 dark:text-slate-300">{{ locale === 'lo' ? term.termNameLo : term.termNameEn }}</td>
               <td class="text-sm text-slate-500 dark:text-slate-400 hidden sm:table-cell">{{ term.startDate.slice(0, 10) }} → {{ term.endDate.slice(0, 10) }}</td>

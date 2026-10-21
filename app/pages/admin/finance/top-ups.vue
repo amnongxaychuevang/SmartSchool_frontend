@@ -1,6 +1,17 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader :eyebrow="$t('nav.finance')" :title="$t('topups.title')" :subtitle="$t('topups.subtitle')">
+      <div class="relative w-72">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('topups.search')" @input="handleSearch">
+        <button v-if="searchInput" type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear')" @click="clearSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
       <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="handleFilter">
         <option value="">{{ $t('topups.all_status') }}</option>
         <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
@@ -14,35 +25,40 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
               <th>{{ $t('topups.col_requested') }}</th>
               <th>{{ $t('topups.col_student') }}</th>
+              <th>{{ $t('topups.col_parent') }}</th>
+              <th>{{ $t('topups.col_phone') }}</th>
               <th>{{ $t('topups.col_method') }}</th>
               <th>{{ $t('topups.col_slip') }}</th>
               <th class="text-right">{{ $t('topups.col_amount') }}</th>
               <th>{{ $t('common.status') }}</th>
+              <th>{{ $t('topups.col_reason') }}</th>
               <th class="text-right">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="req in financeStore.topUpRequests" :key="req.requestId">
+            <tr v-for="(req, i) in financeStore.topUpRequests" :key="req.requestId">
+              <td class="text-center tnum text-ink-subtle">{{ (financeStore.topUpRequestsPage - 1) * TOPUPS_PER_PAGE + i + 1 }}</td>
               <td class="tnum whitespace-nowrap">{{ f.dateTime(req.requestedAt) }}</td>
+              <td class="font-semibold">{{ name(req.student) }}</td>
+              <td>{{ name(req.parentRequester) }}</td>
+              <td class="tnum whitespace-nowrap text-ink-muted">{{ req.parentRequester?.phoneNumber || '—' }}</td>
+              <td class="text-ink-muted">{{ $t(`topups.method.${req.method}`) }}</td>
               <td>
-                <p class="font-semibold">{{ name(req.student) }}</p>
-                <p class="text-xs text-ink-subtle">{{ $t('topups.parent', { name: name(req.parentRequester) }) }}</p>
-              </td>
-              <td class="text-ink-muted">{{ methodLabel(req) }}</td>
-              <td>
-                <a v-if="req.slipUrl" :href="req.slipUrl" target="_blank" class="inline-block">
-                  <img :src="req.slipUrl" :alt="$t('topups.slip_image')" class="h-10 w-10 rounded border border-line object-cover hover:opacity-80 transition-opacity">
+                <a v-if="mediaUrl(req.slipUrl)" :href="mediaUrl(req.slipUrl)!" target="_blank" rel="noopener noreferrer" class="inline-block">
+                  <img :src="mediaUrl(req.slipUrl)!" :alt="$t('topups.slip_image')" class="h-10 w-10 rounded border border-line object-cover hover:opacity-80 transition-opacity">
                 </a>
                 <span v-else class="text-ink-subtle">—</span>
               </td>
               <td class="text-right font-semibold tnum text-primary-ink">{{ f.kip(req.amount) }}</td>
               <td>
                 <span :class="statusBadge[req.status]">{{ $t(`status.${req.status}`) }}</span>
-                <p v-if="req.status === 'rejected' && req.rejectReason" class="mt-1 max-w-xs truncate text-xs text-ink-subtle" :title="req.rejectReason">
-                  {{ $t('topups.reason_label', { reason: req.rejectReason }) }}
-                </p>
+              </td>
+              <td class="max-w-xs">
+                <p v-if="req.rejectReason" class="truncate text-ink-muted" :title="req.rejectReason">{{ req.rejectReason }}</p>
+                <span v-else class="text-ink-subtle">—</span>
               </td>
               <td class="text-right">
                 <div v-if="req.status === 'pending'" class="inline-flex gap-2">
@@ -88,7 +104,7 @@
 import type { TopUpRequest } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useFinanceStore } from '../../../application/stores/finance';
+import { useFinanceStore, TOPUPS_PER_PAGE } from '../../../application/stores/finance';
 import PageHeader from '../../../components/PageHeader.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
 import AppModal from '../../../components/AppModal.vue';
@@ -100,23 +116,32 @@ definePageMeta({ layout: 'admin' });
 
 const { t, locale } = useI18n();
 const f = useFormat();
+const mediaUrl = useMediaUrl();
 useHead({ title: () => t('topups.title') });
 
 const financeStore = useFinanceStore();
 const statuses = ['pending', 'approved', 'rejected'] as const;
 const statusFilter = ref('');
-const PAGE_SIZE = 15; // the store requests 15 per page
-const totalPages = computed(() => Math.ceil(financeStore.topUpRequestsTotal / PAGE_SIZE));
+const totalPages = computed(() => Math.ceil(financeStore.topUpRequestsTotal / TOPUPS_PER_PAGE));
 
-onMounted(() => financeStore.fetchTopUpRequests());
+onMounted(() => financeStore.fetchTopUpRequests({ search: '', page: 1 }));
 const handleFilter = () => financeStore.fetchTopUpRequests({ status: statusFilter.value, page: 1 });
 const changePage = (page: number) => financeStore.fetchTopUpRequests({ status: statusFilter.value, page });
 
+const searchInput = ref('');
+let searchTimeout: ReturnType<typeof setTimeout>;
+const handleSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => financeStore.fetchTopUpRequests({ search: searchInput.value.trim(), page: 1 }), 400);
+};
+const clearSearch = () => {
+  searchInput.value = '';
+  clearTimeout(searchTimeout);
+  financeStore.fetchTopUpRequests({ search: '', page: 1 });
+};
+
 const name = (p?: { fullNameEn: string; fullNameLo: string } | null) =>
   p ? ((locale.value === 'lo' ? p.fullNameLo : p.fullNameEn) || p.fullNameEn) : t('common.unknown');
-// The school's own label for the channel (e.g. "BCEL One"), else the generic method name.
-const methodLabel = (r: TopUpRequest) =>
-  (locale.value === 'lo' ? r.methodLabelLo : r.methodLabelEn) || t(`topups.method.${r.method}`);
 const statusBadge: Record<TopUpRequest['status'], string> = {
   pending: 'badge-warning', approved: 'badge-success', rejected: 'badge-danger',
 };

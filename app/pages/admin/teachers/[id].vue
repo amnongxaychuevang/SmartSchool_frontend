@@ -354,9 +354,8 @@ const { locale, t } = useI18n();
 const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
 
 const teacherId = computed(() => Number(route.params.id));
-useHead({ title: computed(() => `${editing.value ? t('teachers.edit_title') : t('teachers.detail_title')} — Smart School Admin`) });
-
 const editing = ref(false);
+useHead({ title: computed(() => `${editing.value ? t('teachers.edit_title') : t('teachers.detail_title')} — Smart School Admin`) });
 const loading = ref(false);
 const isSubmitting = ref(false);
 const errorMsg = ref('');

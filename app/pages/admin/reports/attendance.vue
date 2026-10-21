@@ -128,6 +128,8 @@
           <table class="data-table w-full min-w-max">
             <thead>
               <tr>
+                <th class="w-12 text-center">#</th>
+                <th>{{ $t('attendance_report.col_code') }}</th>
                 <th>{{ $t('attendance_report.col_student') }}</th>
                 <th>{{ $t('attendance_report.col_class') }}</th>
                 <th>{{ $t('attendance_report.col_date') }}</th>
@@ -138,11 +140,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="a in visibleAbsentees" :key="`${a.studentId}:${a.date}`">
-                <td>
-                  <p class="font-semibold">{{ studentName(a) }}</p>
-                  <p class="text-xs text-ink-subtle font-mono">{{ a.studentCode }}</p>
-                </td>
+              <tr v-for="(a, i) in visibleAbsentees" :key="`${a.studentId}:${a.date}`">
+                <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
+                <td class="tnum whitespace-nowrap text-ink-muted">{{ a.studentCode || '—' }}</td>
+                <td class="font-semibold">{{ studentName(a) }}</td>
                 <td>{{ className(a) ?? $t('attendance_report.no_class') }}</td>
                 <td class="tnum">{{ f.date(a.date) }}</td>
                 <td><span :class="statusBadge[a.status]">{{ $t(`attendance_report.status.${a.status}`) }}</span></td>
@@ -162,7 +163,7 @@
                 </td>
               </tr>
               <tr v-if="!visibleAbsentees.length">
-                <td colspan="7" class="py-10 text-center text-sm text-ink-subtle">
+                <td colspan="9" class="py-10 text-center text-sm text-ink-subtle">
                   {{ search ? $t('attendance_report.no_match') : $t('attendance_report.no_absentees') }}
                 </td>
               </tr>

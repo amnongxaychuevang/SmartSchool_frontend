@@ -222,14 +222,14 @@ const { t, locale } = useI18n();
 const route = useRoute();
 const f = useFormat();
 
-useHead({ title: () => invoice.value ? `${t('invoice_print.document_title')} — ${invoice.value.invoiceNo}` : t('invoice_print.document_title') });
-
 const isLao = computed(() => locale.value === 'lo');
 
 // State
 const loading = ref(true);
 const error = ref('');
 const invoice = ref<Invoice | null>(null);
+
+useHead({ title: () => invoice.value ? `${t('invoice_print.document_title')} — ${invoice.value.invoiceNo}` : t('invoice_print.document_title') });
 
 // Computed helpers
 const studentName = computed(() => {

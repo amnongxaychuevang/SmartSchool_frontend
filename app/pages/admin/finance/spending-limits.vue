@@ -21,17 +21,18 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
+              <th>{{ $t('limits_admin.col_code') }}</th>
               <th>{{ $t('limits_admin.col_student') }}</th>
               <th>{{ $t('limits_admin.col_class') }}</th>
               <th class="text-right">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="s in adminStore.students" :key="s.studentId">
-              <td>
-                <p class="font-semibold">{{ studentName(s) }}</p>
-                <p class="text-xs text-ink-subtle font-mono">{{ s.studentCode }}</p>
-              </td>
+            <tr v-for="(s, i) in adminStore.students" :key="s.studentId">
+              <td class="text-center tnum text-ink-subtle">{{ (adminStore.studentsPage - 1) * STUDENTS_PER_PAGE + i + 1 }}</td>
+              <td class="tnum whitespace-nowrap text-ink-muted">{{ s.studentCode || '—' }}</td>
+              <td class="font-semibold">{{ studentName(s) }}</td>
               <td class="text-ink-muted">{{ className(s) }}</td>
               <td class="text-right">
                 <button type="button" class="btn-secondary min-h-8 px-3" @click="openLimits(s)">{{ $t('limits_admin.manage') }}</button>

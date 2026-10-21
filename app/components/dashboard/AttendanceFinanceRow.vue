@@ -7,7 +7,7 @@
     >
       <h3 class="text-lg font-bold text-white flex items-center gap-2">
         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        {{ $t('admin.attendance_status') || 'ສະຖານະການເຂົ້າ-ອອກໂຮງຮ຋ນສົດ' }}
+        {{ $t('admin.attendance_status') }}
       </h3>
     </div>
 

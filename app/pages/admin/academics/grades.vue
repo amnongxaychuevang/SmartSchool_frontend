@@ -204,7 +204,7 @@ import type { SchoolClass } from '../../../domain/models/SchoolClass';
 import type { Student } from '../../../domain/models/Student';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useAcademicsStore } from '../../../application/stores/academics';
+import { useAcademicsStore, GRADES_PER_PAGE } from '../../../application/stores/academics';
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
 
 import PaginationBar from '../../../components/PaginationBar.vue';
@@ -237,7 +237,7 @@ const getDefaultMonth = () => {
 };
 const monthFilter = ref(getDefaultMonth());
 
-const totalPages = computed(() => Math.ceil(academicsStore.gradesTotal / 10));
+const totalPages = computed(() => Math.ceil(academicsStore.gradesTotal / GRADES_PER_PAGE));
 
 type Named = { fullNameEn: string; fullNameLo: string } | null | undefined;
 const personName = (p: Named) => (p ? (locale.value === 'lo' ? p.fullNameLo : p.fullNameEn) || p.fullNameEn : '—');

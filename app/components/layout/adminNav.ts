@@ -55,6 +55,13 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/announcements', key: 'nav.announcements', icon: 'IconNotifications', permission: 'announcements.manage' },
     { to: '/admin/notifications', key: 'nav.notifications', icon: 'IconNotifications', permission: 'notifications.manage' },
   ] },
+  { key: 'system', collapsible: true, items: [
+    { to: '/admin/settings', key: 'nav.general', icon: 'IconSettings', permission: 'settings.manage' },
+    { to: '/admin/users', key: 'nav.users', icon: 'IconUsers', permission: 'users.manage' },
+    { to: '/admin/settings/permissions', key: 'nav.permissions', icon: 'IconSettings', permission: 'roles.manage' },
+    { to: '/admin/settings/notifications', key: 'nav.notificationSettings', icon: 'IconNotifications', permission: 'settings.manage' },
+    { to: '/admin/audit-logs', key: 'nav.auditLogs', icon: 'IconReports', permission: 'audit.view' },
+  ] },
   { key: 'reports', collapsible: true, items: [
     { to: '/admin/reports', key: 'nav.overview', icon: 'IconReports', permission: 'reports.view' },
     { to: '/admin/reports/attendance', key: 'nav.attendance', icon: 'IconAttendance', permission: 'reports.view' },
@@ -63,13 +70,6 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/reports/wallet', key: 'nav.wallet', icon: 'IconWallet', permission: 'reports.view' },
     { to: '/admin/reports/fees', key: 'nav.fees', icon: 'IconWallet', permission: ['fees.view', 'reports.view'] },
     { to: '/admin/reports/shop-sales', key: 'nav.shopSales', icon: 'IconDashboard', permission: ['finance.view', 'reports.view'] },
-  ] },
-  { key: 'system', collapsible: true, items: [
-    { to: '/admin/settings', key: 'nav.general', icon: 'IconSettings', permission: 'settings.manage' },
-    { to: '/admin/users', key: 'nav.users', icon: 'IconUsers', permission: 'users.manage' },
-    { to: '/admin/settings/permissions', key: 'nav.permissions', icon: 'IconSettings', permission: 'roles.manage' },
-    { to: '/admin/settings/notifications', key: 'nav.notificationSettings', icon: 'IconNotifications', permission: 'settings.manage' },
-    { to: '/admin/audit-logs', key: 'nav.auditLogs', icon: 'IconReports', permission: 'audit.view' },
   ] },
 ];
 

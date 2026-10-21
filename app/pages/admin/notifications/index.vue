@@ -15,20 +15,21 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
               <th>{{ $t('notifications_admin.col_sent') }}</th>
               <th>{{ $t('notifications_admin.col_type') }}</th>
+              <th>{{ $t('notifications_admin.channel') }}</th>
               <th>{{ $t('notifications_admin.col_message') }}</th>
               <th>{{ $t('notifications_admin.col_recipient') }}</th>
               <th>{{ $t('common.status') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="n in academicsStore.notifications" :key="n.notificationId">
+            <tr v-for="(n, i) in academicsStore.notifications" :key="n.notificationId">
+              <td class="text-center tnum text-ink-subtle">{{ (academicsStore.notificationsPage - 1) * NOTIFICATIONS_PER_PAGE + i + 1 }}</td>
               <td class="tnum whitespace-nowrap">{{ f.dateTime(n.sentAt) }}</td>
-              <td>
-                <p class="font-semibold">{{ $t(`notifications_admin.types.${n.type}`) }}</p>
-                <p class="text-xs text-ink-subtle">{{ $t(`notifications_admin.channels.${n.channel}`) }}</p>
-              </td>
+              <td class="font-semibold">{{ $t(`notifications_admin.types.${n.type}`) }}</td>
+              <td class="text-ink-muted">{{ $t(`notifications_admin.channels.${n.channel}`) }}</td>
               <td class="max-w-md whitespace-normal text-ink-muted">{{ locale === 'lo' ? n.messageLo : n.messageEn }}</td>
               <td>{{ n.recipient ? (locale === 'lo' ? n.recipient.fullNameLo : n.recipient.fullNameEn) : '—' }}</td>
               <td><span :class="statusBadge[n.status]">{{ $t(`status.${n.status}`) }}</span></td>
@@ -81,7 +82,7 @@
 import type { AppNotification } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useAcademicsStore } from '../../../application/stores/academics';
+import { useAcademicsStore, NOTIFICATIONS_PER_PAGE } from '../../../application/stores/academics';
 import PageHeader from '../../../components/PageHeader.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
 import AppModal from '../../../components/AppModal.vue';
@@ -99,7 +100,7 @@ const academicsStore = useAcademicsStore();
 const statuses = ['pending', 'sent', 'failed'] as const;
 const statusBadge: Record<AppNotification['status'], string> = { pending: 'badge-warning', sent: 'badge-success', failed: 'badge-danger' };
 const statusFilter = ref('');
-const totalPages = computed(() => Math.ceil(academicsStore.notificationsTotal / 15));
+const totalPages = computed(() => Math.ceil(academicsStore.notificationsTotal / NOTIFICATIONS_PER_PAGE));
 
 // The status filter is passed on every call, so paging keeps it.
 const load = (page: number) => academicsStore.fetchNotifications({ status: statusFilter.value || undefined, page });
@@ -107,11 +108,12 @@ onMounted(() => load(1));
 
 // Must match the API's enums.
 const types: AppNotification['type'][] = ['general', 'absence', 'grade', 'transaction', 'check_in', 'check_out'];
-const channels: AppNotification['channel'][] = ['whatsapp', 'app_push', 'email'];
+// App push is not implemented by the server yet; sending on it always fails.
+const channels: AppNotification['channel'][] = ['whatsapp', 'email'];
 const emptyForm = () => ({
   recipientUserId: null as number | null,
   type: 'general' as AppNotification['type'],
-  channel: 'app_push' as AppNotification['channel'],
+  channel: 'whatsapp' as AppNotification['channel'],
   messageLo: '',
   messageEn: '',
 });

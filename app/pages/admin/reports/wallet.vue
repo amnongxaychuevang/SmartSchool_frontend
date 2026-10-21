@@ -60,7 +60,8 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
-              <th class="w-20">{{ $t('wallet_ui.col_id') }}</th>
+              <th class="w-12 text-center">#</th>
+              <th>{{ $t('wallet_ui.col_code') }}</th>
               <th class="w-auto">{{ $t('wallet_ui.col_student') }}</th>
               <th class="w-36 text-right">{{ $t('wallet_ui.col_balance') }}</th>
               <th class="w-36 text-right">{{ $t('wallet_ui.col_daily') }}</th>
@@ -69,12 +70,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="wallet in filteredWallets" :key="wallet.walletId">
-              <td class="text-ink-muted tnum">#{{ wallet.walletId }}</td>
-              <td>
-                <p class="font-semibold">{{ walletStudentName(wallet) }}</p>
-                <p class="text-xs text-ink-subtle">{{ walletStudentCode(wallet) }}</p>
-              </td>
+            <tr v-for="(wallet, i) in filteredWallets" :key="wallet.walletId">
+              <td class="text-center tnum text-ink-subtle">{{ (currentPage - 1) * WALLETS_PER_PAGE + i + 1 }}</td>
+              <td class="tnum whitespace-nowrap text-ink-muted">{{ walletStudentCode(wallet) || '—' }}</td>
+              <td class="font-semibold">{{ walletStudentName(wallet) }}</td>
               <td class="text-right font-bold tnum text-primary-ink">{{ f.kip(wallet.balance) }}</td>
               <td class="text-right tnum text-ink-muted">{{ walletDailyLimit(wallet) }}</td>
               <td class="text-center">
@@ -94,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { useFinanceStore } from '~/application/stores/finance';
+import { useFinanceStore, WALLETS_PER_PAGE } from '~/application/stores/finance';
 import { useExport } from '../../../composables/useExport';
 import PageHeader from '../../../components/PageHeader.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
@@ -111,8 +110,7 @@ const financeStore = useFinanceStore();
 const filterStatus = ref('all');
 const searchQuery = ref('');
 const currentPage = ref(1);
-const PAGE_SIZE = 20;
-const totalPages = computed(() => Math.ceil((financeStore.walletsTotal || 1) / PAGE_SIZE));
+const totalPages = computed(() => Math.ceil((financeStore.walletsTotal || 1) / WALLETS_PER_PAGE));
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 const handleSearch = () => {
@@ -166,18 +164,18 @@ function exportWallets() {
     dailyLimit: w.student?.spendingLimit?.dailyMax || '',
     weeklyLimit: w.student?.spendingLimit?.weeklyMax || '',
     perTxLimit: w.student?.spendingLimit?.perTransactionMax || '',
-    status: w.status,
+    status: w.status === 'active' ? t('wallet_report.active') : t('wallet_report.frozen'),
     createdAt: f.date(w.createdAt),
   }));
   exportExcel(data, [
-    { key: 'student', label: locale.value === 'lo' ? 'ນັກຮຽນ' : 'Student' },
-    { key: 'studentCode', label: locale.value === 'lo' ? 'ລະຫັດ' : 'Code' },
-    { key: 'balance', label: locale.value === 'lo' ? 'ຍອດເງິນ' : 'Balance' },
-    { key: 'dailyLimit', label: locale.value === 'lo' ? 'ຈຳກັດຕໍ່ມື້' : 'Daily Limit' },
-    { key: 'weeklyLimit', label: locale.value === 'lo' ? 'ຈຳກັດຕໍ່ອາທິດ' : 'Weekly Limit' },
-    { key: 'perTxLimit', label: locale.value === 'lo' ? 'ຈຳກັດຕໍ່ຄັ້ງ' : 'Per Transaction' },
-    { key: 'status', label: locale.value === 'lo' ? 'ສະຖານະ' : 'Status' },
-    { key: 'createdAt', label: locale.value === 'lo' ? 'ວັນທີສ້າງ' : 'Created' },
+    { key: 'studentCode', label: t('wallet_ui.col_code') },
+    { key: 'student', label: t('wallet_ui.col_student') },
+    { key: 'balance', label: t('wallet_ui.col_balance') },
+    { key: 'dailyLimit', label: t('wallet_ui.col_daily') },
+    { key: 'weeklyLimit', label: t('wallet_ui.col_weekly') },
+    { key: 'perTxLimit', label: t('wallet_ui.col_per_tx') },
+    { key: 'status', label: t('wallet_ui.col_status') },
+    { key: 'createdAt', label: t('wallet_ui.col_created') },
   ], 'wallet-report');
 }
 </script>

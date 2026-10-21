@@ -213,6 +213,7 @@
       <table v-else class="data-table w-full min-w-max">
         <thead>
           <tr>
+            <th class="w-12 text-center">#</th>
             <th>{{ $t("common.name") }}</th>
             <th class="hidden md:table-cell">{{ $t("teachers.specialization") }}</th>
             <th class="hidden min-[1360px]:table-cell">{{ $t("teachers.qualification") }}</th>
@@ -227,10 +228,13 @@
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr
-            v-for="teacher in adminStore.teachers"
+            v-for="(teacher, i) in adminStore.teachers"
             :key="teacher.teacherId"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
           >
+            <td class="text-center tnum text-ink-subtle">
+              {{ (adminStore.teachersPage - 1) * TEACHERS_PER_PAGE + i + 1 }}
+            </td>
             <td>
               <div class="flex items-center gap-3">
                 <PersonAvatar

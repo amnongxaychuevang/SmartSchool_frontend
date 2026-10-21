@@ -6,187 +6,288 @@
       :subtitle="$t('settings.subtitle')"
     />
 
-    <!-- Settings Forms -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div v-if="loadError" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm flex items-center justify-between gap-4">
+      <span>{{ $t('settings_ui.load_error') }}: {{ loadError }}</span>
+      <button type="button" class="btn-secondary" @click="load">{{ $t('common.refresh') }}</button>
+    </div>
 
-      <!-- General School Config -->
-      <div class="lg:col-span-2 panel p-6 flex flex-col gap-4">
-        <div class="flex items-center gap-2 pb-2 border-b border-line">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    <LoadingSpinner v-if="loading" />
+
+    <div v-else class="flex flex-col gap-4">
+      <!-- Tabs -->
+      <div role="tablist" class="inline-flex self-start max-w-full overflow-x-auto p-0.5 gap-0.5 rounded-lg border border-line bg-surface-2">
+        <button
+          v-for="tab in tabs"
+          :id="`tab-${tab.id}`"
+          :key="tab.id"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === tab.id"
+          :aria-controls="`panel-${tab.id}`"
+          :title="tab.ok ? $t('settings_ui.configured') : $t('settings_ui.not_configured')"
+          :class="[
+            'flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold whitespace-nowrap transition-colors',
+            activeTab === tab.id ? 'bg-surface text-primary-ink shadow-float' : 'text-ink-muted hover:text-ink',
+          ]"
+          @click="selectTab(tab.id)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="tab.icon" />
           </svg>
-          <h3 class="text-sm font-semibold text-ink uppercase tracking-wider">{{ $t('settings.school_info') }}</h3>
-        </div>
+          {{ tab.label }}
+          <span :class="['w-1.5 h-1.5 rounded-full', tab.ok ? 'bg-success' : 'bg-line-strong']" aria-hidden="true" />
+        </button>
+      </div>
 
+      <!-- School information -->
+      <section v-show="activeTab === 'school'" id="panel-school" role="tabpanel" aria-labelledby="tab-school" class="panel p-6 max-w-3xl">
         <form class="flex flex-col gap-4" @submit.prevent="handleSchoolSave">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.school_name_en') }}</label>
-              <input v-model="schoolForm.schoolNameEn" type="text" required class="input-field" >
+              <label for="school-name-lo" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.school_name_lo') }}</label>
+              <input id="school-name-lo" v-model="schoolForm.schoolNameLo" type="text" required maxlength="150" class="input-field">
             </div>
             <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.school_name_lo') }}</label>
-              <input v-model="schoolForm.schoolNameLo" type="text" required class="input-field" >
+              <label for="school-name-en" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.school_name_en') }}</label>
+              <input id="school-name-en" v-model="schoolForm.schoolNameEn" type="text" required maxlength="150" class="input-field">
             </div>
             <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.contact_email') }}</label>
-              <input v-model="schoolForm.contactEmail" type="email" required class="input-field" >
+              <label for="school-email" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.contact_email') }}</label>
+              <input id="school-email" v-model="schoolForm.contactEmail" type="email" maxlength="150" class="input-field">
             </div>
             <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.contact_phone') }}</label>
-              <input v-model="schoolForm.contactPhone" type="text" required class="input-field" >
+              <label for="school-phone" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.contact_phone') }}</label>
+              <input id="school-phone" v-model="schoolForm.contactPhone" type="text" maxlength="30" class="input-field">
             </div>
           </div>
 
-          <div class="flex items-center justify-between pt-4 border-t border-line mt-2">
-            <span v-if="successSchool" class="text-xs text-teal-400 flex items-center gap-1.5 animate-pulse">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-              </svg>
-              {{ $t('settings_ui.school_saved') }}
-            </span>
-            <span v-else/>
-            <button type="submit" :disabled="savingSchool" class="btn-primary flex items-center gap-2">
-              <svg v-if="savingSchool" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
+          <p v-if="saveError" role="alert" class="text-sm text-danger">{{ saveError }}</p>
+
+          <div class="flex items-center justify-end gap-3">
+            <span v-if="successSchool" class="text-xs text-success">{{ $t('settings_ui.school_saved') }}</span>
+            <button type="submit" :disabled="savingSchool" class="btn-primary">
               {{ savingSchool ? $t('common.saving') : $t('settings.save') }}
             </button>
           </div>
         </form>
-      </div>
+      </section>
 
-      <!-- Academic Defaults -->
-      <div class="panel p-6 flex flex-col gap-4 h-fit">
-        <div class="flex items-center gap-2 pb-2 border-b border-line">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
-          <h3 class="text-sm font-semibold text-ink uppercase tracking-wider">{{ $t('settings.academic_settings') }}</h3>
-        </div>
+      <!-- School account parents transfer top-ups to -->
+      <section v-show="activeTab === 'payment'" id="panel-payment" role="tabpanel" aria-labelledby="tab-payment" class="panel p-6 max-w-3xl flex flex-col gap-4">
+        <p class="text-sm text-ink-muted">{{ $t('payment_info.subtitle') }}</p>
 
-        <form class="flex flex-col gap-4" @submit.prevent="handleAcademicSave">
-          <div class="flex flex-col gap-3">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.current_year') }}</label>
-              <select v-model="academicForm.currentYear" class="input-field">
-                <option value="2025 - 2026">2025 - 2026</option>
-                <option value="2026 - 2027">2026 - 2027</option>
-                <option value="2027 - 2028">2027 - 2028</option>
-              </select>
+        <form class="flex flex-col gap-4" @submit.prevent="handlePaymentSave">
+          <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_160px] gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label for="pay-bank" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.bank_name') }}</label>
+                <input id="pay-bank" v-model="paymentForm.bankName" type="text" required maxlength="100" class="input-field" placeholder="BCEL">
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="pay-number" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.account_number') }}</label>
+                <input id="pay-number" v-model="paymentForm.accountNumber" type="text" required maxlength="50" class="input-field tnum">
+              </div>
+              <div class="flex flex-col gap-1.5 sm:col-span-2">
+                <label for="pay-name" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.account_name') }}</label>
+                <input id="pay-name" v-model="paymentForm.accountName" type="text" required maxlength="150" class="input-field">
+              </div>
+              <div class="flex flex-col gap-1.5 sm:col-span-2">
+                <label for="pay-note" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.note') }}</label>
+                <input id="pay-note" v-model="paymentForm.note" type="text" maxlength="255" class="input-field" :placeholder="$t('payment_info.note_placeholder')">
+              </div>
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.active_term') }}</label>
-              <select v-model="academicForm.activeTerm" class="input-field">
-                <option value="Semester 1">Semester 1</option>
-                <option value="Semester 2">Semester 2</option>
-              </select>
+              <span class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.qr') }}</span>
+              <label class="relative aspect-square rounded-lg border border-dashed border-line-strong bg-surface-2 flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-colors">
+                <img v-if="qrPreview" :src="qrPreview" :alt="$t('payment_info.qr')" class="w-full h-full object-contain">
+                <span v-else class="text-xs text-ink-subtle text-center px-3">{{ $t('payment_info.qr_hint') }}</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="onQrChange">
+              </label>
+              <button v-if="qrPreview" type="button" class="text-xs text-danger self-start hover:underline" @click="removeQr">{{ $t('common.delete') }}</button>
             </div>
           </div>
 
-          <div class="flex flex-col gap-2 pt-4 border-t border-line mt-2">
-            <button type="submit" :disabled="savingAcademic" class="w-full btn-primary flex items-center justify-center gap-2">
-              <svg v-if="savingAcademic" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
-              {{ savingAcademic ? $t('common.saving') : $t('settings.update_term') }}
+          <p v-if="paymentError" role="alert" class="text-sm text-danger">{{ paymentError }}</p>
+
+          <div class="flex items-center justify-end gap-3">
+            <span v-if="paymentSaved" class="text-xs text-success">{{ $t('payment_info.saved') }}</span>
+            <button type="submit" :disabled="savingPayment" class="btn-primary">
+              {{ savingPayment ? $t('common.saving') : $t('settings.save') }}
             </button>
-            <span v-if="successAcademic" class="text-xs text-teal-400 flex items-center justify-center gap-1.5 animate-pulse text-center mt-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-              </svg>
-              {{ $t('settings_ui.academic_saved') }}
-            </span>
           </div>
         </form>
-      </div>
+      </section>
 
+      <!-- Active term (read from the academic terms, managed on their own page) -->
+      <section v-show="activeTab === 'term'" id="panel-term" role="tabpanel" aria-labelledby="tab-term" class="panel p-6 max-w-3xl flex flex-col gap-5">
+        <dl v-if="activeTerm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="flex flex-col gap-0.5">
+            <dt class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.current_year') }}</dt>
+            <dd class="text-base font-semibold tnum">{{ activeTerm.academicYear }}</dd>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <dt class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.active_term') }}</dt>
+            <dd class="text-base font-semibold">{{ termName(activeTerm) }}</dd>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <dt class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings_ui.term_dates') }}</dt>
+            <dd class="text-base font-semibold tnum">{{ f.date(activeTerm.startDate) }} – {{ f.date(activeTerm.endDate) }}</dd>
+          </div>
+        </dl>
+        <p v-else class="rounded-lg border border-warning-line bg-warning-soft text-warning px-4 py-3 text-sm">{{ $t('settings_ui.no_active_term') }}</p>
+
+        <div class="flex justify-end">
+          <NuxtLink to="/admin/settings/academic-terms" class="btn-secondary">
+            {{ $t('settings_ui.manage_terms') }}
+          </NuxtLink>
+        </div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, computed, onMounted } from 'vue';
 import { useSettingsStore } from '../../../application/stores/settings';
+import { settingsRepository } from '../../../infrastructure/api/SettingsRepository';
+import { academicsRepository, type AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
+
+type TabId = 'school' | 'payment' | 'term';
+const TAB_IDS: TabId[] = ['school', 'payment', 'term'];
 
 definePageMeta({ layout: 'admin' });
-const { t } = useI18n();
-useHead({ title: () => t('page_titles.notification') });
+const { t, locale } = useI18n();
+useHead({ title: () => t('page_titles.settings') });
 
+const route = useRoute();
+const router = useRouter();
 const settingsStore = useSettingsStore();
+const f = useFormat();
 
-const schoolForm = reactive({
-  schoolNameEn: '',
-  schoolNameLo: '',
-  contactEmail: '',
-  contactPhone: ''
-});
+// The open tab lives in the URL (?tab=payment) so a refresh or a shared link keeps it.
+const activeTab = ref<TabId>(TAB_IDS.includes(route.query.tab as TabId) ? (route.query.tab as TabId) : 'school');
+const selectTab = (id: TabId) => {
+  activeTab.value = id;
+  router.replace({ query: { ...route.query, tab: id === 'school' ? undefined : id } });
+};
 
-const academicForm = reactive({
-  currentYear: '',
-  activeTerm: ''
-});
-
+const schoolForm = reactive({ schoolNameEn: '', schoolNameLo: '', contactEmail: '', contactPhone: '' });
+const terms = ref<AcademicTerm[]>([]);
+const loading = ref(true);
+const loadError = ref('');
 const savingSchool = ref(false);
 const successSchool = ref(false);
-const savingAcademic = ref(false);
-const successAcademic = ref(false);
+const saveError = ref('');
 
-onMounted(() => {
-  settingsStore.loadSettings();
-  
-  // Bind form properties
-  schoolForm.schoolNameEn = settingsStore.schoolInfo.schoolNameEn;
-  schoolForm.schoolNameLo = settingsStore.schoolInfo.schoolNameLo;
-  schoolForm.contactEmail = settingsStore.schoolInfo.contactEmail;
-  schoolForm.contactPhone = settingsStore.schoolInfo.contactPhone;
+const activeTerm = computed(() => terms.value.find((term) => term.status === 'active') ?? null);
+const termName = (term: AcademicTerm) => (locale.value === 'lo' ? term.termNameLo : term.termNameEn) || term.termNameEn;
 
-  academicForm.currentYear = settingsStore.academicSettings.currentYear;
-  academicForm.activeTerm = settingsStore.academicSettings.activeTerm;
-});
+// Tab dots reflect what is saved, not unsaved edits.
+const tabs = computed(() => [
+  {
+    id: 'school' as const,
+    label: t('settings.school_info'),
+    ok: Boolean(settingsStore.schoolInfo.schoolNameLo && settingsStore.schoolInfo.schoolNameEn),
+    icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+  },
+  {
+    id: 'payment' as const,
+    label: t('payment_info.title'),
+    ok: Boolean(settingsStore.paymentInfo),
+    icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+  },
+  {
+    id: 'term' as const,
+    label: t('settings.academic_settings'),
+    ok: Boolean(activeTerm.value),
+    icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+  },
+]);
+
+const load = async () => {
+  loading.value = true;
+  loadError.value = '';
+  try {
+    // Terms need academics.view; without it the school form must still work.
+    const [, termList] = await Promise.all([
+      settingsStore.loadSettings(),
+      academicsRepository.getTerms().catch(() => [] as AcademicTerm[]),
+    ]);
+    terms.value = termList;
+    Object.assign(schoolForm, settingsStore.schoolInfo);
+    const pay = settingsStore.paymentInfo;
+    Object.assign(paymentForm, {
+      bankName: pay?.bankName ?? '',
+      accountName: pay?.accountName ?? '',
+      accountNumber: pay?.accountNumber ?? '',
+      note: pay?.note ?? '',
+    });
+    qrUrl.value = pay?.qrUrl ?? '';
+  } catch (err) {
+    loadError.value = getErrorMessage(err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(load);
 
 const handleSchoolSave = async () => {
   savingSchool.value = true;
   successSchool.value = false;
-  
-  // Simulate network save latency
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  settingsStore.saveSchoolInfo({
-    schoolNameEn: schoolForm.schoolNameEn,
-    schoolNameLo: schoolForm.schoolNameLo,
-    contactEmail: schoolForm.contactEmail,
-    contactPhone: schoolForm.contactPhone
-  });
-  
-  savingSchool.value = false;
-  successSchool.value = true;
-  
-  setTimeout(() => {
-    successSchool.value = false;
-  }, 3000);
+  saveError.value = '';
+  try {
+    await settingsStore.saveSchoolInfo({ ...schoolForm });
+    successSchool.value = true;
+    setTimeout(() => { successSchool.value = false; }, 3000);
+  } catch (err) {
+    saveError.value = getErrorMessage(err, t('settings_ui.save_error'));
+  } finally {
+    savingSchool.value = false;
+  }
 };
 
-const handleAcademicSave = async () => {
-  savingAcademic.value = true;
-  successAcademic.value = false;
-  
-  // Simulate network save latency
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  settingsStore.saveAcademicSettings({
-    currentYear: academicForm.currentYear,
-    activeTerm: academicForm.activeTerm
-  });
-  
-  savingAcademic.value = false;
-  successAcademic.value = true;
-  
-  setTimeout(() => {
-    successAcademic.value = false;
-  }, 3000);
+// ── Payment account ──
+const mediaUrl = useMediaUrl();
+const paymentForm = reactive({ bankName: '', accountName: '', accountNumber: '', note: '' });
+const qrUrl = ref('');
+const qrFile = ref<File | null>(null);
+const qrPreview = computed(() => (qrFile.value ? URL.createObjectURL(qrFile.value) : mediaUrl(qrUrl.value)));
+const savingPayment = ref(false);
+const paymentSaved = ref(false);
+const paymentError = ref('');
+
+const onQrChange = (e: Event) => {
+  qrFile.value = (e.target as HTMLInputElement).files?.[0] ?? null;
+};
+const removeQr = () => {
+  qrFile.value = null;
+  qrUrl.value = '';
+};
+
+const handlePaymentSave = async () => {
+  savingPayment.value = true;
+  paymentSaved.value = false;
+  paymentError.value = '';
+  try {
+    if (qrFile.value) {
+      qrUrl.value = await settingsRepository.uploadPaymentQr(qrFile.value);
+      qrFile.value = null;
+    }
+    await settingsStore.savePaymentInfo({
+      bankName: paymentForm.bankName,
+      accountName: paymentForm.accountName,
+      accountNumber: paymentForm.accountNumber,
+      ...(paymentForm.note.trim() ? { note: paymentForm.note.trim() } : {}),
+      ...(qrUrl.value ? { qrUrl: qrUrl.value } : {}),
+    });
+    paymentSaved.value = true;
+    setTimeout(() => { paymentSaved.value = false; }, 3000);
+  } catch (err) {
+    paymentError.value = getErrorMessage(err, t('settings_ui.save_error'));
+  } finally {
+    savingPayment.value = false;
+  }
 };
 </script>

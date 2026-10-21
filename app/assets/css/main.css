@@ -294,10 +294,12 @@
   }
 
   /* ── Data table (opt-in, denser than the base table) ── */
-  .data-table thead th {
+  /* :where() keeps these at element specificity, so per-column utilities
+     (text-right, text-center, w-12, ...) on a th/td still win. */
+  :where(.data-table) thead th {
     @apply px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide;
   }
-  .data-table tbody td {
+  :where(.data-table) tbody td {
     @apply px-4 py-2;
   }
 

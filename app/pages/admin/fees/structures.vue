@@ -2,24 +2,54 @@
   <div class="flex flex-col gap-6">
     <PageHeader :eyebrow="$t('nav.fees')" :title="$t('fee_structures.title')" :subtitle="$t('fee_structures.subtitle')" />
 
-    <!-- ── Fee Types ── -->
-    <section class="panel">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-line">
-        <div>
-          <h3 class="text-base font-bold">{{ $t('fee_structures.types_title') }}</h3>
-          <p class="text-xs text-ink-muted mt-0.5">{{ $t('fee_structures.types_subtitle') }}</p>
-        </div>
-        <button type="button" class="btn-primary min-h-8 px-3 inline-flex items-center gap-1.5" @click="openTypeForm()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-          {{ $t('fee_structures.add_type') }}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <!-- Tabs -->
+      <div role="tablist" class="inline-flex max-w-full overflow-x-auto p-0.5 gap-0.5 rounded-lg border border-line bg-surface-2">
+        <button
+          v-for="tab in tabs"
+          :id="`tab-${tab.id}`"
+          :key="tab.id"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === tab.id"
+          :aria-controls="`panel-${tab.id}`"
+          :class="[
+            'flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold whitespace-nowrap transition-colors',
+            activeTab === tab.id ? 'bg-surface text-primary-ink shadow-float' : 'text-ink-muted hover:text-ink',
+          ]"
+          @click="selectTab(tab.id)"
+        >
+          {{ tab.label }}
+          <span class="min-w-5 px-1.5 rounded-full bg-line text-[11px] text-ink-muted tnum">{{ tab.count }}</span>
         </button>
       </div>
+
+      <div v-if="activeTab === 'structures'" class="flex items-center gap-2">
+        <select v-model="yearFilter" class="input-field w-auto" :aria-label="$t('fee_structures.col_year')" @change="financeStore.fetchFeeStructures(yearFilter)">
+          <option value="">{{ $t('fee_structures.all_years') }}</option>
+          <option v-for="y in academicYears" :key="y" :value="y">{{ y }}</option>
+        </select>
+        <button type="button" class="btn-primary inline-flex items-center gap-1.5" @click="openStructureForm()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          {{ $t('fee_structures.add_structure') }}
+        </button>
+      </div>
+      <button v-else type="button" class="btn-primary inline-flex items-center gap-1.5" @click="openTypeForm()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+        {{ $t('fee_structures.add_type') }}
+      </button>
+    </div>
+
+    <!-- ── Fee Types ── -->
+    <section v-show="activeTab === 'types'" id="panel-types" role="tabpanel" aria-labelledby="tab-types" class="panel overflow-hidden">
+      <p class="px-5 py-3 text-xs text-ink-muted border-b border-line">{{ $t('fee_structures.types_subtitle') }}</p>
       <LoadingSpinner v-if="financeStore.feeTypesLoading" class="my-8" />
       <p v-else-if="!financeStore.feeTypes.length" class="px-5 py-8 text-center text-sm text-ink-subtle">{{ $t('fee_structures.type_empty') }}</p>
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
               <th>{{ $t('fee_structures.type_name_en') }}</th>
               <th>{{ $t('fee_structures.type_name_lo') }}</th>
               <th>{{ $t('common.status') }}</th>
@@ -28,17 +58,18 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="ft in financeStore.feeTypes" :key="ft.feeTypeId">
+            <tr v-for="(ft, i) in financeStore.feeTypes" :key="ft.feeTypeId">
+              <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
               <td class="font-semibold">{{ ft.nameEn }}</td>
               <td>{{ ft.nameLo }}</td>
               <td><span :class="ft.isActive ? 'badge-success' : 'badge-muted'">{{ ft.isActive ? $t('status.active') : $t('status.inactive') }}</span></td>
               <td class="text-ink-muted">{{ $t('fee_structures.type_used', { count: (ft._count && ft._count.structures) || 0 }) }}</td>
               <td class="text-right">
                 <div class="inline-flex gap-1">
-                  <button type="button" class="btn-secondary min-h-8 px-2.5" :title="$t('common.edit')" @click="openTypeForm(ft)">
+                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openTypeForm(ft)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                   </button>
-                  <button type="button" class="btn-danger min-h-8 px-2.5" :title="$t('common.delete')" @click="openTypeDelete(ft)">
+                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="openTypeDelete(ft)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
@@ -50,29 +81,15 @@
     </section>
 
     <!-- ── Fee Structures ── -->
-    <section class="panel">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-line">
-        <div>
-          <h3 class="text-base font-bold">{{ $t('fee_structures.structures_title') }}</h3>
-          <p class="text-xs text-ink-muted mt-0.5">{{ $t('fee_structures.structures_subtitle') }}</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <select v-model="yearFilter" class="input-field w-auto" @change="financeStore.fetchFeeStructures(yearFilter)">
-            <option value="">{{ $t('fee_structures.all_years') }}</option>
-            <option v-for="y in academicYears" :key="y" :value="y">{{ y }}</option>
-          </select>
-          <button type="button" class="btn-primary min-h-8 px-3 inline-flex items-center gap-1.5" @click="openStructureForm()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-            {{ $t('fee_structures.add_structure') }}
-          </button>
-        </div>
-      </div>
+    <section v-show="activeTab === 'structures'" id="panel-structures" role="tabpanel" aria-labelledby="tab-structures" class="panel overflow-hidden">
+      <p class="px-5 py-3 text-xs text-ink-muted border-b border-line">{{ $t('fee_structures.structures_subtitle') }}</p>
       <LoadingSpinner v-if="financeStore.feeStructuresLoading" class="my-8" />
       <p v-else-if="!financeStore.feeStructures.length" class="px-5 py-8 text-center text-sm text-ink-subtle">{{ $t('fee_structures.empty') }}</p>
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
               <th>{{ $t('fee_structures.col_fee_type') }}</th>
               <th>{{ $t('fee_structures.col_year') }}</th>
               <th>{{ $t('fee_structures.col_term') }}</th>
@@ -85,7 +102,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="s in financeStore.feeStructures" :key="s.feeStructureId">
+            <tr v-for="(s, i) in financeStore.feeStructures" :key="s.feeStructureId">
+              <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
               <td class="font-semibold">{{ pick(s.feeType && s.feeType.nameLo, s.feeType && s.feeType.nameEn) }}</td>
               <td>{{ s.academicYear }}</td>
               <td class="text-ink-muted">{{ s.term ? pick(s.term.termNameLo, s.term.termNameEn) : $t('fee_structures.all_terms') }}</td>
@@ -99,13 +117,13 @@
               </td>
               <td class="text-right">
                 <div class="inline-flex gap-1">
-                  <button type="button" class="btn-primary min-h-8 px-2.5" :title="$t('fee_structures.generate')" @click="openGenerate(s)">
+                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('fee_structures.generate')" @click="openGenerate(s)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   </button>
-                  <button type="button" class="btn-secondary min-h-8 px-2.5" :title="$t('common.edit')" @click="openStructureForm(s)">
+                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openStructureForm(s)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                   </button>
-                  <button type="button" class="btn-danger min-h-8 px-2.5" :title="$t('common.delete')" @click="openStructureDelete(s)">
+                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="openStructureDelete(s)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
@@ -273,6 +291,21 @@ const classes = ref<SchoolClass[]>([]);
 
 const activeFeeTypes = computed(() => financeStore.feeTypes.filter(ft => ft.isActive));
 
+// ── Tabs (kept in the URL as ?tab=types so a refresh stays put) ──
+type TabId = 'structures' | 'types';
+const route = useRoute();
+const router = useRouter();
+const dialog = useDialog();
+const activeTab = ref<TabId>(route.query.tab === 'types' ? 'types' : 'structures');
+const selectTab = (id: TabId) => {
+  activeTab.value = id;
+  router.replace({ query: { ...route.query, tab: id === 'types' ? 'types' : undefined } });
+};
+const tabs = computed(() => [
+  { id: 'structures' as const, label: t('fee_structures.structures_title'), count: financeStore.feeStructures.length },
+  { id: 'types' as const, label: t('fee_structures.types_title'), count: financeStore.feeTypes.length },
+]);
+
 onMounted(async () => {
   financeStore.fetchFeeTypes();
   financeStore.fetchFeeStructures();
@@ -391,7 +424,7 @@ async function handleGenerate() {
   try {
     const result = await financeStore.generateInvoices(gen.structureId);
     gen.open = false;
-    alert(t('fee_structures.generate_result', { created: result.created, existing: result.alreadyBilled }));
+    dialog.success(t('fee_structures.generate_result', { created: result.created, existing: result.alreadyBilled }));
   } catch (err) {
     gen.error = getErrorMessage(err, t('common.error'));
   } finally {

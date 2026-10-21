@@ -227,7 +227,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAdminStore } from '../../../application/stores/admin';
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
@@ -237,14 +237,12 @@ import type { ParentChild } from '../../../domain/models/Parent';
 definePageMeta({ layout: 'admin' });
 
 const route = useRoute();
-const router = useRouter();
 const adminStore = useAdminStore();
 const dialog = useDialog();
 const { locale, t } = useI18n();
 const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
 
 const parentId = computed(() => Number(route.params.id));
-useHead({ title: computed(() => `${isEditing.value ? t('parents.edit_parent') : t('parents.detail_title')} — Smart School Admin`) });
 
 const form = reactive({
   fullNameLo: '',
@@ -265,6 +263,7 @@ const snapshot = ref<typeof form | null>(null);
 const isActive = ref(true);
 const children = ref<ParentChild[]>([]);
 const isEditing = ref(false);
+useHead({ title: computed(() => `${isEditing.value ? t('parents.edit_parent') : t('parents.detail_title')} — Smart School Admin`) });
 const loading = ref(false);
 const isSubmitting = ref(false);
 const errorMsg = ref('');

@@ -67,6 +67,7 @@
       <table v-else class="data-table w-full min-w-max">
         <thead>
           <tr>
+            <th class="w-12 text-center">#</th>
             <th>{{ $t('common.name') }}</th>
             <th class="hidden md:table-cell">{{ $t('parents.children') }}</th>
             <th class="hidden sm:table-cell">{{ $t('users.phone') }}</th>
@@ -79,9 +80,10 @@
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr
-            v-for="parent in adminStore.parents"
+            v-for="(parent, i) in adminStore.parents"
             :key="parent.parentId"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="text-center tnum text-ink-subtle">{{ (adminStore.parentsPage - 1) * PARENTS_PER_PAGE + i + 1 }}</td>
             <td>
               <NuxtLink :to="`/admin/parents/${parent.parentId}`" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <PersonAvatar :name="parentName(parent)" :photo-url="parent.user?.avatarUrl" size="md" />

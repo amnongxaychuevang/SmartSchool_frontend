@@ -26,6 +26,8 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
+              <th>{{ $t('wallets_admin.col_code') }}</th>
               <th>{{ $t('wallets_admin.col_student') }}</th>
               <th class="text-right">{{ $t('wallets_admin.col_balance') }}</th>
               <th class="text-right">{{ $t('wallets_admin.col_daily') }}</th>
@@ -35,11 +37,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="w in financeStore.wallets" :key="w.walletId">
-              <td>
-                <p class="font-semibold">{{ studentName(w) }}</p>
-                <p class="text-xs text-ink-subtle font-mono">{{ w.student ? w.student.studentCode : '' }}</p>
-              </td>
+            <tr v-for="(w, i) in financeStore.wallets" :key="w.walletId">
+              <td class="text-center tnum text-ink-subtle">{{ (financeStore.walletsPage - 1) * WALLETS_PER_PAGE + i + 1 }}</td>
+              <td class="tnum whitespace-nowrap text-ink-muted">{{ (w.student && w.student.studentCode) || '—' }}</td>
+              <td class="font-semibold">{{ studentName(w) }}</td>
               <td class="text-right font-semibold tnum">{{ f.kip(w.balance) }}</td>
               <td class="text-right tnum text-ink-muted">
                 {{ w.student && w.student.spendingLimit && w.student.spendingLimit.dailyMax ? f.kip(w.student.spendingLimit.dailyMax) : $t('wallets_admin.no_limit') }}
@@ -105,7 +106,7 @@
 import type { Wallet } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useFinanceStore } from '../../../application/stores/finance';
+import { useFinanceStore, WALLETS_PER_PAGE } from '../../../application/stores/finance';
 import PageHeader from '../../../components/PageHeader.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
 import AppModal from '../../../components/AppModal.vue';
@@ -122,7 +123,7 @@ useHead({ title: () => t('wallets_admin.title') });
 const financeStore = useFinanceStore();
 const searchInput = ref('');
 const statusFilter = ref('');
-const totalPages = computed(() => Math.ceil(financeStore.walletsTotal / 15));
+const totalPages = computed(() => Math.ceil(financeStore.walletsTotal / WALLETS_PER_PAGE));
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 const studentName = (w: Wallet) => (locale.value === 'lo' ? w.student?.fullNameLo : w.student?.fullNameEn) || w.student?.fullNameEn || '—';

@@ -312,8 +312,9 @@ async function loadGrades() {
 const handlePrint = () => window.print();
 
 onMounted(async () => {
+  // The school header is optional: staff without settings.manage get a 403 here.
+  settingsStore.loadSettings().catch(() => {});
   try {
-    await settingsStore.loadSettings();
     const [studentData, termsData] = await Promise.all([
       adminRepository.getStudent(studentId.value),
       academicsRepository.getTerms(),

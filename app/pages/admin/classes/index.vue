@@ -67,6 +67,7 @@
       <table v-else class="data-table w-full min-w-max">
         <thead>
           <tr>
+            <th class="w-12 text-center">#</th>
             <th>{{ $t('nav.classes') }}</th>
             <th class="hidden md:table-cell">{{ $t('classes.grade_level') }}</th>
             <th class="hidden sm:table-cell">{{ $t('classes.academic_year') }}</th>
@@ -78,9 +79,10 @@
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr
-            v-for="cls in adminStore.classes"
+            v-for="(cls, i) in adminStore.classes"
             :key="cls.classId"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="text-center tnum text-ink-subtle">{{ (adminStore.classesPage - 1) * CLASSES_PER_PAGE + i + 1 }}</td>
             <td>
               <div class="flex items-center gap-3">
                 <span class="w-9 h-9 shrink-0 rounded-lg bg-teal-500/15 text-teal-500 flex items-center justify-center">

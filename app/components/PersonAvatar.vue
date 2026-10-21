@@ -33,13 +33,8 @@ const SIZES = {
   xl: 'w-24 h-24 text-3xl',
 };
 
-const apiBase = useRuntimeConfig().public.apiBaseUrl as string;
-const src = computed(() => {
-  const p = props.photoUrl;
-  if (!p) return null;
-  if (/^(https?:|blob:|data:)/.test(p)) return p;
-  return new URL(p, apiBase).href; // uploads are served by the API host, outside /api
-});
+const mediaUrl = useMediaUrl();
+const src = computed(() => mediaUrl(props.photoUrl));
 
 const failed = ref(false);
 watch(src, () => (failed.value = false));

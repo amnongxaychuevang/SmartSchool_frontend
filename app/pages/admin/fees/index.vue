@@ -92,6 +92,7 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
+              <th class="w-12 text-center">#</th>
               <th>{{ $t("fees_admin.col_invoice") }}</th>
               <th>{{ $t("fees_admin.col_student") }}</th>
               <th>{{ $t("fees_admin.col_class") }}</th>
@@ -105,16 +106,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="inv in financeStore.invoices" :key="inv.invoiceId">
+            <tr v-for="(inv, i) in financeStore.invoices" :key="inv.invoiceId">
+              <td class="text-center tnum text-ink-subtle">
+                {{ (financeStore.invoicesPage - 1) * INVOICES_PER_PAGE + i + 1 }}
+              </td>
               <td class="font-mono text-xs whitespace-nowrap">
                 {{ inv.invoiceNo }}
               </td>
-              <td>
-                <p class="font-semibold">{{ studentName(inv) }}</p>
-                <p class="text-xs text-ink-subtle font-mono">
-                  {{ inv.student?.studentCode }}
-                </p>
-              </td>
+              <td class="font-semibold">{{ studentName(inv) }}</td>
               <td class="text-ink-muted">{{ className(inv) || "—" }}</td>
               <td class="text-ink-muted">{{ feeTypeName(inv) }}</td>
               <td class="text-right font-semibold tnum">
@@ -402,7 +401,7 @@
 import type { Invoice } from "../../../domain/models/Finance";
 import { ref, reactive, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { useFinanceStore } from "../../../application/stores/finance";
+import { useFinanceStore, INVOICES_PER_PAGE } from "../../../application/stores/finance";
 import PageHeader from "../../../components/PageHeader.vue";
 import PaginationBar from "../../../components/PaginationBar.vue";
 import AppModal from "../../../components/AppModal.vue";
@@ -418,9 +417,8 @@ useHead({ title: () => t("fees_admin.title") });
 const financeStore = useFinanceStore();
 const searchInput = ref("");
 const statusFilter = ref("");
-const PAGE_SIZE = 20;
 const totalPages = computed(() =>
-  Math.ceil(financeStore.invoicesTotal / PAGE_SIZE),
+  Math.ceil(financeStore.invoicesTotal / INVOICES_PER_PAGE),
 );
 let searchTimeout: ReturnType<typeof setTimeout>;
 

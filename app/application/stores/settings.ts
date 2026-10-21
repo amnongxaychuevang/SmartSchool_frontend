@@ -1,16 +1,11 @@
 import { defineStore } from "pinia";
-import { settingsRepository } from "../../infrastructure/api/SettingsRepository";
+import { settingsRepository, type SettingsData } from "../../infrastructure/api/SettingsRepository";
 
 export interface SchoolInfo {
   schoolNameEn: string;
   schoolNameLo: string;
   contactEmail: string;
   contactPhone: string;
-}
-
-export interface AcademicSettings {
-  currentYear: string;
-  activeTerm: string;
 }
 
 export interface WhatsAppConfig {
@@ -28,228 +23,26 @@ export interface EmailConfig {
 }
 
 export interface NotificationChannelConfig {
-  default: "whatsapp" | "email" | "app_push";
+  default: "whatsapp" | "email";
 }
 
-export interface PermissionItem {
-  key: string;
-  label: string;
-  desc: string;
-  enabled: boolean;
+/** The school account parents transfer top-ups to. */
+export interface PaymentInfo {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  qrUrl?: string;
+  note?: string;
 }
-
-export interface PermissionCategory {
-  name: string;
-  items: PermissionItem[];
-}
-
-export type PermissionsMap = Record<string, PermissionCategory[]>;
-
-const defaultSchoolInfo: SchoolInfo = {
-  schoolNameEn: "Smart School Academy",
-  schoolNameLo: "ໂຮງຮຽນ ສະມາດ ສະຄູນ",
-  contactEmail: "contact@smartschool.com",
-  contactPhone: "+856 20 5555 6666",
-};
-
-const defaultAcademicSettings: AcademicSettings = {
-  currentYear: "2025 - 2026",
-  activeTerm: "Semester 1",
-};
-
-const defaultPermissionsMap: PermissionsMap = {
-  admin: [
-    {
-      name: "Student Management",
-      items: [
-        {
-          key: "std_view",
-          label: "View Student Directory",
-          desc: "Can browse student details and profiles",
-          enabled: true,
-        },
-        {
-          key: "std_write",
-          label: "Add/Edit Students",
-          desc: "Can insert new student entries and modify profiles",
-          enabled: true,
-        },
-        {
-          key: "std_delete",
-          label: "Delete Student Records",
-          desc: "Can purge student accounts from database",
-          enabled: true,
-        },
-      ],
-    },
-    {
-      name: "Academics & Grading",
-      items: [
-        {
-          key: "class_manage",
-          label: "Manage Classes & Rooms",
-          desc: "Can create classes, sections and assign homerooms",
-          enabled: true,
-        },
-        {
-          key: "grade_write",
-          label: "Edit Academic Scores",
-          desc: "Can modify exam grades and gradebooks",
-          enabled: true,
-        },
-      ],
-    },
-    {
-      name: "Financial Audit",
-      items: [
-        {
-          key: "fee_write",
-          label: "Manage Fees & Invoices",
-          desc: "Can issue invoices and adjust tuition fees",
-          enabled: true,
-        },
-        {
-          key: "trans_view",
-          label: "View Collection Logs",
-          desc: "Can review payment transaction logs",
-          enabled: true,
-        },
-      ],
-    },
-  ],
-  teacher: [
-    {
-      name: "Student Management",
-      items: [
-        {
-          key: "std_view",
-          label: "View Student Directory",
-          desc: "Can browse student details and profiles",
-          enabled: true,
-        },
-        {
-          key: "std_write",
-          label: "Add/Edit Students",
-          desc: "Can insert new student entries and modify profiles",
-          enabled: false,
-        },
-        {
-          key: "std_delete",
-          label: "Delete Student Records",
-          desc: "Can purge student accounts from database",
-          enabled: false,
-        },
-      ],
-    },
-    {
-      name: "Academics & Grading",
-      items: [
-        {
-          key: "class_manage",
-          label: "Manage Classes & Rooms",
-          desc: "Can create classes, sections and assign homerooms",
-          enabled: false,
-        },
-        {
-          key: "grade_write",
-          label: "Edit Academic Scores",
-          desc: "Can modify exam grades and gradebooks",
-          enabled: true,
-        },
-      ],
-    },
-    {
-      name: "Financial Audit",
-      items: [
-        {
-          key: "fee_write",
-          label: "Manage Fees & Invoices",
-          desc: "Can issue invoices and adjust tuition fees",
-          enabled: false,
-        },
-        {
-          key: "trans_view",
-          label: "View Collection Logs",
-          desc: "Can review payment transaction logs",
-          enabled: false,
-        },
-      ],
-    },
-  ],
-  parent: [
-    {
-      name: "Student Management",
-      items: [
-        {
-          key: "std_view",
-          label: "View Child Profile",
-          desc: "Can view details of linked children",
-          enabled: true,
-        },
-        {
-          key: "std_write",
-          label: "Edit Child Profile",
-          desc: "Can edit basic details of linked children",
-          enabled: false,
-        },
-      ],
-    },
-    {
-      name: "Academics & Grading",
-      items: [
-        {
-          key: "grade_view",
-          label: "View Child Report Card",
-          desc: "Can check grading logs and exam reports",
-          enabled: true,
-        },
-      ],
-    },
-    {
-      name: "Financial Audit",
-      items: [
-        {
-          key: "fee_pay",
-          label: "Online Tuition Payments",
-          desc: "Can pay outstanding invoices online",
-          enabled: true,
-        },
-      ],
-    },
-  ],
-  student: [
-    {
-      name: "Student Profile",
-      items: [
-        {
-          key: "std_view_self",
-          label: "View Self Profile",
-          desc: "Can view personal academic info",
-          enabled: true,
-        },
-      ],
-    },
-    {
-      name: "Academics & Grades",
-      items: [
-        {
-          key: "grade_view_self",
-          label: "View Self Report Card",
-          desc: "Can review own exam score logs",
-          enabled: true,
-        },
-      ],
-    },
-  ],
-};
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
-    schoolInfo: { ...defaultSchoolInfo } as SchoolInfo,
-    academicSettings: { ...defaultAcademicSettings } as AcademicSettings,
-    permissionsMap: JSON.parse(
-      JSON.stringify(defaultPermissionsMap),
-    ) as PermissionsMap,
+    schoolInfo: {
+      schoolNameEn: "",
+      schoolNameLo: "",
+      contactEmail: "",
+      contactPhone: "",
+    } as SchoolInfo,
     whatsapp: { phoneNumberId: "", accessToken: "" } as WhatsAppConfig,
     email: {
       host: "",
@@ -260,125 +53,43 @@ export const useSettingsStore = defineStore("settings", {
       from: "",
     } as EmailConfig,
     notificationChannel: { default: "whatsapp" } as NotificationChannelConfig,
+    paymentInfo: null as PaymentInfo | null,
     loaded: false,
   }),
 
   actions: {
     async loadSettings() {
       if (this.loaded) return;
-      try {
-        const res = await settingsRepository.getSettings();
-        if (res.data) {
-          if (res.data.schoolInfo) this.schoolInfo = res.data.schoolInfo;
-          if (res.data.academicSettings)
-            this.academicSettings = res.data.academicSettings;
-          if (res.data.permissionsMap)
-            this.permissionsMap = res.data.permissionsMap;
-          if (res.data.whatsapp)
-            this.whatsapp = res.data.whatsapp as WhatsAppConfig;
-          if (res.data.email) this.email = res.data.email as EmailConfig;
-          if (res.data.notificationChannel)
-            this.notificationChannel = res.data
-              .notificationChannel as NotificationChannelConfig;
-        }
-      } catch (err) {
-        console.warn(
-          "Failed to load settings from API, falling back to localStorage:",
-          err,
-        );
-        if (!import.meta.client) return;
-        const cachedSchool = localStorage.getItem("school_info");
-        if (cachedSchool) this.schoolInfo = JSON.parse(cachedSchool);
-
-        const cachedAcademic = localStorage.getItem("academic_settings");
-        if (cachedAcademic) this.academicSettings = JSON.parse(cachedAcademic);
-
-        const cachedPermissions = localStorage.getItem("permissions_map");
-        if (cachedPermissions)
-          this.permissionsMap = JSON.parse(cachedPermissions);
-      } finally {
-        this.loaded = true;
-      }
+      const res = await settingsRepository.getSettings();
+      const data: SettingsData = res.data?.settings ?? {};
+      if (data.schoolInfo) this.schoolInfo = { ...this.schoolInfo, ...data.schoolInfo };
+      if (data.whatsapp) this.whatsapp = data.whatsapp as WhatsAppConfig;
+      if (data.email) this.email = data.email as EmailConfig;
+      if (data.notificationChannel)
+        this.notificationChannel = data.notificationChannel as NotificationChannelConfig;
+      if (data.paymentInfo) this.paymentInfo = data.paymentInfo as PaymentInfo;
+      this.loaded = true;
     },
 
     async saveSchoolInfo(info: SchoolInfo) {
+      await settingsRepository.updateSettings({ schoolInfo: info });
       this.schoolInfo = { ...info };
-      try {
-        await settingsRepository.updateSettings({
-          schoolInfo: this.schoolInfo,
-        });
-      } catch (e) {
-        console.error("Failed to sync to API", e);
-      }
-      if (import.meta.client) {
-        localStorage.setItem("school_info", JSON.stringify(this.schoolInfo));
-      }
     },
 
-    async saveAcademicSettings(settings: AcademicSettings) {
-      this.academicSettings = { ...settings };
-      try {
-        await settingsRepository.updateSettings({
-          academicSettings: this.academicSettings,
-        });
-      } catch (e) {
-        console.error("Failed to sync to API", e);
-      }
-      if (import.meta.client) {
-        localStorage.setItem(
-          "academic_settings",
-          JSON.stringify(this.academicSettings),
-        );
-      }
+    async savePaymentInfo(info: PaymentInfo) {
+      await settingsRepository.updateSettings({ paymentInfo: info });
+      this.paymentInfo = { ...info };
     },
 
-    async saveWhatsAppConfig(config: WhatsAppConfig) {
-      this.whatsapp = { ...config };
-      try {
-        await settingsRepository.updateSettings({ whatsapp: this.whatsapp });
-      } catch (e) {
-        console.error("Failed to save WhatsApp config", e);
-      }
-    },
-
-    async saveEmailConfig(config: EmailConfig) {
-      this.email = { ...config };
-      try {
-        await settingsRepository.updateSettings({ email: this.email });
-      } catch (e) {
-        console.error("Failed to save email config", e);
-      }
-    },
-
-    async saveNotificationChannel(channel: NotificationChannelConfig) {
-      this.notificationChannel = { ...channel };
-      try {
-        await settingsRepository.updateSettings({
-          notificationChannel: this.notificationChannel,
-        });
-      } catch (e) {
-        console.error("Failed to save notification channel", e);
-      }
-    },
-
-    savePermissions(permissions: PermissionsMap) {
-      this.permissionsMap = JSON.parse(JSON.stringify(permissions));
-      if (import.meta.client) {
-        localStorage.setItem(
-          "permissions_map",
-          JSON.stringify(this.permissionsMap),
-        );
-      }
-    },
-
-    resetPermissions() {
-      this.permissionsMap = JSON.parse(JSON.stringify(defaultPermissionsMap));
-      if (import.meta.client) {
-        localStorage.setItem(
-          "permissions_map",
-          JSON.stringify(this.permissionsMap),
-        );
-      }
+    // Saves the chosen channel together with its connection details in one request.
+    async saveNotificationSetup(
+      setup: { channel: "whatsapp"; config: WhatsAppConfig } | { channel: "email"; config: EmailConfig },
+    ) {
+      const notificationChannel = { default: setup.channel };
+      await settingsRepository.updateSettings({ notificationChannel, [setup.channel]: setup.config });
+      this.notificationChannel = notificationChannel;
+      if (setup.channel === "whatsapp") this.whatsapp = { ...setup.config };
+      else this.email = { ...setup.config };
     },
   },
 });

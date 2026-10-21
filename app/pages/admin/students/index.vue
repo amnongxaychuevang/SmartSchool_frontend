@@ -110,6 +110,7 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
       <table v-else class="data-table w-full min-w-max">
         <thead>
           <tr>
+            <th class="w-12 text-center">#</th>
             <th>{{ $t('common.name') }}</th>
             <th class="hidden md:table-cell">{{ $t('common.class') }}</th>
             <th class="hidden sm:table-cell">{{ $t('common.date_of_birth') }}</th>
@@ -123,8 +124,9 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr
-v-for="student in adminStore.students" :key="student.studentId"
+v-for="(student, i) in adminStore.students" :key="student.studentId"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="text-center tnum text-ink-subtle">{{ (adminStore.studentsPage - 1) * STUDENTS_PER_PAGE + i + 1 }}</td>
             <td>
               <div class="flex items-center gap-3">
                 <PersonAvatar :name="studentName(student)" :photo-url="student.photoUrl" size="md" />

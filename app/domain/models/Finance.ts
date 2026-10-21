@@ -28,6 +28,7 @@ export interface WalletTransaction {
   descriptionLo: string | null;
   referenceNo: string | null;
   createdAt: string;
+  shop?: { shopId: number; shopNameEn: string; shopNameLo: string } | null;
 }
 
 export interface TopUpRequest {

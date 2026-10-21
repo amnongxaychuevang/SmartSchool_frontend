@@ -186,11 +186,24 @@ v-if="profileOpen"
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, reactive, onMounted, onBeforeUnmount, type Component } from 'vue';
+import IconAttendance from '../components/IconAttendance.vue';
+import IconClasses from '../components/IconClasses.vue';
+import IconDashboard from '../components/IconDashboard.vue';
+import IconNotifications from '../components/IconNotifications.vue';
+import IconParents from '../components/IconParents.vue';
+import IconReports from '../components/IconReports.vue';
+import IconSchedule from '../components/IconSchedule.vue';
+import IconSettings from '../components/IconSettings.vue';
+import IconStudents from '../components/IconStudents.vue';
+import IconTeachers from '../components/IconTeachers.vue';
+import IconUsers from '../components/IconUsers.vue';
+import IconWallet from '../components/IconWallet.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../application/stores/auth';
 import LangSwitch from '../components/LangSwitch.vue';
 import ThemeSwitch from '../components/ThemeSwitch.vue';
+import { ADMIN_NAV, hasPermission } from '../components/layout/adminNav';
 
 interface NavSubItem {
   to: string;
@@ -233,52 +246,37 @@ const userInitial = computed((): string => {
   return fullName.charAt(0).toUpperCase() || 'A';
 });
 
-const navItems: NavItem[] = [
-  { to: '/admin',            key: 'nav.dashboard',  icon: resolveComponent('IconDashboard') },
-  { to: '/admin/students',   key: 'nav.students',   icon: resolveComponent('IconStudents') },
-  { to: '/admin/teachers',   key: 'nav.teachers',   icon: resolveComponent('IconTeachers') },
-  { to: '/admin/parents',    key: 'nav.parents',    icon: resolveComponent('IconParents') },
-  { to: '/admin/classes',    key: 'nav.classes',    icon: resolveComponent('IconClasses') },
-  { to: '/admin/attendance', key: 'nav.attendance', icon: resolveComponent('IconAttendance') },
-  {
-    key: 'nav.academic',
-    icon: resolveComponent('IconClasses'),
-    children: [
-      { to: '/admin/academics/class-subjects', key: 'nav.classSubjects' },
-      { to: '/admin/academics/subjects',       key: 'nav.subjects' },
-      { to: '/admin/academics/schedule',       key: 'nav.schedule' },
-      { to: '/admin/academics/grades',         key: 'nav.grades' },
-      { to: '/admin/settings/academic-terms',  key: 'nav.academicTerms' },
-    ]
-  },
-  
-   { 
-    key: 'nav.settings',  
-    icon: resolveComponent('IconSettings'),
-    children: [
-      { to: '/admin/settings',               key: 'nav.settings' },
-      { to: '/admin/users',                  key: 'nav.users' },
-      { to: '/admin/settings/permissions',   key: 'nav.permissions' },
-      { to: '/admin/settings/shops',         key: 'nav.shops' },
-      { to: '/admin/settings/notifications', key: 'nav.notifications' },
-      { to: '/admin/announcements',          key: 'nav.announcements' },
-      { to: '/admin/audit-logs',             key: 'nav.auditLogs' },
-    ]
-  },
-  { 
-    key: 'nav.reports',   
-    icon: resolveComponent('IconReports'),
-    children: [
-      { to: '/admin/reports',            key: 'nav.reports' },
-      { to: '/admin/reports/attendance', key: 'nav.attendance' },
-      { to: '/admin/reports/fees',       key: 'nav.fees' },
-      { to: '/admin/reports/grades',     key: 'nav.grades' },
-      { to: '/admin/reports/students',   key: 'nav.students' },
-      { to: '/admin/reports/wallet',     key: 'nav.wallet' },
-    ]
-  },
- 
-];
+// Built from ADMIN_NAV (the same table the route middleware enforces), showing only
+// what the signed-in role may open. Overview/people entries are top-level links; every
+// other section becomes a collapsible group, or a plain link if only one entry is left.
+const SECTION_GROUP: Record<string, { key: string; icon: string }> = {
+  attendance: { key: 'nav.attendance', icon: 'IconAttendance' },
+  academics: { key: 'nav.academic', icon: 'IconClasses' },
+  finance: { key: 'nav.finance', icon: 'IconWallet' },
+  fees: { key: 'nav.fees', icon: 'IconReports' },
+  communication: { key: 'nav.communication', icon: 'IconNotifications' },
+  reports: { key: 'nav.reports', icon: 'IconReports' },
+  system: { key: 'nav.settings', icon: 'IconSettings' },
+};
+
+// ADMIN_NAV names its icons as strings. Nuxt only auto-imports components referenced by
+// a literal name, so map each name to an imported component; a bare name renders nothing.
+const ICONS: Record<string, Component> = {
+  IconAttendance, IconClasses, IconDashboard, IconNotifications, IconParents, IconReports,
+  IconSchedule, IconSettings, IconStudents, IconTeachers, IconUsers, IconWallet,
+};
+
+const navItems = computed<NavItem[]>(() =>
+  ADMIN_NAV.flatMap((section): NavItem[] => {
+    const items = section.items.filter((i) => hasPermission(authStore.permissions, i.permission));
+    const group = SECTION_GROUP[section.key];
+    if (!items.length) return [];
+    if (!group || items.length === 1) {
+      return items.map((i) => ({ to: i.to, key: i.key, icon: ICONS[i.icon] }));
+    }
+    return [{ key: group.key, icon: ICONS[group.icon], children: items.map((i) => ({ to: i.to, key: i.key })) }];
+  }),
+);
 
 const openMenus = reactive<Record<string, boolean>>({
   'nav.reports': false,
@@ -300,17 +298,25 @@ const closeSidebarOnMobile = () => {
   }
 };
 
-const isActive = (to: string) => {
-  if (to === '/admin') return route.path === '/admin';
-  return route.path === to || (to !== '/admin' && route.path.startsWith(to + '/'));
-};
+// Only the most specific link matching the URL is active: on /admin/settings/permissions
+// that is "Permissions", not also "Settings" (/admin/settings). Pages without their own
+// link (e.g. /admin/students/164) fall back to their parent link.
+const activeLink = computed(() => {
+  const path = route.path;
+  return navItems.value
+    .flatMap((item) => [item.to, ...(item.children?.map((c) => c.to) ?? [])])
+    .filter((to): to is string => Boolean(to))
+    .filter((to) => path === to || (to !== '/admin' && path.startsWith(to + '/')))
+    .sort((a, b) => b.length - a.length)[0] ?? null;
+});
+const isActive = (to: string) => to === activeLink.value;
 
 const isSubActive = (item: NavItem): boolean => {
   return item.children?.some((sub: NavSubItem) => isActive(sub.to)) ?? false;
 };
 
 onMounted(() => {
-  navItems.forEach((item: NavItem) => {
+  navItems.value.forEach((item: NavItem) => {
     if (item.children && isSubActive(item)) {
       openMenus[item.key] = true;
     }
@@ -318,7 +324,7 @@ onMounted(() => {
 });
 
 const currentPageTitle = computed((): string => {
-  for (const item of navItems) {
+  for (const item of navItems.value) {
     if (item.children) {
       const child = item.children.find((c: NavSubItem) => isActive(c.to));
       if (child) return t(child.key);

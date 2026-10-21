@@ -225,7 +225,7 @@
                 {{ req.student ? (locale === 'lo' ? req.student.fullNameLo : req.student.fullNameEn) : "—" }}
               </p>
               <p class="text-xs text-slate-500 capitalize">
-                {{ (locale === 'lo' ? req.methodLabelLo : req.methodLabelEn) || $t(`topups.method.${req.method}`) }}
+                {{ $t(`topups.method.${req.method}`) }}
               </p>
             </div>
             <span class="text-sm font-semibold text-amber-400 whitespace-nowrap"

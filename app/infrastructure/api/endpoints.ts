@@ -50,6 +50,7 @@ export const API_ENDPOINTS = {
     topUp: '/wallets/:id/topup',
     status: '/wallets/:id/status',
     process: '/wallet/process',
+    card: '/wallet/card',
   },
   topUps: {
     requests: '/topup-requests'
@@ -80,10 +81,12 @@ export const API_ENDPOINTS = {
     list: '/notifications'
   },
   settings: {
-    list: '/settings'
+    list: '/settings',
+    paymentQr: '/settings/payment-qr'
   },
   roles: {
-    list: '/roles'
+    list: '/roles',
+    permissions: '/permissions'
   },
   announcements: {
     base: '/announcements'
