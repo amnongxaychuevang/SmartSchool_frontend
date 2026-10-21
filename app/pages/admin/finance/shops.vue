@@ -86,7 +86,14 @@
         </tbody>
       </table>
     </div>
-    <PaginationBar :loading="financeStore.shopsLoading" :current-page="financeStore.shopsPage" :total-pages="totalPages" @update:page="changePage" />
+    <PaginationBar
+      :loading="financeStore.shopsLoading"
+      :current-page="financeStore.shopsPage"
+      :total-pages="totalPages"
+      :total="financeStore.shopsTotal"
+      :page-size="SHOPS_PER_PAGE"
+      @update:page="changePage"
+    />
 
     <ShopFormModal :open="modal.open" :shop="modal.shop" @update:open="modal.open = $event" />
 
@@ -108,8 +115,7 @@
 import type { Shop } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useFinanceStore } from '../../../application/stores/finance';
-import PaginationBar from '../../../components/PaginationBar.vue';
+import { useFinanceStore, SHOPS_PER_PAGE } from '../../../application/stores/finance';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import ShopFormModal from '../../../components/admin/ShopFormModal.vue';
@@ -124,7 +130,7 @@ const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' 
 
 const financeStore = useFinanceStore();
 const searchInput = ref('');
-const totalPages = computed(() => Math.ceil(financeStore.shopsTotal / 15));
+const totalPages = computed(() => Math.ceil(financeStore.shopsTotal / SHOPS_PER_PAGE));
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 onMounted(() => financeStore.fetchShops());

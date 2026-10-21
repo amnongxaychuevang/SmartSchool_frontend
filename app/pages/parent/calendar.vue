@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-6 w-full">
     <PageHeader :title="$t('calendar.title')" :subtitle="$t('calendar.subtitle')" />
     <SchoolCalendar />
   </div>

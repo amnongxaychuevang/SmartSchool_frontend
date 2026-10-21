@@ -232,6 +232,8 @@
         :loading="financeStore.invoicesLoading"
         :current-page="financeStore.invoicesPage"
         :total-pages="totalPages"
+        :total="financeStore.invoicesTotal"
+        :page-size="INVOICES_PER_PAGE"
         @update:page="load"
       />
     </section>
@@ -403,7 +405,6 @@ import { ref, reactive, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useFinanceStore, INVOICES_PER_PAGE } from "../../../application/stores/finance";
 import PageHeader from "../../../components/PageHeader.vue";
-import PaginationBar from "../../../components/PaginationBar.vue";
 import AppModal from "../../../components/AppModal.vue";
 import LoadingSpinner from "../../../components/LoadingSpinner.vue";
 import { useFormat } from "../../../composables/useFormat";

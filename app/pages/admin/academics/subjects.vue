@@ -68,7 +68,15 @@
     </div>
     
     <!-- Pagination -->
-    <PaginationBar :loading="academicsStore.subjectsLoading" :current-page="academicsStore.subjectsPage" :total-pages="totalPages" @update:page="changePage" />
+    <!-- Pagination -->
+    <PaginationBar
+      :loading="academicsStore.subjectsLoading"
+      :current-page="academicsStore.subjectsPage"
+      :total-pages="totalPages"
+      :total="academicsStore.subjectsTotal"
+      :page-size="SUBJECTS_PER_PAGE"
+      @update:page="changePage"
+    />
 
     <AppModal :open="modal.open" :title="modal.subjectId ? $t('subjects_admin.edit') : $t('subjects_admin.add')" @update:open="modal.open = $event">
       <form id="subject-form" class="grid grid-cols-2 gap-4" @submit.prevent="handleSubmit">
@@ -107,8 +115,7 @@
 import type { Subject } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useAcademicsStore } from '../../../application/stores/academics';
-import PaginationBar from '../../../components/PaginationBar.vue';
+import { useAcademicsStore, SUBJECTS_PER_PAGE } from '../../../application/stores/academics';
 import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
@@ -122,7 +129,7 @@ useHead({ title: () => t('subjects_admin.title') });
 
 const academicsStore = useAcademicsStore();
 const searchInput = ref('');
-const totalPages = computed(() => Math.ceil(academicsStore.subjectsTotal / 15));
+const totalPages = computed(() => Math.ceil(academicsStore.subjectsTotal / SUBJECTS_PER_PAGE));
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 onMounted(() => academicsStore.fetchSubjects());

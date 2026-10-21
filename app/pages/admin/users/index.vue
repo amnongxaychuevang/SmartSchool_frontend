@@ -149,10 +149,14 @@
     </div>
 
     <!-- Pagination -->
-    <PaginationBar :loading="adminStore.usersLoading"
+    <PaginationBar
+      :loading="adminStore.usersLoading"
       :current-page="adminStore.usersPage"
       :total-pages="totalPages"
+      :total="adminStore.usersTotal"
+      :page-size="pageSize"
       @update:page="changePage"
+      @update:page-size="changePageSize"
     />
 
 
@@ -178,7 +182,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import UserFormModal from '../../../components/admin/UserFormModal.vue';
-import { useAdminStore } from '../../../application/stores/admin';
+import { useAdminStore, USERS_PER_PAGE } from '../../../application/stores/admin';
 import type { User } from '../../../domain/models/User';
 import type { Role } from '../../../domain/models/School';
 import type { TeacherAccountCandidate } from '../../../domain/models/Teacher';
@@ -232,29 +236,30 @@ const roleColors: Record<string, { bg: string; badge: string }> = {
   parent: { bg: 'bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-400', badge: 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20' },
 };
 
-const totalPages = computed(() => Math.ceil(adminStore.usersTotal / 10));
+const pageSize = ref(USERS_PER_PAGE);
+const totalPages = computed(() => Math.ceil(adminStore.usersTotal / pageSize.value));
 
 onMounted(() => {
-  adminStore.fetchUsers();
+  adminStore.fetchUsers({ limit: pageSize.value });
   fetchRoles();
 });
 
 const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    adminStore.fetchUsers({ search: searchInput.value, page: 1 });
+    adminStore.fetchUsers({ search: searchInput.value, page: 1, limit: pageSize.value });
   }, 400);
 };
 
 const clearSearch = () => {
   searchInput.value = '';
   clearTimeout(searchTimeout);
-  adminStore.fetchUsers({ search: '', page: 1 });
+  adminStore.fetchUsers({ search: '', page: 1, limit: pageSize.value });
 };
 
 const setRoleFilter = (role: string) => {
   roleFilter.value = role;
-  adminStore.fetchUsers({ role, search: searchInput.value, page: 1 });
+  adminStore.fetchUsers({ role, search: searchInput.value, page: 1, limit: pageSize.value });
 };
 
 const selectRole = (role: string) => {
@@ -263,7 +268,12 @@ const selectRole = (role: string) => {
 };
 
 const changePage = (page: number) => {
-  adminStore.fetchUsers({ page });
+  adminStore.fetchUsers({ page, limit: pageSize.value });
+};
+
+const changePageSize = (size: number) => {
+  pageSize.value = size;
+  adminStore.fetchUsers({ page: 1, limit: size });
 };
 
 // ── User Modal (Add + Edit) ──

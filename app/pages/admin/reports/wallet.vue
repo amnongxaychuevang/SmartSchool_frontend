@@ -86,7 +86,14 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :loading="financeStore.walletsLoading" :current-page="currentPage" :total-pages="totalPages" @update:page="onPageChange" />
+      <PaginationBar
+        :loading="financeStore.walletsLoading"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total="financeStore.walletsTotal"
+        :page-size="WALLETS_PER_PAGE"
+        @update:page="onPageChange"
+      />
     </section>
   </div>
 </template>
@@ -96,7 +103,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useFinanceStore, WALLETS_PER_PAGE } from '~/application/stores/finance';
 import { useExport } from '../../../composables/useExport';
 import PageHeader from '../../../components/PageHeader.vue';
-import PaginationBar from '../../../components/PaginationBar.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
 definePageMeta({ layout: 'admin' });

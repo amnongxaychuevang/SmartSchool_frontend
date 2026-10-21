@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('nav.finance')" :title="$t('pos.title')" :subtitle="$t('pos.subtitle')" />
+    <PageHeader :title="$t('pos.title')" :subtitle="$t('pos.subtitle')" />
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left: scan + student info -->

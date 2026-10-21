@@ -143,7 +143,10 @@
       :loading="adminStore.classesLoading"
       :current-page="adminStore.classesPage"
       :total-pages="totalPages"
+      :total="adminStore.classesTotal"
+      :page-size="pageSize"
       @update:page="changePage"
+      @update:page-size="changePageSize"
     />
   </div>
 </template>
@@ -164,6 +167,7 @@ const searchInput = ref(adminStore.classesSearch);
 const yearFilter = ref(adminStore.classesYear);
 const yearDropdownOpen = ref(false);
 const academicYears = ref<string[]>([]);
+const pageSize = ref(CLASSES_PER_PAGE);
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 const filters = () => ({ search: searchInput.value, academicYear: yearFilter.value });
@@ -176,7 +180,16 @@ const personName = (p: { fullNameLo?: string; fullNameEn?: string }) =>
   (locale.value === 'lo' ? p.fullNameLo || p.fullNameEn : p.fullNameEn || p.fullNameLo) || '';
 const studentCount = (c: SchoolClass) => c._count?.classStudents ?? 0;
 
-const totalPages = computed(() => Math.ceil(adminStore.classesTotal / CLASSES_PER_PAGE));
+const totalPages = computed(() => Math.ceil(adminStore.classesTotal / pageSize.value));
+
+const changePage = (page: number) => {
+  adminStore.fetchClasses({ ...filters(), page, limit: pageSize.value });
+};
+
+const changePageSize = (size: number) => {
+  pageSize.value = size;
+  adminStore.fetchClasses({ ...filters(), page: 1, limit: size });
+};
 
 onMounted(async () => {
   adminStore.fetchClasses();
@@ -200,11 +213,7 @@ const clearSearch = () => {
 };
 
 const handleFilter = () => {
-  adminStore.fetchClasses({ ...filters(), page: 1 });
-};
-
-const changePage = (page: number) => {
-  adminStore.fetchClasses({ ...filters(), page });
+  adminStore.fetchClasses({ ...filters(), page: 1, limit: pageSize.value });
 };
 
 // ── Delete ──

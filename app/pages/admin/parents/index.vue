@@ -153,7 +153,10 @@
       :loading="adminStore.parentsLoading"
       :current-page="adminStore.parentsPage"
       :total-pages="totalPages"
+      :total="adminStore.parentsTotal"
+      :page-size="pageSize"
       @update:page="changePage"
+      @update:page-size="changePageSize"
     />
   </div>
 </template>
@@ -192,16 +195,17 @@ const place = (x?: { nameLo: string; nameEn: string } | null) =>
 const parentAddress = (parent: Parent) =>
   [parent.village, place(parent.district), place(parent.province)].filter(Boolean).join(', ') || parent.address || '—';
 
-const totalPages = computed(() => Math.ceil(adminStore.parentsTotal / PARENTS_PER_PAGE));
+const pageSize = ref(PARENTS_PER_PAGE);
+const totalPages = computed(() => Math.ceil(adminStore.parentsTotal / pageSize.value));
 
 onMounted(() => {
-  adminStore.fetchParents();
+  adminStore.fetchParents({ limit: pageSize.value });
 });
 
 const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    adminStore.fetchParents({ ...filters(), page: 1 });
+    adminStore.fetchParents({ ...filters(), page: 1, limit: pageSize.value });
   }, 400);
 };
 
@@ -211,11 +215,16 @@ const clearSearch = () => {
 };
 
 const handleFilter = () => {
-  adminStore.fetchParents({ ...filters(), page: 1 });
+  adminStore.fetchParents({ ...filters(), page: 1, limit: pageSize.value });
 };
 
 const changePage = (page: number) => {
-  adminStore.fetchParents({ ...filters(), page });
+  adminStore.fetchParents({ ...filters(), page, limit: pageSize.value });
+};
+
+const changePageSize = (size: number) => {
+  pageSize.value = size;
+  adminStore.fetchParents({ ...filters(), page: 1, limit: size });
 };
 
 // ── Deactivate / reactivate ──

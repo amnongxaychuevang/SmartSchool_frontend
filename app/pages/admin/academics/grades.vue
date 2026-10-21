@@ -175,7 +175,14 @@
     </div>
     
     <!-- Pagination -->
-    <PaginationBar :loading="academicsStore.gradesLoading" :current-page="academicsStore.gradesPage" :total-pages="totalPages" @update:page="changePage" />
+    <PaginationBar
+      :loading="academicsStore.gradesLoading"
+      :current-page="academicsStore.gradesPage"
+      :total-pages="totalPages"
+      :total="academicsStore.gradesTotal"
+      :page-size="GRADES_PER_PAGE"
+      @update:page="changePage"
+    />
 
     <GradeFormModal
       :open="modal.open"
@@ -207,7 +214,6 @@ import { useI18n } from 'vue-i18n';
 import { useAcademicsStore, GRADES_PER_PAGE } from '../../../application/stores/academics';
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
 
-import PaginationBar from '../../../components/PaginationBar.vue';
 import PersonAvatar from '../../../components/PersonAvatar.vue';
 import GradeFormModal from '../../../components/admin/GradeFormModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';

@@ -125,5 +125,36 @@ export const API_ENDPOINTS = {
     structures: '/fee-structures',
     invoices: '/invoices',
     runReminders: '/fees/reminders/run',
-  }
+  },
+  behavior: {
+    overview: '/behavior/overview',
+    categories: '/behavior/categories',
+    records: '/behavior/records',
+    students: '/behavior/students',
+  },
+  bus: {
+    vehicles: '/bus/vehicles',
+    routes: '/bus/routes',
+    students: '/bus/students',
+    scan: '/bus/scan',
+    logs: '/bus/logs',
+    manifest: '/bus/manifest',
+  },
+  library: {
+    overview: '/library/overview',
+    categories: '/library/categories',
+    books: '/library/books',
+    loans: '/library/loans',
+    borrow: '/library/borrow',
+  },
+  analytics: {
+    atRiskOverview: '/analytics/at-risk/overview',
+    atRisk: '/analytics/at-risk',
+    atRiskRun: '/analytics/at-risk/run',
+    interventions: '/analytics/at-risk/interventions',
+  },
+  schools: {
+    overview: '/schools/overview',
+    list: '/schools',
+  },
 } as const;

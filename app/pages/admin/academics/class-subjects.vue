@@ -440,6 +440,8 @@
       :loading="loading"
       :current-page="currentPage"
       :total-pages="totalPages"
+      :total="filteredRows.length"
+      :page-size="itemsPerPage"
       @update:page="(p) => (currentPage = p)"
     />
 

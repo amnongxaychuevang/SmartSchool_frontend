@@ -58,7 +58,14 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :loading="adminStore.auditLogsLoading" :current-page="adminStore.auditLogsPage" :total-pages="totalPages" @update:page="(page) => adminStore.fetchAuditLogs({ page })" />
+      <PaginationBar
+        :loading="adminStore.auditLogsLoading"
+        :current-page="adminStore.auditLogsPage"
+        :total-pages="totalPages"
+        :total="adminStore.auditLogsTotal"
+        :page-size="15"
+        @update:page="(page) => adminStore.fetchAuditLogs({ page })"
+      />
     </section>
   </div>
 </template>
@@ -68,7 +75,6 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAdminStore } from '../../../application/stores/admin';
 
-import PaginationBar from '../../../components/PaginationBar.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import UserPicker from '../../../components/UserPicker.vue';
 import { useFormat } from '../../../composables/useFormat';

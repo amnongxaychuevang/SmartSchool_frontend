@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('navSection.attendance')" :title="$t('cards_admin.title')" :subtitle="$t('cards_admin.subtitle')">
+    <PageHeader :title="$t('cards_admin.title')" :subtitle="$t('cards_admin.subtitle')">
       <div class="relative w-64">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -27,6 +27,7 @@
           <thead>
             <tr>
               <th>{{ $t('cards_admin.col_uid') }}</th>
+              <th>{{ $t('cards_admin.col_student_code') }}</th>
               <th>{{ $t('cards_admin.col_student') }}</th>
               <th>{{ $t('common.status') }}</th>
               <th>{{ $t('cards_admin.col_issued') }}</th>
@@ -37,11 +38,9 @@
           </thead>
           <tbody>
             <tr v-for="card in academicsStore.cards" :key="card.cardId">
-              <td class="font-mono font-semibold text-primary-ink">{{ card.cardUid }}</td>
-              <td>
-                <p class="font-semibold">{{ studentName(card) }}</p>
-                <p class="text-xs text-ink-subtle font-mono">{{ card.student && card.student.studentCode }}</p>
-              </td>
+              <td class="font-mono font-semibold text-primary-ink whitespace-nowrap">{{ card.cardUid }}</td>
+              <td class="font-mono text-xs text-ink-subtle whitespace-nowrap">{{ (card.student && card.student.studentCode) || '—' }}</td>
+              <td class="font-medium whitespace-nowrap">{{ studentName(card) }}</td>
               <td><span :class="statusBadge[card.status]">{{ $t(`status.${card.status}`) }}</span></td>
               <td class="tnum">{{ f.date(card.issuedDate) }}</td>
               <td class="tnum">{{ f.date(card.expiredDate) }}</td>
@@ -56,7 +55,14 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :loading="academicsStore.cardsLoading" :current-page="academicsStore.cardsPage" :total-pages="totalPages" @update:page="changePage" />
+      <PaginationBar
+        :loading="academicsStore.cardsLoading"
+        :current-page="academicsStore.cardsPage"
+        :total-pages="totalPages"
+        :total="academicsStore.cardsTotal"
+        :page-size="CARDS_PER_PAGE"
+        @update:page="changePage"
+      />
     </section>
 
     <AppModal :open="modal.open" :title="modal.cardId ? $t('cards_admin.edit') : $t('cards_admin.issue')" @update:open="modal.open = $event">
@@ -117,9 +123,7 @@
 import type { Card } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useAcademicsStore } from '../../../application/stores/academics';
-import PageHeader from '../../../components/PageHeader.vue';
-import PaginationBar from '../../../components/PaginationBar.vue';
+import { useAcademicsStore, CARDS_PER_PAGE } from '../../../application/stores/academics';
 import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
@@ -137,7 +141,7 @@ const statuses = ['active', 'lost', 'deactivated'] as const;
 const statusBadge: Record<Card['status'], string> = { active: 'badge-success', lost: 'badge-danger', deactivated: 'badge-neutral' };
 const searchInput = ref('');
 const statusFilter = ref('');
-const totalPages = computed(() => Math.ceil(academicsStore.cardsTotal / 15));
+const totalPages = computed(() => Math.ceil(academicsStore.cardsTotal / CARDS_PER_PAGE));
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 const studentName = (c: Card) => (locale.value === 'lo' ? c.student?.fullNameLo : c.student?.fullNameEn) || c.student?.fullNameEn || '—';

@@ -1,6 +1,34 @@
 <template>
   <div class="flex flex-col gap-4">
-    <!-- Month navigation -->
+    <!-- Tabs: Calendar vs Agenda -->
+    <div class="flex items-center gap-2 p-1 bg-surface-2 rounded-xl border border-line w-fit">
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all"
+        :class="activeTab === 'calendar' ? 'bg-primary !text-white shadow-sm' : 'text-ink-muted hover:text-ink'"
+        @click="activeTab = 'calendar'"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span>{{ $t('calendar.tab_calendar') }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all"
+        :class="activeTab === 'agenda' ? 'bg-primary !text-white shadow-sm' : 'text-ink-muted hover:text-ink'"
+        @click="activeTab = 'agenda'"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+        <span>{{ $t('calendar.tab_agenda') }}</span>
+        <span v-if="monthEvents.length" class="ml-1 px-1.5 py-0.5 text-xs rounded-md" :class="activeTab === 'agenda' ? 'bg-white/20 text-white' : 'bg-surface text-ink-muted'">{{ monthEvents.length }}</span>
+      </button>
+    </div>
+
+    <!-- Month navigation & Actions -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <button type="button" class="btn-secondary min-h-9 px-2.5" :aria-label="$t('calendar.prev')" @click="shiftMonth(-1)">
@@ -22,8 +50,8 @@
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
 
-    <!-- Month grid (wide screens) -->
-    <div class="panel overflow-hidden hidden md:block">
+    <!-- TAB 1: Month grid -->
+    <div v-if="activeTab === 'calendar'" class="panel overflow-hidden">
       <div class="grid grid-cols-7 border-b border-line bg-surface-2">
         <div v-for="w in weekdayNames" :key="w" class="px-2 py-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted text-center">{{ w }}</div>
       </div>
@@ -48,22 +76,25 @@
       </div>
     </div>
 
-    <!-- Agenda: the month's events as a list (also the phone view) -->
-    <section class="panel overflow-hidden">
-      <h3 class="px-5 py-3 text-sm font-semibold uppercase tracking-wider text-ink-muted border-b border-line">{{ $t('calendar.this_month') }}</h3>
+    <!-- TAB 2: Agenda: the month's events as a list -->
+    <section v-else class="panel overflow-hidden">
+      <div class="px-5 py-3.5 flex items-center justify-between border-b border-line bg-surface-2">
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-muted">{{ $t('calendar.this_month') }} ({{ monthTitle }})</h3>
+        <span class="text-xs text-ink-muted">{{ monthEvents.length }} {{ $t('common.items') || 'events' }}</span>
+      </div>
       <LoadingSpinner v-if="loading" />
-      <p v-else-if="!monthEvents.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('calendar.empty') }}</p>
+      <p v-else-if="!monthEvents.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('calendar.empty') }}</p>
       <ul v-else class="divide-y divide-line">
         <li v-for="e in monthEvents" :key="e.eventId">
-          <button type="button" class="w-full text-left px-5 py-3 flex items-start gap-4 hover:bg-surface-2" @click="openEvent(e)">
+          <button type="button" class="w-full text-left px-5 py-3.5 flex items-start gap-4 hover:bg-surface-2 transition-colors" @click="openEvent(e)">
             <span :class="['legend-dot mt-1.5', `type-${e.type}`]" aria-hidden="true" />
             <span class="min-w-0 flex-1">
               <span class="flex flex-wrap items-center gap-2">
-                <span class="font-semibold">{{ title(e) }}</span>
+                <span class="font-semibold text-sm">{{ title(e) }}</span>
                 <span v-if="e.schoolClosed" class="badge-danger">{{ $t('calendar.closed') }}</span>
               </span>
-              <span class="block text-xs text-ink-subtle tnum">{{ rangeText(e) }} · {{ $t(`calendar.types.${e.type}`) }}</span>
-              <span v-if="description(e)" class="block text-sm text-ink-muted mt-0.5 line-clamp-2">{{ description(e) }}</span>
+              <span class="block text-xs text-ink-subtle tnum mt-0.5">{{ rangeText(e) }} · {{ $t(`calendar.types.${e.type}`) }}</span>
+              <span v-if="description(e)" class="block text-sm text-ink-muted mt-1 line-clamp-2">{{ description(e) }}</span>
             </span>
           </button>
         </li>
@@ -141,6 +172,7 @@ const props = withDefaults(defineProps<{ editable?: boolean }>(), { editable: fa
 const { t, locale } = useI18n();
 const dialog = useDialog();
 
+const activeTab = ref<'calendar' | 'agenda'>('calendar');
 const TYPES: SchoolEventType[] = ['holiday', 'exam', 'activity', 'meeting', 'other'];
 const today = schoolToday();
 
@@ -275,11 +307,11 @@ async function remove() {
 
 <style scoped>
 .day-cell {
-  min-height: 6.5rem;
-  padding: 0.375rem;
+  min-height: 4.5rem;
+  padding: 0.25rem 0.375rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.1875rem;
   border-right: 1px solid rgb(var(--line));
   border-bottom: 1px solid rgb(var(--line));
 }
@@ -290,10 +322,10 @@ async function remove() {
 .day-cell.other-month .day-no { color: rgb(var(--ink-subtle)); }
 .day-cell.closed { background-color: rgb(var(--danger-soft) / 0.6); }
 .day-no {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.375rem;
+  height: 1.375rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;

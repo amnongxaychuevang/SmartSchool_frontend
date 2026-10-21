@@ -93,11 +93,12 @@
 
     <!-- Pagination -->
     <PaginationBar
-      v-if="!loading && totalItems > 0"
+      :loading="loading"
       :current-page="currentPage"
       :total-pages="totalPages"
-      :total-items="totalItems"
-      @page-changed="handlePageChange"
+      :total="totalItems"
+      :page-size="limit"
+      @update:page="handlePageChange"
     />
 
     <!-- Create Modal -->

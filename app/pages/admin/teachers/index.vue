@@ -399,7 +399,10 @@
       :loading="adminStore.teachersLoading"
       :current-page="adminStore.teachersPage"
       :total-pages="totalPages"
+      :total="adminStore.teachersTotal"
+      :page-size="pageSize"
       @update:page="changePage"
+      @update:page-size="changePageSize"
     />
   </div>
 </template>
@@ -458,18 +461,19 @@ const teacherAddress = (teacher: Teacher) =>
 const formatDate = (dateStr?: string | null) =>
   dateStr ? new Date(dateStr).toLocaleDateString("en-GB") : "—";
 
+const pageSize = ref(TEACHERS_PER_PAGE);
 const totalPages = computed(() =>
-  Math.ceil(adminStore.teachersTotal / TEACHERS_PER_PAGE),
+  Math.ceil(adminStore.teachersTotal / pageSize.value),
 );
 
 onMounted(() => {
-  adminStore.fetchTeachers();
+  adminStore.fetchTeachers({ limit: pageSize.value });
 });
 
 const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    adminStore.fetchTeachers({ ...filters(), page: 1 });
+    adminStore.fetchTeachers({ ...filters(), page: 1, limit: pageSize.value });
   }, 400);
 };
 
@@ -479,11 +483,16 @@ const clearSearch = () => {
 };
 
 const handleFilter = () => {
-  adminStore.fetchTeachers({ ...filters(), page: 1 });
+  adminStore.fetchTeachers({ ...filters(), page: 1, limit: pageSize.value });
 };
 
 const changePage = (page: number) => {
-  adminStore.fetchTeachers({ ...filters(), page });
+  adminStore.fetchTeachers({ ...filters(), page, limit: pageSize.value });
+};
+
+const changePageSize = (size: number) => {
+  pageSize.value = size;
+  adminStore.fetchTeachers({ ...filters(), page: 1, limit: size });
 };
 
 // ── Deactivate / reactivate ──

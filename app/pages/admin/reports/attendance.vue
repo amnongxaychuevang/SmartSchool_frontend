@@ -30,150 +30,308 @@
       <button type="button" class="btn-secondary" @click="load">{{ $t('common.refresh') }}</button>
     </div>
 
+    <!-- ══ TABS NAVIGATION ══ -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-line pb-2">
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+        :class="activeTab === 'overview' ? 'bg-primary text-white shadow-sm' : 'text-ink-muted hover:text-ink hover:bg-surface-2'"
+        @click="activeTab = 'overview'"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <span>{{ $t('attendance_report.tab_overview') }}</span>
+        <span v-if="report && report.attendanceRate !== null" class="ml-1 px-1.5 py-0.5 text-xs rounded-md" :class="activeTab === 'overview' ? 'bg-white/20 text-white' : 'bg-surface-2 text-ink-muted'">
+          {{ f.percent(report.attendanceRate) }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+        :class="activeTab === 'absentees' ? 'bg-primary text-white shadow-sm' : 'text-ink-muted hover:text-ink hover:bg-surface-2'"
+        @click="activeTab = 'absentees'"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <span>{{ $t('attendance_report.tab_absentees') }}</span>
+        <span
+          v-if="report?.absentees"
+          class="ml-1 px-2 py-0.5 text-xs rounded-full font-bold"
+          :class="activeTab === 'absentees' ? 'bg-white/25 text-white' : (report.absentees.length > 0 ? 'bg-danger-soft text-danger' : 'bg-surface-2 text-ink-muted')"
+        >
+          {{ report.absentees.length }}
+        </span>
+      </button>
+    </div>
+
     <LoadingSpinner v-if="loading && !report" />
 
     <template v-if="report">
-      <!-- KPI tiles -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="stat-card">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.attendance_rate') }}</p>
-          <p class="text-3xl font-bold tnum">{{ f.percent(report.attendanceRate) }}</p>
-          <p v-if="rateDelta !== null" :class="['text-xs font-semibold', rateDelta >= 0 ? 'text-success' : 'text-danger']">
-            {{ $t('attendance_report.vs_previous', { delta: $t('attendance_report.points', { n: `${rateDelta >= 0 ? '+' : ''}${f.number(rateDelta, 1)}` }) }) }}
-          </p>
-          <p v-else class="text-xs text-ink-subtle">{{ $t('attendance_report.no_previous') }}</p>
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <!-- TAB 1: OVERVIEW & ANALYTICS                             -->
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <div v-show="activeTab === 'overview'" class="flex flex-col gap-6">
+        <!-- KPI tiles -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div class="stat-card">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.attendance_rate') }}</p>
+            <p class="text-3xl font-bold tnum">{{ f.percent(report.attendanceRate) }}</p>
+            <p v-if="rateDelta !== null" :class="['text-xs font-semibold', rateDelta >= 0 ? 'text-success' : 'text-danger']">
+              {{ $t('attendance_report.vs_previous', { delta: $t('attendance_report.points', { n: `${rateDelta >= 0 ? '+' : ''}${f.number(rateDelta, 1)}` }) }) }}
+            </p>
+            <p v-else class="text-xs text-ink-subtle">{{ $t('attendance_report.no_previous') }}</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.best_class') }}</p>
+            <p class="text-3xl font-bold">{{ bestClass ? className(bestClass) : '—' }}</p>
+            <p class="text-xs text-ink-subtle tnum">{{ bestClass ? f.percent(bestClass.rate) : $t('attendance_report.no_classes') }}</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.missed') }}</p>
+            <p class="text-3xl font-bold tnum">{{ f.number(report.notInClass) }}</p>
+            <p class="text-xs text-ink-subtle">
+              {{ report.notArrivedToday ? $t('attendance_report.not_arrived', { count: report.notArrivedToday }) : $t('attendance_report.missed_sub') }}
+            </p>
+          </div>
+
+          <div class="stat-card">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.excused_share') }}</p>
+            <p class="text-3xl font-bold tnum">{{ f.percent(report.excusedShare) }}</p>
+            <p class="text-xs text-ink-subtle">{{ $t('attendance_report.excused_share_sub') }}</p>
+          </div>
         </div>
 
-        <div class="stat-card">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.best_class') }}</p>
-          <p class="text-3xl font-bold">{{ bestClass ? className(bestClass) : '—' }}</p>
-          <p class="text-xs text-ink-subtle tnum">{{ bestClass ? f.percent(bestClass.rate) : $t('attendance_report.no_classes') }}</p>
-        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Rate by class -->
+          <section class="panel p-5 lg:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-base">{{ $t('reports_detail.rate_by_class') }}</h3>
+                <p class="text-xs text-ink-subtle">{{ $t('attendance_report.by_class_sub') }}</p>
+              </div>
+            </div>
+            <p v-if="!report.classes.length" class="py-8 text-center text-sm text-ink-subtle">{{ $t('attendance_report.no_classes') }}</p>
+            <ul v-else class="space-y-4">
+              <li v-for="c in report.classes" :key="c.classId">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="font-semibold">{{ className(c) }}</span>
+                  <span class="tnum text-ink-muted">
+                    <span class="font-bold text-ink">{{ f.percent(c.rate) }}</span>
+                    · {{ f.number(c.attended) }}/{{ f.number(c.expected) }}
+                  </span>
+                </div>
+                <div class="mt-1.5 h-2 rounded-full bg-surface-2 overflow-hidden">
+                  <div class="h-full rounded-full bg-primary" :style="{ width: `${c.rate ?? 0}%` }" />
+                </div>
+              </li>
+            </ul>
+          </section>
 
-        <div class="stat-card">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.missed') }}</p>
-          <p class="text-3xl font-bold tnum">{{ f.number(report.notInClass) }}</p>
-          <p class="text-xs text-ink-subtle">
-            {{ report.notArrivedToday ? $t('attendance_report.not_arrived', { count: report.notArrivedToday }) : $t('attendance_report.missed_sub') }}
-          </p>
-        </div>
-
-        <div class="stat-card">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ $t('attendance_report.excused_share') }}</p>
-          <p class="text-3xl font-bold tnum">{{ f.percent(report.excusedShare) }}</p>
-          <p class="text-xs text-ink-subtle">{{ $t('attendance_report.excused_share_sub') }}</p>
+          <!-- Breakdown -->
+          <section class="panel p-5 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-base">{{ $t('attendance_report.breakdown') }}</h3>
+              <p class="text-xs text-ink-subtle">{{ $t('attendance_report.breakdown_sub') }}</p>
+              <div class="mt-5 flex h-3.5 rounded-full overflow-hidden bg-surface-2" role="img" :aria-label="breakdownLabel">
+                <div
+                  v-for="b in breakdown"
+                  :key="b.key"
+                  :class="b.bar"
+                  :style="{ width: `${b.share}%` }"
+                />
+              </div>
+              <ul class="mt-6 space-y-3">
+                <li v-for="b in breakdown" :key="b.key" class="flex items-center justify-between text-sm">
+                  <span class="flex items-center gap-2">
+                    <span :class="['w-2.5 h-2.5 rounded-full', b.bar]" />
+                    <span>{{ $t(`attendance_report.status.${b.key}`) }}</span>
+                  </span>
+                  <span class="tnum">
+                    <span class="font-semibold">{{ f.number(b.count) }}</span>
+                    <span class="text-ink-subtle"> · {{ f.percent(b.share) }}</span>
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <div class="pt-6 mt-6 border-t border-line">
+              <button
+                type="button"
+                class="w-full btn-secondary text-xs flex items-center justify-center gap-1.5"
+                @click="activeTab = 'absentees'"
+              >
+                <span>{{ $t('attendance_report.tab_absentees') }}</span>
+                <span class="font-bold">({{ report.absentees.length }})</span>
+                <span>&rarr;</span>
+              </button>
+            </div>
+          </section>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Rate by class -->
-        <section class="panel p-5 lg:col-span-2">
-          <h3 class="font-bold">{{ $t('reports_detail.rate_by_class') }}</h3>
-          <p class="text-xs text-ink-subtle">{{ $t('attendance_report.by_class_sub') }}</p>
-          <p v-if="!report.classes.length" class="py-8 text-center text-sm text-ink-subtle">{{ $t('attendance_report.no_classes') }}</p>
-          <ul v-else class="mt-5 space-y-4">
-            <li v-for="c in report.classes" :key="c.classId">
-              <div class="flex items-center justify-between text-sm">
-                <span class="font-semibold">{{ className(c) }}</span>
-                <span class="tnum text-ink-muted">
-                  <span class="font-bold text-ink">{{ f.percent(c.rate) }}</span>
-                  · {{ f.number(c.attended) }}/{{ f.number(c.expected) }}
-                </span>
-              </div>
-              <div class="mt-1.5 h-2 rounded-full bg-surface-2 overflow-hidden">
-                <div class="h-full rounded-full bg-primary" :style="{ width: `${c.rate ?? 0}%` }" />
-              </div>
-            </li>
-          </ul>
-        </section>
-
-        <!-- Breakdown -->
-        <section class="panel p-5">
-          <h3 class="font-bold">{{ $t('attendance_report.breakdown') }}</h3>
-          <p class="text-xs text-ink-subtle">{{ $t('attendance_report.breakdown_sub') }}</p>
-          <div class="mt-5 flex h-3 rounded-full overflow-hidden bg-surface-2" role="img" :aria-label="breakdownLabel">
-            <div
-              v-for="b in breakdown"
-              :key="b.key"
-              :class="b.bar"
-              :style="{ width: `${b.share}%` }"
-            />
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <!-- TAB 2: ABSENTEES & FOLLOW-UP (WITH PAGINATION)           -->
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <div v-show="activeTab === 'absentees'" class="flex flex-col gap-5">
+        <!-- Quick Stats Mini Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="panel p-3.5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center text-ink-muted shrink-0">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </div>
+            <div>
+              <p class="text-xs text-ink-muted">{{ $t('attendance_report.missed') }}</p>
+              <p class="text-xl font-bold">{{ absenteeStats.total }}</p>
+            </div>
           </div>
-          <ul class="mt-5 space-y-2.5">
-            <li v-for="b in breakdown" :key="b.key" class="flex items-center justify-between text-sm">
-              <span class="flex items-center gap-2">
-                <span :class="['w-2.5 h-2.5 rounded-full', b.bar]" />
-                {{ $t(`attendance_report.status.${b.key}`) }}
-              </span>
-              <span class="tnum">
-                <span class="font-semibold">{{ f.number(b.count) }}</span>
-                <span class="text-ink-subtle"> · {{ f.percent(b.share) }}</span>
-              </span>
-            </li>
-          </ul>
+
+          <div class="panel p-3.5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-danger-soft text-danger flex items-center justify-center shrink-0">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+            <div>
+              <p class="text-xs text-ink-muted">{{ $t('attendance_report.status.absent') }}</p>
+              <p class="text-xl font-bold text-danger">{{ absenteeStats.absentCount }}</p>
+            </div>
+          </div>
+
+          <div class="panel p-3.5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-primary-soft text-primary-ink flex items-center justify-center shrink-0">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </div>
+            <div>
+              <p class="text-xs text-ink-muted">{{ $t('attendance_report.status.excused') }}</p>
+              <p class="text-xl font-bold text-primary-ink">{{ absenteeStats.excusedCount }}</p>
+            </div>
+          </div>
+
+          <div class="panel p-3.5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-success-soft text-success flex items-center justify-center shrink-0">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            </div>
+            <div>
+              <p class="text-xs text-ink-muted">{{ $t('attendance_report.notice_sent') }}</p>
+              <p class="text-xl font-bold text-success">{{ absenteeStats.notifiedCount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <section class="panel overflow-hidden">
+          <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-line">
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                :class="statusFilter === 'all' ? 'bg-primary text-white' : 'bg-surface-2 text-ink-muted hover:text-ink'"
+                @click="statusFilter = 'all'"
+              >
+                {{ $t('attendance_report.filter_all') }} ({{ report.absentees.length }})
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                :class="statusFilter === 'absent' ? 'bg-danger text-white' : 'bg-surface-2 text-ink-muted hover:text-ink'"
+                @click="statusFilter = 'absent'"
+              >
+                {{ $t('attendance_report.status.absent') }} ({{ absenteeStats.absentCount }})
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                :class="statusFilter === 'excused' ? 'bg-primary-soft text-primary-ink' : 'bg-surface-2 text-ink-muted hover:text-ink'"
+                @click="statusFilter = 'excused'"
+              >
+                {{ $t('attendance_report.status.excused') }} ({{ absenteeStats.excusedCount }})
+              </button>
+            </div>
+
+            <div class="relative w-full sm:w-72">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                v-model="search"
+                type="text"
+                class="search-bar"
+                :placeholder="$t('reports_detail.search_student')"
+              >
+              <button
+                v-if="search"
+                type="button"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+                @click="search = ''"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Absentees Table -->
+          <div class="overflow-x-auto">
+            <table class="data-table w-full min-w-max">
+              <thead>
+                <tr>
+                  <th class="w-12 text-center">#</th>
+                  <th>{{ $t('attendance_report.col_code') }}</th>
+                  <th>{{ $t('attendance_report.col_student') }}</th>
+                  <th>{{ $t('attendance_report.col_class') }}</th>
+                  <th>{{ $t('attendance_report.col_date') }}</th>
+                  <th>{{ $t('attendance_report.col_status') }}</th>
+                  <th>{{ $t('attendance_report.col_reason') }}</th>
+                  <th>{{ $t('attendance_report.col_notice') }}</th>
+                  <th class="text-right">{{ $t('common.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(a, i) in paginatedAbsentees" :key="`${a.studentId}:${a.date}`">
+                  <td class="text-center tnum text-ink-subtle">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                  <td class="tnum whitespace-nowrap text-ink-muted">{{ a.studentCode || '—' }}</td>
+                  <td class="font-semibold">{{ studentName(a) }}</td>
+                  <td>{{ className(a) ?? $t('attendance_report.no_class') }}</td>
+                  <td class="tnum">{{ f.date(a.date) }}</td>
+                  <td><span :class="statusBadge[a.status]">{{ $t(`attendance_report.status.${a.status}`) }}</span></td>
+                  <td class="max-w-xs truncate text-ink-muted" :title="a.leaveReason ?? undefined">{{ a.leaveReason ?? '—' }}</td>
+                  <td>
+                    <span :class="noticeBadge(a.notification)">{{ $t(`attendance_report.notice_${a.notification ?? 'none'}`) }}</span>
+                  </td>
+                  <td class="text-right">
+                    <button
+                      type="button"
+                      class="btn-secondary min-h-8 px-3 text-xs"
+                      :disabled="!!a.notification || notifying.has(key(a))"
+                      @click="notify(a)"
+                    >
+                      {{ $t('attendance_report.notify') }}
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="!filteredAbsentees.length">
+                  <td colspan="9" class="py-12 text-center text-sm text-ink-subtle">
+                    {{ search || statusFilter !== 'all' ? $t('attendance_report.no_match') : $t('attendance_report.no_absentees') }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <PaginationBar
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            :total="filteredAbsentees.length"
+            :page-size="pageSize"
+            @update:page="(p) => currentPage = p"
+            @update:page-size="(s) => { pageSize = s; currentPage = 1; }"
+          />
         </section>
       </div>
-
-      <!-- Students who missed school -->
-      <section class="panel overflow-hidden">
-        <div class="p-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div>
-            <h3 class="font-bold">{{ $t('attendance_report.absentees') }}</h3>
-            <p class="text-xs text-ink-subtle">{{ $t('attendance_report.absentees_sub') }}</p>
-          </div>
-          <input v-model="search" type="search" class="input-field sm:max-w-xs" :placeholder="$t('reports_detail.search_student')">
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="data-table w-full min-w-max">
-            <thead>
-              <tr>
-                <th class="w-12 text-center">#</th>
-                <th>{{ $t('attendance_report.col_code') }}</th>
-                <th>{{ $t('attendance_report.col_student') }}</th>
-                <th>{{ $t('attendance_report.col_class') }}</th>
-                <th>{{ $t('attendance_report.col_date') }}</th>
-                <th>{{ $t('attendance_report.col_status') }}</th>
-                <th>{{ $t('attendance_report.col_reason') }}</th>
-                <th>{{ $t('attendance_report.col_notice') }}</th>
-                <th class="text-right">{{ $t('common.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(a, i) in visibleAbsentees" :key="`${a.studentId}:${a.date}`">
-                <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
-                <td class="tnum whitespace-nowrap text-ink-muted">{{ a.studentCode || '—' }}</td>
-                <td class="font-semibold">{{ studentName(a) }}</td>
-                <td>{{ className(a) ?? $t('attendance_report.no_class') }}</td>
-                <td class="tnum">{{ f.date(a.date) }}</td>
-                <td><span :class="statusBadge[a.status]">{{ $t(`attendance_report.status.${a.status}`) }}</span></td>
-                <td class="max-w-xs truncate text-ink-muted" :title="a.leaveReason ?? undefined">{{ a.leaveReason ?? '—' }}</td>
-                <td>
-                  <span :class="noticeBadge(a.notification)">{{ $t(`attendance_report.notice_${a.notification ?? 'none'}`) }}</span>
-                </td>
-                <td class="text-right">
-                  <button
-                    type="button"
-                    class="btn-secondary min-h-8 px-3 text-xs"
-                    :disabled="!!a.notification || notifying.has(key(a))"
-                    @click="notify(a)"
-                  >
-                    {{ $t('attendance_report.notify') }}
-                  </button>
-                </td>
-              </tr>
-              <tr v-if="!visibleAbsentees.length">
-                <td colspan="9" class="py-10 text-center text-sm text-ink-subtle">
-                  {{ search ? $t('attendance_report.no_match') : $t('attendance_report.no_absentees') }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p v-if="filteredAbsentees.length > visibleAbsentees.length" class="px-5 py-3 text-xs text-ink-subtle border-t border-line">
-          {{ $t('attendance_report.showing', { shown: visibleAbsentees.length, total: filteredAbsentees.length }) }}
-        </p>
-      </section>
 
       <p v-if="toast" role="status" class="fixed bottom-6 right-6 z-50 panel-float px-4 py-3 text-sm">{{ toast }}</p>
     </template>
@@ -200,6 +358,13 @@ const f = useFormat();
 const { exportExcel } = useExport();
 useHead({ title: () => t('reports_detail.attendance_analytics') });
 
+const activeTab = ref<'overview' | 'absentees'>('overview');
+const statusFilter = ref<'all' | 'absent' | 'excused' | 'unrecorded'>('all');
+
+// Pagination
+const currentPage = ref(1);
+const pageSize = ref(15);
+
 const ranges: ReportRange[] = ['today', '7d', '30d'];
 const range = ref<ReportRange>('today');
 const report = ref<AttendanceReport | null>(null);
@@ -217,7 +382,10 @@ async function load() {
     loading.value = false;
   }
 }
-watch(range, load);
+watch(range, () => {
+  currentPage.value = 1;
+  load();
+});
 onMounted(load);
 
 const className = (c: { classNameEn: string | null; classNameLo: string | null }) =>
@@ -253,15 +421,38 @@ const statusBadge: Record<AbsenceEntry['status'], string> = {
 const noticeBadge = (n: AbsenceEntry['notification']) =>
   n === 'sent' ? 'badge-success' : n === 'failed' ? 'badge-danger' : n === 'pending' ? 'badge-warning' : 'badge-neutral';
 
+const absenteeStats = computed(() => {
+  const list = report.value?.absentees ?? [];
+  const absentCount = list.filter((a) => a.status === 'absent').length;
+  const excusedCount = list.filter((a) => a.status === 'excused').length;
+  const unrecordedCount = list.filter((a) => a.status === 'unrecorded').length;
+  const notifiedCount = list.filter((a) => a.notification === 'sent').length;
+  return { total: list.length, absentCount, excusedCount, unrecordedCount, notifiedCount };
+});
+
 const search = ref('');
 const filteredAbsentees = computed(() => {
-  const list = report.value?.absentees ?? [];
+  let list = report.value?.absentees ?? [];
+  if (statusFilter.value !== 'all') {
+    list = list.filter((a) => a.status === statusFilter.value);
+  }
   const q = search.value.trim().toLowerCase();
   if (!q) return list;
   return list.filter((a) =>
-    [a.fullNameEn, a.fullNameLo, a.studentCode, a.classNameEn, a.classNameLo].some((v) => v?.toLowerCase().includes(q)));
+    [a.fullNameEn, a.fullNameLo, a.studentCode, a.classNameEn, a.classNameLo, a.leaveReason].some((v) => v?.toLowerCase().includes(q)));
 });
-const visibleAbsentees = computed(() => filteredAbsentees.value.slice(0, 100));
+
+// Pagination computed
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredAbsentees.value.length / pageSize.value)));
+const paginatedAbsentees = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredAbsentees.value.slice(start, start + pageSize.value);
+});
+
+// Reset page when search or filter changes
+watch([search, statusFilter, pageSize], () => {
+  currentPage.value = 1;
+});
 
 function exportAttendance() {
   if (!report.value) return;

@@ -212,10 +212,14 @@ v-for="(student, i) in adminStore.students" :key="student.studentId"
     </div>
 
     <!-- Pagination -->
-    <PaginationBar :loading="adminStore.studentsLoading"
+    <PaginationBar
+      :loading="adminStore.studentsLoading"
       :current-page="adminStore.studentsPage"
       :total-pages="totalPages"
+      :total="adminStore.studentsTotal"
+      :page-size="pageSize"
       @update:page="changePage"
+      @update:page-size="changePageSize"
     />
   </div>
 </template>
@@ -284,26 +288,32 @@ const studentAddress = (student: Student) => {
   return parts.length > 0 ? parts.join(', ') : '—';
 };
 
-const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / STUDENTS_PER_PAGE));
+const pageSize = ref(STUDENTS_PER_PAGE);
+const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / pageSize.value));
 
 onMounted(() => {
   adminStore.fetchStudentStatuses();
-  adminStore.fetchStudents();
+  adminStore.fetchStudents({ limit: pageSize.value });
 });
 
 const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value, gender: genderFilter.value });
+    adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value, gender: genderFilter.value, limit: pageSize.value });
   }, 400);
 };
 
 const handleFilter = () => {
-  adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value, gender: genderFilter.value });
+  adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value, gender: genderFilter.value, limit: pageSize.value });
 };
 
 const changePage = (page: number) => {
-  adminStore.fetchStudents({ page, status: statusFilter.value, search: searchInput.value, gender: genderFilter.value });
+  adminStore.fetchStudents({ page, status: statusFilter.value, search: searchInput.value, gender: genderFilter.value, limit: pageSize.value });
+};
+
+const changePageSize = (size: number) => {
+  pageSize.value = size;
+  adminStore.fetchStudents({ search: searchInput.value, page: 1, status: statusFilter.value, gender: genderFilter.value, limit: size });
 };
 
 // ── Deactivate / reactivate ──

@@ -4,9 +4,10 @@ import type { Payload } from '../../domain/models/Academics';
 import type { Wallet, TopUpRequest, Shop, FeeType, FeeStructure, Invoice } from '../../domain/models/Finance';
 import { getErrorMessage } from '../../utils/errors';
 
-export const INVOICES_PER_PAGE = 10;
-export const WALLETS_PER_PAGE = 10;
-export const TOPUPS_PER_PAGE = 10;
+export const INVOICES_PER_PAGE = 15;
+export const WALLETS_PER_PAGE = 15;
+export const TOPUPS_PER_PAGE = 15;
+export const SHOPS_PER_PAGE = 15;
 
 export const useFinanceStore = defineStore('finance', {
   state: () => ({

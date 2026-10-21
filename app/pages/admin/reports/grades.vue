@@ -90,7 +90,14 @@
         </table>
       </div>
       
-      <PaginationBar :loading="academicsStore.gradesLoading" :current-page="currentPage" :total-pages="totalPages" @update:page="onPageChange" />
+      <PaginationBar
+        :loading="academicsStore.gradesLoading"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total="academicsStore.gradesTotal"
+        :page-size="GRADES_PER_PAGE"
+        @update:page="onPageChange"
+      />
     </section>
   </div>
 </template>
@@ -100,7 +107,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useAcademicsStore, GRADES_PER_PAGE } from '~/application/stores/academics';
 import { useExport } from '../../../composables/useExport';
 import PageHeader from '../../../components/PageHeader.vue';
-import PaginationBar from '../../../components/PaginationBar.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
 definePageMeta({ layout: 'admin' });

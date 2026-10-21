@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('nav.finance')" :title="$t('wallets_admin.title')" :subtitle="$t('wallets_admin.subtitle')">
+    <PageHeader :title="$t('wallets_admin.title')" :subtitle="$t('wallets_admin.subtitle')">
       <div class="relative w-64">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -60,7 +60,14 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :loading="financeStore.walletsLoading" :current-page="financeStore.walletsPage" :total-pages="totalPages" @update:page="load" />
+      <PaginationBar
+        :loading="financeStore.walletsLoading"
+        :current-page="financeStore.walletsPage"
+        :total-pages="totalPages"
+        :total="financeStore.walletsTotal"
+        :page-size="WALLETS_PER_PAGE"
+        @update:page="load"
+      />
     </section>
 
     <AppModal
@@ -192,7 +199,6 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceStore, WALLETS_PER_PAGE } from '../../../application/stores/finance';
 import PageHeader from '../../../components/PageHeader.vue';
-import PaginationBar from '../../../components/PaginationBar.vue';
 import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';

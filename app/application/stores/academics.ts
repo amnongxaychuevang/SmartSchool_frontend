@@ -3,8 +3,10 @@ import { academicsRepository } from '../../infrastructure/api/AcademicsRepositor
 import type { Subject, Grade, GradeType, Card, AppNotification, Payload } from '../../domain/models/Academics';
 import { getErrorMessage } from '../../utils/errors';
 
-export const GRADES_PER_PAGE = 10;
+export const GRADES_PER_PAGE = 15;
 export const NOTIFICATIONS_PER_PAGE = 15;
+export const SUBJECTS_PER_PAGE = 15;
+export const CARDS_PER_PAGE = 15;
 
 export const useAcademicsStore = defineStore('academics', {
   state: () => ({

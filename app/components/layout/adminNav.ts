@@ -57,6 +57,21 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/announcements', key: 'nav.announcements', icon: 'IconNotifications', permission: 'announcements.manage' },
     { to: '/admin/notifications', key: 'nav.notifications', icon: 'IconNotifications', permission: 'notifications.manage' },
   ] },
+  { key: 'behavior', items: [
+    { to: '/admin/behavior', key: 'nav.behavior', icon: 'IconAttendance', permission: 'behavior.view' },
+  ] },
+  { key: 'transport', items: [
+    { to: '/admin/transport', key: 'nav.transport', icon: 'IconSchedule', permission: 'transport.view' },
+  ] },
+  { key: 'library', items: [
+    { to: '/admin/library', key: 'nav.library', icon: 'IconReports', permission: 'library.view' },
+  ] },
+  { key: 'analytics', items: [
+    { to: '/admin/analytics/at-risk', key: 'nav.atRisk', icon: 'IconStudents', permission: 'analytics.at_risk_view' },
+  ] },
+  { key: 'schools', items: [
+    { to: '/admin/schools', key: 'nav.multiSchool', icon: 'IconSettings', permission: 'schools.view' },
+  ] },
   { key: 'system', collapsible: true, items: [
     { to: '/admin/settings', key: 'nav.general', icon: 'IconSettings', permission: 'settings.manage' },
     { to: '/admin/users', key: 'nav.users', icon: 'IconUsers', permission: 'users.manage' },

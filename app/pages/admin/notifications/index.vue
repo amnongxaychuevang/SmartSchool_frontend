@@ -37,7 +37,14 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :loading="academicsStore.notificationsLoading" :current-page="academicsStore.notificationsPage" :total-pages="totalPages" @update:page="load" />
+      <PaginationBar
+        :loading="academicsStore.notificationsLoading"
+        :current-page="academicsStore.notificationsPage"
+        :total-pages="totalPages"
+        :total="academicsStore.notificationsTotal"
+        :page-size="NOTIFICATIONS_PER_PAGE"
+        @update:page="load"
+      />
     </section>
 
     <AppModal :open="modal.open" :title="$t('notifications_admin.send')" :subtitle="$t('notifications_admin.queued_note')" @update:open="modal.open = $event">
@@ -84,7 +91,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAcademicsStore, NOTIFICATIONS_PER_PAGE } from '../../../application/stores/academics';
 import PageHeader from '../../../components/PageHeader.vue';
-import PaginationBar from '../../../components/PaginationBar.vue';
+
 import AppModal from '../../../components/AppModal.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import UserPicker from '../../../components/UserPicker.vue';

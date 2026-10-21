@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('nav.finance')" :title="$t('limits_admin.title')" :subtitle="$t('limits_admin.subtitle')">
+    <PageHeader :title="$t('limits_admin.title')" :subtitle="$t('limits_admin.subtitle')">
       <div class="relative w-64">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -41,7 +41,14 @@
           </tbody>
         </table>
       </div>
-      <PaginationBar :loading="adminStore.studentsLoading" :current-page="adminStore.studentsPage" :total-pages="totalPages" @update:page="changePage" />
+      <PaginationBar
+        :loading="adminStore.studentsLoading"
+        :current-page="adminStore.studentsPage"
+        :total-pages="totalPages"
+        :total="adminStore.studentsTotal"
+        :page-size="STUDENTS_PER_PAGE"
+        @update:page="changePage"
+      />
     </section>
 
     <AppModal
@@ -95,7 +102,6 @@ import { useI18n } from 'vue-i18n';
 import { useAdminStore, STUDENTS_PER_PAGE } from '../../../application/stores/admin';
 import { financeRepository } from '../../../infrastructure/api/FinanceRepository';
 import PageHeader from '../../../components/PageHeader.vue';
-import PaginationBar from '../../../components/PaginationBar.vue';
 import AppModal from '../../../components/AppModal.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 

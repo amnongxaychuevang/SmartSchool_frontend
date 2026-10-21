@@ -11,10 +11,11 @@ import type { Teacher } from '../../domain/models/Teacher';
 import type { Parent } from '../../domain/models/Parent';
 import { getErrorMessage } from '../../utils/errors';
 
-export const STUDENTS_PER_PAGE = 10;
-export const TEACHERS_PER_PAGE = 10;
-export const PARENTS_PER_PAGE = 10;
-export const CLASSES_PER_PAGE = 10;
+export const STUDENTS_PER_PAGE = 15;
+export const TEACHERS_PER_PAGE = 15;
+export const PARENTS_PER_PAGE = 15;
+export const CLASSES_PER_PAGE = 15;
+export const USERS_PER_PAGE = 15;
 
 export const useAdminStore = defineStore('admin', {
   state: () => ({
@@ -26,6 +27,7 @@ export const useAdminStore = defineStore('admin', {
     students: [] as Student[],
     studentsTotal: 0,
     studentsPage: 1,
+    studentsLimit: STUDENTS_PER_PAGE,
     studentsSearch: '',
     studentsStatus: '',
     studentsGender: '',
@@ -36,6 +38,7 @@ export const useAdminStore = defineStore('admin', {
     users: [] as User[],
     usersTotal: 0,
     usersPage: 1,
+    usersLimit: USERS_PER_PAGE,
     usersRoleFilter: '' as string,
     usersSearch: '',
     usersLoading: false,
@@ -44,6 +47,7 @@ export const useAdminStore = defineStore('admin', {
     teachers: [] as Teacher[],
     teachersTotal: 0,
     teachersPage: 1,
+    teachersLimit: TEACHERS_PER_PAGE,
     teachersSearch: '',
     teachersStatus: '',
     teachersGender: '',
@@ -53,6 +57,7 @@ export const useAdminStore = defineStore('admin', {
     parents: [] as Parent[],
     parentsTotal: 0,
     parentsPage: 1,
+    parentsLimit: PARENTS_PER_PAGE,
     parentsSearch: '',
     parentsStatus: '',
     parentsLoading: false,
@@ -61,6 +66,7 @@ export const useAdminStore = defineStore('admin', {
     classes: [] as SchoolClass[],
     classesTotal: 0,
     classesPage: 1,
+    classesLimit: CLASSES_PER_PAGE,
     classesSearch: '',
     classesYear: '',
     classesLoading: false,
@@ -119,14 +125,15 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchStudents(params?: { search?: string; page?: number; status?: string; gender?: string }) {
+    async fetchStudents(params?: { search?: string; page?: number; status?: string; gender?: string; limit?: number }) {
       this.studentsLoading = true;
       if (params?.search !== undefined) this.studentsSearch = params.search;
       if (params?.page !== undefined) this.studentsPage = params.page;
       if (params?.status !== undefined) this.studentsStatus = params.status;
       if (params?.gender !== undefined) this.studentsGender = params.gender;
+      if (params?.limit !== undefined) this.studentsLimit = params.limit;
       try {
-        const res = await adminRepository.getStudents({ search: this.studentsSearch, page: this.studentsPage, limit: STUDENTS_PER_PAGE, status: this.studentsStatus, gender: this.studentsGender });
+        const res = await adminRepository.getStudents({ search: this.studentsSearch, page: this.studentsPage, limit: this.studentsLimit, status: this.studentsStatus, gender: this.studentsGender });
         this.students = res.students;
         this.studentsTotal = res.total;
       } catch (err) {
@@ -170,13 +177,14 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchUsers(params?: { role?: string; search?: string; page?: number }) {
+    async fetchUsers(params?: { role?: string; search?: string; page?: number; limit?: number }) {
       this.usersLoading = true;
       if (params?.role !== undefined) this.usersRoleFilter = params.role;
       if (params?.search !== undefined) this.usersSearch = params.search;
       if (params?.page !== undefined) this.usersPage = params.page;
+      if (params?.limit !== undefined) this.usersLimit = params.limit;
       try {
-        const res = await adminRepository.getUsers({ role: this.usersRoleFilter, search: this.usersSearch, page: this.usersPage, limit: 10 });
+        const res = await adminRepository.getUsers({ role: this.usersRoleFilter, search: this.usersSearch, page: this.usersPage, limit: this.usersLimit || USERS_PER_PAGE });
         this.users = res.users;
         this.usersTotal = res.total;
       } catch (err) {
@@ -213,14 +221,15 @@ export const useAdminStore = defineStore('admin', {
     },
 
     // Teachers
-    async fetchTeachers(params?: { search?: string; page?: number; status?: string; gender?: string }) {
+    async fetchTeachers(params?: { search?: string; page?: number; status?: string; gender?: string; limit?: number }) {
       this.teachersLoading = true;
       if (params?.search !== undefined) this.teachersSearch = params.search;
       if (params?.page !== undefined) this.teachersPage = params.page;
       if (params?.status !== undefined) this.teachersStatus = params.status;
       if (params?.gender !== undefined) this.teachersGender = params.gender;
+      if (params?.limit !== undefined) this.teachersLimit = params.limit;
       try {
-        const res = await adminRepository.getTeachers({ search: this.teachersSearch, page: this.teachersPage, limit: TEACHERS_PER_PAGE, status: this.teachersStatus, gender: this.teachersGender });
+        const res = await adminRepository.getTeachers({ search: this.teachersSearch, page: this.teachersPage, limit: this.teachersLimit || TEACHERS_PER_PAGE, status: this.teachersStatus, gender: this.teachersGender });
         this.teachers = res.teachers;
         this.teachersTotal = res.total;
       } catch (err) {
@@ -257,13 +266,14 @@ export const useAdminStore = defineStore('admin', {
     },
 
     // Parents
-    async fetchParents(params?: { search?: string; page?: number; status?: string }) {
+    async fetchParents(params?: { search?: string; page?: number; status?: string; limit?: number }) {
       this.parentsLoading = true;
       if (params?.search !== undefined) this.parentsSearch = params.search;
       if (params?.page !== undefined) this.parentsPage = params.page;
       if (params?.status !== undefined) this.parentsStatus = params.status;
+      if (params?.limit !== undefined) this.parentsLimit = params.limit;
       try {
-        const res = await adminRepository.getParents({ search: this.parentsSearch, page: this.parentsPage, limit: PARENTS_PER_PAGE, status: this.parentsStatus });
+        const res = await adminRepository.getParents({ search: this.parentsSearch, page: this.parentsPage, limit: this.parentsLimit || PARENTS_PER_PAGE, status: this.parentsStatus });
         this.parents = res.parents;
         this.parentsTotal = res.total;
       } catch (err) {
@@ -299,13 +309,14 @@ export const useAdminStore = defineStore('admin', {
       }
     },
 
-    async fetchClasses(params?: { search?: string; page?: number; academicYear?: string }) {
+    async fetchClasses(params?: { search?: string; page?: number; academicYear?: string; limit?: number }) {
       this.classesLoading = true;
       if (params?.search !== undefined) this.classesSearch = params.search;
       if (params?.page !== undefined) this.classesPage = params.page;
       if (params?.academicYear !== undefined) this.classesYear = params.academicYear;
+      if (params?.limit !== undefined) this.classesLimit = params.limit;
       try {
-        const res = await adminRepository.getClasses({ search: this.classesSearch, page: this.classesPage, limit: CLASSES_PER_PAGE, academicYear: this.classesYear });
+        const res = await adminRepository.getClasses({ search: this.classesSearch, page: this.classesPage, limit: this.classesLimit || CLASSES_PER_PAGE, academicYear: this.classesYear });
         this.classes = res.classes;
         this.classesTotal = res.total;
       } catch (err) {
