@@ -92,6 +92,7 @@ import { academicsRepository, type ClassSubject } from '../../infrastructure/api
 definePageMeta({ layout: 'teacher' });
 
 const { t, locale } = useI18n();
+const dialog = useDialog();
 useHead({ title: computed(() => `${t('teacherPortal.student_grades')} — Teacher Portal`) });
 
 const teacherStore = useTeacherStore();
@@ -142,9 +143,9 @@ const saveGrades = async () => {
 
     await teacherStore.saveGrades(records);
     
-    alert('Grades saved successfully!');
+    dialog.success(t('teacherPortal.grades_saved'));
   } catch (err) {
-    alert(getErrorMessage(err, 'Failed to save grades'));
+    dialog.error(getErrorMessage(err, t('teacherPortal.grades_save_failed')));
   } finally {
     saving.value = false;
   }

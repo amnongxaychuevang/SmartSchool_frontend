@@ -26,11 +26,13 @@ export const ADMIN_NAV: AdminNavSection[] = [
   { key: 'people', items: [
     { to: '/admin/students', key: 'nav.students', icon: 'IconStudents', permission: 'students.view' },
     { to: '/admin/teachers', key: 'nav.teachers', icon: 'IconTeachers', permission: 'teachers.view' },
+    { to: '/admin/teacher-leaves', key: 'nav.teacherLeaves', icon: 'IconLeave', permission: 'teachers.leave_manage' },
     { to: '/admin/parents', key: 'nav.parents', icon: 'IconParents', permission: 'parents.view' },
   ] },
   { key: 'attendance', items: [
     { to: '/admin/cards', key: 'nav.cards', icon: 'IconUsers', permission: 'cards.view' },
     { to: '/admin/attendance', key: 'nav.scanSimulator', icon: 'IconAttendance', permission: 'attendance.manual_tap' },
+    { to: '/admin/leaves', key: 'nav.leaveRequests', icon: 'IconSchedule', permission: 'leave.manage' },
   ] },
   { key: 'academics', items: [
     { to: '/admin/classes', key: 'nav.classes', icon: 'IconClasses', permission: 'academics.view' },
@@ -38,6 +40,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/academics/class-subjects', key: 'nav.classSubjects', icon: 'IconClasses', permission: 'academics.view' },
     { to: '/admin/academics/schedule', key: 'nav.schedule', icon: 'IconSchedule', permission: 'academics.view' },
     { to: '/admin/academics/grades', key: 'nav.grades', icon: 'IconReports', permission: 'grades.view' },
+    { to: '/admin/academics/assignments', key: 'nav.assignments', icon: 'IconLeave', permission: 'assignments.view' },
     { to: '/admin/settings/academic-terms', key: 'nav.academicTerms', icon: 'IconSchedule', permission: 'academics.view' },
     { to: '/admin/calendar', key: 'nav.calendar', icon: 'IconSchedule', permission: 'academics.view' },
     { to: '/admin/academics/promotion', key: 'nav.promotion', icon: 'IconStudents', permission: 'academics.manage' },
@@ -69,9 +72,6 @@ export const ADMIN_NAV: AdminNavSection[] = [
   { key: 'analytics', items: [
     { to: '/admin/analytics/at-risk', key: 'nav.atRisk', icon: 'IconStudents', permission: 'analytics.at_risk_view' },
   ] },
-  { key: 'schools', items: [
-    { to: '/admin/schools', key: 'nav.multiSchool', icon: 'IconSettings', permission: 'schools.view' },
-  ] },
   { key: 'system', collapsible: true, items: [
     { to: '/admin/settings', key: 'nav.general', icon: 'IconSettings', permission: 'settings.manage' },
     { to: '/admin/users', key: 'nav.users', icon: 'IconUsers', permission: 'users.manage' },
@@ -83,9 +83,12 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/reports', key: 'nav.overview', icon: 'IconReports', permission: 'reports.view' },
     { to: '/admin/reports/attendance', key: 'nav.attendance', icon: 'IconAttendance', permission: 'reports.view' },
     { to: '/admin/reports/grades', key: 'nav.grades', icon: 'IconReports', permission: 'reports.view' },
+    { to: '/admin/reports/class-results', key: 'nav.classResults', icon: 'IconReports', permission: ['grades.view', 'reports.view'] },
     { to: '/admin/reports/students', key: 'nav.students', icon: 'IconStudents', permission: 'reports.view' },
     { to: '/admin/reports/wallet', key: 'nav.wallet', icon: 'IconWallet', permission: 'reports.view' },
     { to: '/admin/reports/fees', key: 'nav.fees', icon: 'IconWallet', permission: ['fees.view', 'reports.view'] },
+    { to: '/admin/reports/debtors', key: 'nav.debtors', icon: 'IconWallet', permission: ['fees.view', 'reports.view'] },
+    { to: '/admin/reports/daily-cash', key: 'nav.dailyCash', icon: 'IconWallet', permission: ['fees.view', 'finance.view', 'reports.view'] },
     { to: '/admin/reports/shop-sales', key: 'nav.shopSales', icon: 'IconDashboard', permission: ['finance.view', 'reports.view'] },
   ] },
 ];

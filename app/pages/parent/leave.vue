@@ -121,6 +121,7 @@ import { useParentStore } from '../../application/stores/parent';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const dialog = useDialog();
 const fmt = useFormat();
 
 definePageMeta({ layout: 'parent' });
@@ -170,8 +171,8 @@ const submitLeaveRequest = async () => {
     leaveModal.open = false;
     leaveModal.form = { startDate: '', endDate: '', reason: '', documentUrl: '' };
     loadLeaves();
-  } catch {
-    alert(t('common.submit_failed'));
+  } catch (err) {
+    dialog.error(getErrorMessage(err, t('common.submit_failed')));
   } finally {
     leaveModal.saving = false;
   }

@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('nav.communication')" :title="$t('notifications_admin.title')" :subtitle="$t('notifications_admin.subtitle')">
+    <PageHeader :title="$t('notifications_admin.title')" :subtitle="$t('notifications_admin.subtitle')">
       <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="load(1)">
         <option value="">{{ $t('notifications_admin.all_status') }}</option>
         <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>

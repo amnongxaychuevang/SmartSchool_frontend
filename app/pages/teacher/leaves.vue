@@ -61,6 +61,7 @@ import { useTeacherStore } from '../../application/stores/teacher';
 definePageMeta({ layout: 'teacher' });
 
 const { t, locale } = useI18n();
+const dialog = useDialog();
 const fmt = useFormat();
 useHead({ title: computed(() => `${t('teacherPortal.leave_approvals')} — Teacher Portal`) });
 
@@ -70,10 +71,13 @@ onMounted(() => {
   teacherStore.fetchLeaveRequests();
 });
 
-const updateStatus = async (leaveId: number, status: 'approved' | 'rejected') => {
-  if (confirm(t(status === 'approved' ? 'leave_ui.confirm_approve' : 'leave_ui.confirm_reject'))) {
-    await teacherStore.updateLeaveRequestStatus(leaveId, status);
-  }
+const updateStatus = (leaveId: number, status: 'approved' | 'rejected') => {
+  dialog.confirm({
+    message: t(status === 'approved' ? 'leave_ui.confirm_approve' : 'leave_ui.confirm_reject'),
+    confirmLabel: t(status === 'approved' ? 'teacherPortal.approve' : 'teacherPortal.reject'),
+    tone: status === 'approved' ? 'primary' : 'danger',
+    onConfirm: () => teacherStore.updateLeaveRequestStatus(leaveId, status),
+  });
 };
 
 const formatDate = (dateStr: string) => {

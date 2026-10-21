@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
     <PageHeader
-      :eyebrow="$t('nav.settings')"
       :title="$t('settings.title')"
       :subtitle="$t('settings.subtitle')"
     />
@@ -15,7 +14,7 @@
 
     <div v-else class="flex flex-col gap-4">
       <!-- Tabs -->
-      <div role="tablist" class="inline-flex self-start max-w-full overflow-x-auto p-0.5 gap-0.5 rounded-lg border border-line bg-surface-2">
+      <div role="tablist" class="flex self-start max-w-full overflow-x-auto gap-6">
         <button
           v-for="tab in tabs"
           :id="`tab-${tab.id}`"
@@ -24,18 +23,13 @@
           role="tab"
           :aria-selected="activeTab === tab.id"
           :aria-controls="`panel-${tab.id}`"
-          :title="tab.ok ? $t('settings_ui.configured') : $t('settings_ui.not_configured')"
           :class="[
-            'flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold whitespace-nowrap transition-colors',
-            activeTab === tab.id ? 'bg-surface text-primary-ink shadow-float' : 'text-ink-muted hover:text-ink',
+            'flex items-center gap-2 pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2',
+            activeTab === tab.id ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white',
           ]"
           @click="selectTab(tab.id)"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="tab.icon" />
-          </svg>
           {{ tab.label }}
-          <span :class="['w-1.5 h-1.5 rounded-full', tab.ok ? 'bg-success' : 'bg-line-strong']" aria-hidden="true" />
         </button>
       </div>
 
@@ -309,37 +303,26 @@ const saveError = ref('');
 const activeTerm = computed(() => terms.value.find((term) => term.status === 'active') ?? null);
 const termName = (term: AcademicTerm) => (locale.value === 'lo' ? term.termNameLo : term.termNameEn) || term.termNameEn;
 
-// Tab dots reflect what is saved, not unsaved edits.
 const tabs = computed(() => [
   {
     id: 'school' as const,
     label: t('settings.school_info'),
-    ok: Boolean(settingsStore.schoolInfo.schoolNameLo && settingsStore.schoolInfo.schoolNameEn),
-    icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
   },
   {
     id: 'payment' as const,
     label: t('payment_info.title'),
-    ok: Boolean(settingsStore.paymentInfo),
-    icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
   },
   {
     id: 'attendance' as const,
     label: t('auto_absence.title'),
-    ok: Boolean(settingsStore.autoAbsence?.enabled),
-    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
     id: 'fees' as const,
     label: t('fee_reminders.title'),
-    ok: feeRemindersOn.value,
-    icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
   },
   {
     id: 'term' as const,
     label: t('settings.academic_settings'),
-    ok: Boolean(activeTerm.value),
-    icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
   },
 ]);
 

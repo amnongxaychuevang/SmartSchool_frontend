@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <PageHeader :eyebrow="$t('nav.reports')" :title="t('grades_report.title')" :subtitle="t('grades_report.subtitle')" />
+    <PageHeader :title="t('grades_report.title')" :subtitle="t('grades_report.subtitle')" />
 
     <!-- Stats Row -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -43,7 +43,7 @@
         </select>
         <input v-model="filterMonth" type="month" class="input-field w-auto" @change="applyFilters">
       </div>
-      <button class="btn-secondary ml-auto" @click="exportGrades">
+      <button v-if="canExport" class="btn-secondary ml-auto"  :disabled="exporting" @click="exportGrades">
         {{ $t('common.export_excel') }}
       </button>
     </div>
@@ -103,9 +103,11 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
+import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAcademicsStore, GRADES_PER_PAGE } from '~/application/stores/academics';
-import { useExport } from '../../../composables/useExport';
 import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
@@ -114,7 +116,6 @@ definePageMeta({ layout: 'admin' });
 const { locale, t } = useI18n();
 useHead({ title: () => t('page_titles.grades_report') });
 const fmt = useFormat();
-const { exportExcel } = useExport();
 const academicsStore = useAcademicsStore();
 
 const searchInput = ref('');
@@ -202,30 +203,15 @@ const averagePassRate = computed(() => {
   return Math.round((passes.length / grades.length) * 100);
 });
 
-function exportGrades() {
-  const data = filteredGrades.value.map((g: any) => ({
-    student: locale.value === 'lo' ? g.student?.fullNameLo : g.student?.fullNameEn,
-    studentCode: g.student?.studentCode,
-    subject: locale.value === 'lo' ? g.classSubject?.subject?.subjectNameLo : g.classSubject?.subject?.subjectNameEn,
-    class: locale.value === 'lo' ? g.classSubject?.class?.classNameLo : g.classSubject?.class?.classNameEn,
-    gradeType: locale.value === 'lo' ? g.gradeType?.typeNameLo : g.gradeType?.typeNameEn,
-    score: g.score,
-    maxScore: g.maxScore,
-    percent: g.maxScore > 0 ? Math.round((g.score / g.maxScore) * 100) : 0,
-    published: g.isPublished ? t('grades_report.published') : t('grades_report.unpublished'),
-  }));
-  exportExcel(data, [
-    { key: 'studentCode', label: t('grades_report.col_code') },
-    { key: 'student', label: t('grades_report.col_student') },
-    { key: 'subject', label: t('grades_report.col_subject') },
-    { key: 'class', label: t('grades_report.col_class') },
-    { key: 'gradeType', label: t('grades_report.col_type') },
-    { key: 'score', label: t('grades_report.col_score') },
-    { key: 'maxScore', label: t('grades_report.col_max_score') },
-    { key: 'percent', label: '%' },
-    { key: 'published', label: t('grades_report.col_status') },
-  ], 'grades-report');
-}
+// Standard export: built by the server from the report's own filters, and audit-logged.
+const authStore = useAuthStore();
+const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
+const { exporting, download } = useServerExport();
+const exportGrades = () => download('/reports/grades/export', {
+  search: searchInput.value,
+  published: filterStatus.value === 'published' ? 'true' : filterStatus.value === 'unpublished' ? 'false' : '',
+  gradeMonth: filterMonth.value,
+}, 'grades');
 
 const getScoreColor = (score: number, maxScore: number) => {
   const percent = (Number(score) / Number(maxScore)) * 100;

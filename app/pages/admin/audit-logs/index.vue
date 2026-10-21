@@ -88,8 +88,8 @@ useHead({ title: () => t('audit_admin.title') });
 const adminStore = useAdminStore();
 
 // The values the backend writes (AuditAction enum; entity types used by the controllers).
-const actions = ['login', 'login_failed', 'logout', 'create', 'update', 'delete', 'approve', 'reject', 'status_change'];
-const entities = ['user', 'wallet', 'wallet_transaction', 'top_up_request', 'spending_limit'];
+const actions = ['login', 'login_failed', 'logout', 'create', 'update', 'delete', 'approve', 'reject', 'status_change', 'export'];
+const entities = ['user', 'wallet', 'wallet_transaction', 'top_up_request', 'spending_limit', 'student', 'teacher', 'parent', 'card', 'report', 'teacher_leave'];
 
 const actorId = ref<number | null>(null);
 const pickerKey = ref(0); // remounts the picker to clear its text

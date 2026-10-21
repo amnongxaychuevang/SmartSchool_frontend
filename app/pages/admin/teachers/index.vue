@@ -162,9 +162,12 @@
           @click="genderDropdownOpen = false"
         />
 
+        <button v-if="canExport" type="button" class="btn-secondary ml-auto" :disabled="exporting || !adminStore.teachersTotal" @click="exportList">
+          {{ exporting ? $t("common.loading") : $t("common.export_excel") }}
+        </button>
         <NuxtLink
           to="/admin/teachers/create"
-          class="ml-auto h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]"
+          class="h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -414,6 +417,9 @@ import {
   TEACHERS_PER_PAGE,
 } from "../../../application/stores/admin";
 import type { Teacher } from "../../../domain/models/Teacher";
+import { useAuthStore } from "../../../application/stores/auth";
+import { hasPermission } from "../../../components/layout/adminNav";
+import { useServerExport } from "../../../composables/useServerExport";
 import { GENDERS } from "../../../domain/models/Gender";
 
 definePageMeta({ layout: "admin" });
@@ -460,6 +466,12 @@ const teacherAddress = (teacher: Teacher) =>
 
 const formatDate = (dateStr?: string | null) =>
   dateStr ? new Date(dateStr).toLocaleDateString("en-GB") : "—";
+
+// Standard export: the server builds the file from the same filters (and audit-logs it).
+const authStore = useAuthStore();
+const canExport = computed(() => hasPermission(authStore.permissions, "teachers.export"));
+const { exporting, download } = useServerExport();
+const exportList = () => download("/teachers/export", filters(), "teachers");
 
 const pageSize = ref(TEACHERS_PER_PAGE);
 const totalPages = computed(() =>

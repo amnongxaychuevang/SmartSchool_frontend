@@ -94,6 +94,7 @@ import type { AttendanceStatus } from '../../infrastructure/api/TeacherRepositor
 definePageMeta({ layout: 'teacher' });
 
 const { t, locale } = useI18n();
+const dialog = useDialog();
 useHead({ title: computed(() => `${t('teacherPortal.class_attendance')} — Teacher Portal`) });
 
 const route = useRoute();
@@ -149,9 +150,9 @@ const saveAttendance = async () => {
     }));
 
     await teacherStore.saveAttendance(Number(selectedClass.value), attendanceDate.value, records);
-    alert('Attendance saved successfully!');
+    dialog.success(t('teacherPortal.attendance_saved'));
   } catch (err) {
-    alert(getErrorMessage(err, 'Failed to save attendance'));
+    dialog.error(getErrorMessage(err, t('teacherPortal.attendance_save_failed')));
   } finally {
     saving.value = false;
   }

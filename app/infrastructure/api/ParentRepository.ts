@@ -8,6 +8,39 @@ import type { Wallet, SpendingLimit, TopUpRequest, StudentCard, Invoice } from '
 import type { Announcement, DailyAttendance, LeaveRequest } from '../../domain/models/School';
 import type { PaymentInfo } from '../../application/stores/settings';
 
+interface Bilingual { nameEn?: string; nameLo?: string }
+export interface ChildBehavior {
+  summary: { finalScore: number; totalMerits: number; totalDemerits: number; rating: 'excellent' | 'good' | 'fair' | 'needs_improvement' };
+  records: {
+    recordId: number; type: 'merit' | 'demerit'; titleEn: string; titleLo: string; description: string | null;
+    points: number; incidentDate: string; actionTaken: string | null; category: (Bilingual & { categoryId: number }) | null;
+  }[];
+}
+export interface BusStop { nameEn?: string; nameLo?: string; time?: string }
+export interface BusVehicleInfo { plateNumber: string; model: string | null; driverName: string; driverPhone: string }
+export interface ChildTransport {
+  assignment: {
+    pickupStop: string | null; dropoffStop: string | null; isActive: boolean;
+    vehicle: BusVehicleInfo | null;
+    route: { routeNameEn: string; routeNameLo: string; description: string | null; stops: BusStop[] | null; vehicle: BusVehicleInfo | null };
+  } | null;
+  logs: {
+    logId: number; logType: 'board' | 'alight'; direction: 'to_school' | 'to_home'; logTime: string; location: string | null;
+    vehicle: { plateNumber: string } | null; route: { routeNameEn: string; routeNameLo: string } | null;
+  }[];
+}
+export interface ChildLoan {
+  loanId: number; borrowedDate: string; dueDate: string; returnedDate: string | null; renewCount: number;
+  status: 'borrowed' | 'returned' | 'overdue' | 'lost';
+  book: { titleEn: string; titleLo: string; author: string };
+}
+
+export interface ChildAssignment {
+  assignmentId: number; title: string; description: string | null; dueDate: string;
+  subject: { subjectNameEn: string; subjectNameLo: string } | null;
+  creator: { fullNameEn: string; fullNameLo: string } | null;
+}
+
 export class ParentRepository {
   async getMyChildren() {
     return useApiClient()<ApiResponse<Student[]>>('/parents/me/children', { method: 'GET' });
@@ -23,6 +56,26 @@ export class ParentRepository {
 
   async getChildWallet(studentId: number) {
     return useApiClient()<ApiResponse<Wallet | null>>(`/parents/me/children/${studentId}/wallet`, { method: 'GET' });
+  }
+
+  async getChildBehavior(studentId: number) {
+    const res = await useApiClient()<ApiResponse<ChildBehavior>>(`/parents/me/children/${studentId}/behavior`, { method: 'GET' });
+    return res.data;
+  }
+
+  async getChildTransport(studentId: number) {
+    const res = await useApiClient()<ApiResponse<ChildTransport>>(`/parents/me/children/${studentId}/transport`, { method: 'GET' });
+    return res.data;
+  }
+
+  async getChildLibrary(studentId: number) {
+    const res = await useApiClient()<ApiResponse<{ loans: ChildLoan[] }>>(`/parents/me/children/${studentId}/library`, { method: 'GET' });
+    return res.data.loans;
+  }
+
+  async getChildAssignments(studentId: number) {
+    const res = await useApiClient()<ApiResponse<{ assignments: ChildAssignment[] }>>(`/parents/me/children/${studentId}/assignments`, { method: 'GET' });
+    return res.data.assignments;
   }
 
   async getAnnouncements() {

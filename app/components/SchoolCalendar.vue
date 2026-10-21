@@ -1,30 +1,22 @@
 <template>
   <div class="flex flex-col gap-4">
     <!-- Tabs: Calendar vs Agenda -->
-    <div class="flex items-center gap-2 p-1 bg-surface-2 rounded-xl border border-line w-fit">
+    <div class="flex gap-6">
       <button
         type="button"
-        class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all"
-        :class="activeTab === 'calendar' ? 'bg-primary !text-white shadow-sm' : 'text-ink-muted hover:text-ink'"
+        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
+        :class="activeTab === 'calendar' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'calendar'"
       >
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span>{{ $t('calendar.tab_calendar') }}</span>
+        {{ $t('calendar.tab_calendar') }}
       </button>
-
       <button
         type="button"
-        class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all"
-        :class="activeTab === 'agenda' ? 'bg-primary !text-white shadow-sm' : 'text-ink-muted hover:text-ink'"
+        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
+        :class="activeTab === 'agenda' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'agenda'"
       >
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-        <span>{{ $t('calendar.tab_agenda') }}</span>
-        <span v-if="monthEvents.length" class="ml-1 px-1.5 py-0.5 text-xs rounded-md" :class="activeTab === 'agenda' ? 'bg-white/20 text-white' : 'bg-surface text-ink-muted'">{{ monthEvents.length }}</span>
+        {{ $t('calendar.tab_agenda') }}
       </button>
     </div>
 
@@ -80,7 +72,7 @@
     <section v-else class="panel overflow-hidden">
       <div class="px-5 py-3.5 flex items-center justify-between border-b border-line bg-surface-2">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-muted">{{ $t('calendar.this_month') }} ({{ monthTitle }})</h3>
-        <span class="text-xs text-ink-muted">{{ monthEvents.length }} {{ $t('common.items') || 'events' }}</span>
+        <span class="text-xs text-ink-muted">{{ monthEvents.length }} {{ $t('common.items') }}</span>
       </div>
       <LoadingSpinner v-if="loading" />
       <p v-else-if="!monthEvents.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('calendar.empty') }}</p>

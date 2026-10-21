@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
     <PageHeader
-      :eyebrow="$t('nav.settings')"
       :title="$t('notification_settings.title')"
       :subtitle="$t('notification_settings.subtitle')"
     />
@@ -10,17 +9,22 @@
       {{ pageError }}
     </p>
 
-    <form class="panel p-6 flex flex-col gap-5 max-w-3xl" @submit.prevent="handleSave">
-      <div class="flex flex-col gap-1.5 sm:max-w-xs">
-        <label for="default-channel" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">
-          {{ $t("notification_settings.default_channel") }}
-        </label>
-        <select id="default-channel" v-model="channel" class="input-field">
-          <option value="whatsapp">{{ $t("notification_settings.channel_whatsapp") }}</option>
-          <option value="email">{{ $t("notification_settings.channel_email") }}</option>
-        </select>
-      </div>
+    <div role="tablist" :aria-label="$t('notification_settings.default_channel')" class="flex gap-6">
+      <button
+        v-for="opt in channelTabs"
+        :key="opt.id"
+        type="button"
+        role="tab"
+        :aria-selected="channel === opt.id"
+        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
+        :class="channel === opt.id ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+        @click="channel = opt.id"
+      >
+        {{ opt.label }}
+      </button>
+    </div>
 
+    <form class="panel p-6 flex flex-col gap-5 max-w-3xl" @submit.prevent="handleSave">
       <!-- WhatsApp -->
       <section v-if="channel === 'whatsapp'" class="flex flex-col gap-4">
         <div class="flex items-start justify-between gap-3">
@@ -116,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, computed, onMounted } from "vue";
 import { useSettingsStore } from "../../../application/stores/settings";
 
 type Channel = "whatsapp" | "email";
@@ -133,6 +137,10 @@ useHead({ title: () => t("page_titles.notifications") });
 const settingsStore = useSettingsStore();
 
 const channel = ref<Channel>("whatsapp");
+const channelTabs = computed<{ id: Channel; label: string }[]>(() => [
+  { id: "whatsapp", label: t("notification_settings.channel_whatsapp") },
+  { id: "email", label: t("notification_settings.channel_email") },
+]);
 const waForm = reactive({ phoneNumberId: "", accessToken: "" });
 const emailForm = reactive({ host: "", port: 587, secure: false, user: "", pass: "", from: "" });
 const showSecret = ref(false);

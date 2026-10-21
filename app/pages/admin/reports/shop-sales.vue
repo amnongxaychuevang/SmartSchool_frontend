@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('nav.reports')" :title="$t('shop_sales.title')" :subtitle="$t('shop_sales.subtitle')">
+    <PageHeader :title="$t('shop_sales.title')" :subtitle="$t('shop_sales.subtitle')">
       <div class="flex items-center gap-3">
         <select v-model="rangePreset" class="input-field w-auto" @change="applyPreset">
           <option value="today">{{ $t('shop_sales.today') }}</option>

@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('nav.fees')" :title="$t('fee_structures.title')" :subtitle="$t('fee_structures.subtitle')" />
+    <PageHeader :title="$t('fee_structures.title')" :subtitle="$t('fee_structures.subtitle')" />
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-end justify-between gap-3">
       <!-- Tabs -->
-      <div role="tablist" class="inline-flex max-w-full overflow-x-auto p-0.5 gap-0.5 rounded-lg border border-line bg-surface-2">
+      <div role="tablist" class="flex max-w-full overflow-x-auto gap-6">
         <button
           v-for="tab in tabs"
           :id="`tab-${tab.id}`"
@@ -14,17 +14,16 @@
           :aria-selected="activeTab === tab.id"
           :aria-controls="`panel-${tab.id}`"
           :class="[
-            'flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold whitespace-nowrap transition-colors',
-            activeTab === tab.id ? 'bg-surface text-primary-ink shadow-float' : 'text-ink-muted hover:text-ink',
+            'flex items-center gap-2 pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2',
+            activeTab === tab.id ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white',
           ]"
           @click="selectTab(tab.id)"
         >
           {{ tab.label }}
-          <span class="min-w-5 px-1.5 rounded-full bg-line text-[11px] text-ink-muted tnum">{{ tab.count }}</span>
         </button>
       </div>
 
-      <div v-if="activeTab === 'structures'" class="flex items-center gap-2">
+      <div v-if="activeTab === 'structures'" class="flex items-center gap-2 pb-2">
         <select v-model="yearFilter" class="input-field w-auto" :aria-label="$t('fee_structures.col_year')" @change="financeStore.fetchFeeStructures(yearFilter)">
           <option value="">{{ $t('fee_structures.all_years') }}</option>
           <option v-for="y in academicYears" :key="y" :value="y">{{ y }}</option>
@@ -34,7 +33,7 @@
           {{ $t('fee_structures.add_structure') }}
         </button>
       </div>
-      <button v-else type="button" class="btn-primary inline-flex items-center gap-1.5" @click="openTypeForm()">
+      <button v-else type="button" class="btn-primary inline-flex items-center gap-1.5 mb-2" @click="openTypeForm()">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
         {{ $t('fee_structures.add_type') }}
       </button>
@@ -302,8 +301,8 @@ const selectTab = (id: TabId) => {
   router.replace({ query: { ...route.query, tab: id === 'types' ? 'types' : undefined } });
 };
 const tabs = computed(() => [
-  { id: 'structures' as const, label: t('fee_structures.structures_title'), count: financeStore.feeStructures.length },
-  { id: 'types' as const, label: t('fee_structures.types_title'), count: financeStore.feeTypes.length },
+  { id: 'structures' as const, label: t('fee_structures.structures_title') },
+  { id: 'types' as const, label: t('fee_structures.types_title') },
 ]);
 
 onMounted(async () => {

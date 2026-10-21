@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <PageHeader :eyebrow="$t('nav.reports')" :title="t('wallet_report.title')" :subtitle="t('wallet_report.subtitle')" />
+    <PageHeader :title="t('wallet_report.title')" :subtitle="t('wallet_report.subtitle')" />
 
     <!-- Stats Row -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -46,7 +46,7 @@
         <button class="btn-secondary" @click="refreshData">
           {{ $t('common.refresh') }}
         </button>
-        <button class="btn-secondary" @click="exportWallets">
+        <button v-if="canExport" class="btn-secondary"  :disabled="exporting" @click="exportWallets">
           {{ $t('common.export_excel') }}
         </button>
       </div>
@@ -99,9 +99,11 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
+import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useFinanceStore, WALLETS_PER_PAGE } from '~/application/stores/finance';
-import { useExport } from '../../../composables/useExport';
 import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
@@ -110,7 +112,6 @@ definePageMeta({ layout: 'admin' });
 const { locale, t } = useI18n();
 useHead({ title: () => t('page_titles.wallet_report') });
 const f = useFormat();
-const { exportExcel } = useExport();
 const financeStore = useFinanceStore();
 
 const filterStatus = ref('all');
@@ -162,26 +163,9 @@ const totalBalance = computed(() => (financeStore.wallets || []).reduce((sum, wa
 const pendingTopUps = computed(() => financeStore.topUpRequestsTotal || 0);
 const frozenWallets = computed(() => (financeStore.wallets || []).filter(w => w.status === 'frozen').length);
 
-function exportWallets() {
-  const data = filteredWallets.value.map((w: any) => ({
-    student: walletStudentName(w),
-    studentCode: walletStudentCode(w),
-    balance: Number(w.balance),
-    dailyLimit: w.student?.spendingLimit?.dailyMax || '',
-    weeklyLimit: w.student?.spendingLimit?.weeklyMax || '',
-    perTxLimit: w.student?.spendingLimit?.perTransactionMax || '',
-    status: w.status === 'active' ? t('wallet_report.active') : t('wallet_report.frozen'),
-    createdAt: f.date(w.createdAt),
-  }));
-  exportExcel(data, [
-    { key: 'studentCode', label: t('wallet_ui.col_code') },
-    { key: 'student', label: t('wallet_ui.col_student') },
-    { key: 'balance', label: t('wallet_ui.col_balance') },
-    { key: 'dailyLimit', label: t('wallet_ui.col_daily') },
-    { key: 'weeklyLimit', label: t('wallet_ui.col_weekly') },
-    { key: 'perTxLimit', label: t('wallet_ui.col_per_tx') },
-    { key: 'status', label: t('wallet_ui.col_status') },
-    { key: 'createdAt', label: t('wallet_ui.col_created') },
-  ], 'wallet-report');
-}
+// Standard export: built by the server from the report's own filters, and audit-logged.
+const authStore = useAuthStore();
+const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
+const { exporting, download } = useServerExport();
+const exportWallets = () => download('/reports/wallet/export', { search: searchQuery.value, status: filterStatus.value === 'all' ? '' : filterStatus.value }, 'wallets');
 </script>

@@ -1,17 +1,17 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader
-      :eyebrow="$t('nav.reports')"
       :title="$t('reports_detail.attendance_analytics')"
       :subtitle="report ? $t('attendance_report.period', { days: report.schoolDays, students: report.students }) : $t('reports_detail.attendance_subtitle')"
     >
-      <div class="inline-flex h-9 p-0.5 rounded border border-line bg-surface-2" role="group">
+      <div class="flex gap-6 mr-4" role="group">
         <button
           v-for="r in ranges"
           :key="r"
           type="button"
           :aria-pressed="range === r"
-          :class="['px-3 rounded-sm text-sm font-semibold transition-colors', range === r ? 'bg-surface text-primary-ink shadow-float' : 'text-ink-muted hover:text-ink']"
+          class="pb-2 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
+          :class="range === r ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
           @click="range = r"
         >
           {{ $t(`attendance_report.range_${r}`) }}
@@ -20,7 +20,7 @@
       <button type="button" class="btn-secondary" :disabled="loading" @click="load">
         {{ $t('common.refresh') }}
       </button>
-      <button type="button" class="btn-secondary" :disabled="!report" @click="exportAttendance">
+      <button v-if="canExport" type="button" class="btn-secondary" :disabled="exporting || !report"  @click="exportAttendance">
         {{ $t('common.export_excel') }}
       </button>
     </PageHeader>
@@ -31,39 +31,22 @@
     </div>
 
     <!-- ══ TABS NAVIGATION ══ -->
-    <div class="flex flex-wrap items-center gap-2 border-b border-line pb-2">
+    <div class="flex gap-6">
       <button
         type="button"
-        class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
-        :class="activeTab === 'overview' ? 'bg-primary text-white shadow-sm' : 'text-ink-muted hover:text-ink hover:bg-surface-2'"
+        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
+        :class="activeTab === 'overview' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'overview'"
       >
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-        <span>{{ $t('attendance_report.tab_overview') }}</span>
-        <span v-if="report && report.attendanceRate !== null" class="ml-1 px-1.5 py-0.5 text-xs rounded-md" :class="activeTab === 'overview' ? 'bg-white/20 text-white' : 'bg-surface-2 text-ink-muted'">
-          {{ f.percent(report.attendanceRate) }}
-        </span>
+        {{ $t('attendance_report.tab_overview') }}
       </button>
-
       <button
         type="button"
-        class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
-        :class="activeTab === 'absentees' ? 'bg-primary text-white shadow-sm' : 'text-ink-muted hover:text-ink hover:bg-surface-2'"
+        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
+        :class="activeTab === 'absentees' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'absentees'"
       >
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <span>{{ $t('attendance_report.tab_absentees') }}</span>
-        <span
-          v-if="report?.absentees"
-          class="ml-1 px-2 py-0.5 text-xs rounded-full font-bold"
-          :class="activeTab === 'absentees' ? 'bg-white/25 text-white' : (report.absentees.length > 0 ? 'bg-danger-soft text-danger' : 'bg-surface-2 text-ink-muted')"
-        >
-          {{ report.absentees.length }}
-        </span>
+        {{ $t('attendance_report.tab_absentees') }}
       </button>
     </div>
 
@@ -220,59 +203,38 @@
           </div>
         </div>
 
-        <!-- Filter & Search Controls -->
-        <section class="panel overflow-hidden">
-          <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-line">
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                :class="statusFilter === 'all' ? 'bg-primary text-white' : 'bg-surface-2 text-ink-muted hover:text-ink'"
-                @click="statusFilter = 'all'"
-              >
-                {{ $t('attendance_report.filter_all') }} ({{ report.absentees.length }})
-              </button>
-              <button
-                type="button"
-                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                :class="statusFilter === 'absent' ? 'bg-danger text-white' : 'bg-surface-2 text-ink-muted hover:text-ink'"
-                @click="statusFilter = 'absent'"
-              >
-                {{ $t('attendance_report.status.absent') }} ({{ absenteeStats.absentCount }})
-              </button>
-              <button
-                type="button"
-                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                :class="statusFilter === 'excused' ? 'bg-primary-soft text-primary-ink' : 'bg-surface-2 text-ink-muted hover:text-ink'"
-                @click="statusFilter = 'excused'"
-              >
-                {{ $t('attendance_report.status.excused') }} ({{ absenteeStats.excusedCount }})
-              </button>
-            </div>
-
-            <div class="relative w-full sm:w-72">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <!-- Filters -->
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative w-full sm:w-80">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              v-model="search"
+              type="text"
+              class="search-bar"
+              :placeholder="$t('reports_detail.search_student')"
+            >
+            <button
+              v-if="search"
+              type="button"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+              :aria-label="$t('common.clear_search')"
+              @click="search = ''"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
-              <input
-                v-model="search"
-                type="text"
-                class="search-bar"
-                :placeholder="$t('reports_detail.search_student')"
-              >
-              <button
-                v-if="search"
-                type="button"
-                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
-                @click="search = ''"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            </button>
           </div>
+          <select v-model="statusFilter" class="input-field w-full sm:w-48" :aria-label="$t('common.status')">
+            <option value="all">{{ $t('attendance_report.filter_all') }}</option>
+            <option value="absent">{{ $t('attendance_report.status.absent') }}</option>
+            <option value="excused">{{ $t('attendance_report.status.excused') }}</option>
+          </select>
+        </div>
 
+        <section class="panel overflow-hidden">
           <!-- Absentees Table -->
           <div class="overflow-x-auto">
             <table class="data-table w-full min-w-max">
@@ -339,12 +301,14 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
+import { useServerExport } from '../../../composables/useServerExport';
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import { useFormat } from '../../../composables/useFormat';
-import { useExport } from '../../../composables/useExport';
 import { getErrorMessage } from '../../../utils/errors';
 import {
   reportRepository,
@@ -355,7 +319,6 @@ definePageMeta({ layout: 'admin' });
 
 const { t, locale } = useI18n();
 const f = useFormat();
-const { exportExcel } = useExport();
 useHead({ title: () => t('reports_detail.attendance_analytics') });
 
 const activeTab = ref<'overview' | 'absentees'>('overview');
@@ -454,27 +417,11 @@ watch([search, statusFilter, pageSize], () => {
   currentPage.value = 1;
 });
 
-function exportAttendance() {
-  if (!report.value) return;
-  const data = report.value.absentees.map((a) => ({
-    studentName: studentName(a),
-    studentCode: a.studentCode,
-    className: className(a) ?? '',
-    date: a.date,
-    status: a.status,
-    reason: a.leaveReason ?? '',
-    notification: a.notification ?? 'none',
-  }));
-  exportExcel(data, [
-    { key: 'studentName', label: t('attendance_report.col_student') },
-    { key: 'studentCode', label: t('students.student_code') },
-    { key: 'className', label: t('attendance_report.col_class') },
-    { key: 'date', label: t('attendance_report.col_date') },
-    { key: 'status', label: t('attendance_report.col_status') },
-    { key: 'reason', label: t('attendance_report.col_reason') },
-    { key: 'notification', label: t('attendance_report.col_notice') },
-  ], `attendance-report-${range.value}`);
-}
+// Standard export: built by the server from the report's own filters, and audit-logged.
+const authStore = useAuthStore();
+const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
+const { exporting, download } = useServerExport();
+const exportAttendance = () => download('/reports/attendance/export', { range: range.value }, `attendance-${range.value}`);
 
 const key = (a: AbsenceEntry) => `${a.studentId}:${a.date}`;
 const notifying = reactive(new Set<string>());

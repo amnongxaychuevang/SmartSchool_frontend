@@ -84,7 +84,10 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
         </div>
         <div v-if="genderDropdownOpen" class="fixed inset-0 z-40" @click="genderDropdownOpen = false"/>
 
-        <NuxtLink to="/admin/students/create" class="ml-auto h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]">
+        <button v-if="canExport" type="button" class="btn-secondary ml-auto" :disabled="exporting || !adminStore.studentsTotal" @click="exportList">
+          {{ exporting ? $t('common.loading') : $t('common.export_excel') }}
+        </button>
+        <NuxtLink to="/admin/students/create" class="h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
@@ -230,6 +233,9 @@ import { useAdminStore, STUDENTS_PER_PAGE } from '../../../application/stores/ad
 import { useDialog } from '../../../composables/useDialog';
 import { getErrorMessage } from '../../../utils/errors';
 import type { Student } from '../../../domain/models/Student';
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
+import { useServerExport } from '../../../composables/useServerExport';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Students — Smart School Admin' });
@@ -287,6 +293,12 @@ const studentAddress = (student: Student) => {
   const parts = [student.village, place(student.district), place(student.province)].filter(Boolean);
   return parts.length > 0 ? parts.join(', ') : '—';
 };
+
+// Standard export: the server builds the file from the same filters (and audit-logs it).
+const authStore = useAuthStore();
+const canExport = computed(() => hasPermission(authStore.permissions, 'students.export'));
+const { exporting, download } = useServerExport();
+const exportList = () => download('/students/export', { search: searchInput.value, status: statusFilter.value, gender: genderFilter.value }, 'students');
 
 const pageSize = ref(STUDENTS_PER_PAGE);
 const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / pageSize.value));

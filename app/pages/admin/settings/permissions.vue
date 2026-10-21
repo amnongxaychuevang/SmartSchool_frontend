@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
     <PageHeader
-      :eyebrow="$t('nav.settings')"
       :title="$t('settings.permissions_title')"
       :subtitle="$t('settings.permissions_subtitle')"
     >

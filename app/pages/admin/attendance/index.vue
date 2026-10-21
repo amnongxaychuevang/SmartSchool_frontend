@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader
-      :eyebrow="$t('nav.attendance')"
       :title="$t('attendance_simulator.title')"
       :subtitle="$t('attendance_simulator.subtitle')"
     />

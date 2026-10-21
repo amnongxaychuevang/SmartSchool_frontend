@@ -63,6 +63,7 @@ const emit = defineEmits<{
 }>();
 
 const { t, locale } = useI18n();
+const dialog = useDialog();
 
 const isOpen = computed({
   get: () => props.open,
@@ -130,7 +131,7 @@ const save = async () => {
 };
 
 const remove = async () => {
-  if (!scheduleId.value || !confirm(t('schedule_admin.delete_slot_confirm'))) return;
+  if (!scheduleId.value || !(await dialog.confirm({ message: t('schedule_admin.delete_slot_confirm'), tone: 'danger', confirmLabel: t('common.delete') }))) return;
   try {
     await academicsRepository.deleteSchedule(scheduleId.value);
     isOpen.value = false;

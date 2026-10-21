@@ -25,7 +25,7 @@
               ref="uidInput"
               v-model.trim="cardUid"
               type="text"
-              class="input-field flex-1 font-mono"
+              class="input-field flex-1"
               :placeholder="$t('pos.scan_placeholder')"
               :disabled="!shopId"
               @keydown.enter="lookupCard"

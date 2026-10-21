@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader
-      :eyebrow="$t('transport.eyebrow')"
       :title="$t('transport.title')"
       :subtitle="$t('transport.subtitle')"
     >
@@ -67,7 +66,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+    <div class="flex gap-6">
       <button
         type="button"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
@@ -158,7 +157,7 @@
       <div>
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-bold text-base text-slate-800 dark:text-white">{{ $t('transport.fleet_title') }}</h3>
-          <button type="button" class="btn-primary text-xs" @click="openVehicleModal">
+          <button type="button" class="btn-primary text-xs" @click="openVehicleModal()">
             + {{ $t('transport.add_vehicle') }}
           </button>
         </div>
@@ -183,6 +182,9 @@
               </div>
             </div>
             <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="openVehicleModal(v)">
+                {{ $t('common.edit') }}
+              </button>
               <button type="button" class="btn-danger text-xs px-2.5 py-1" @click="deleteVehicle(v.vehicleId)">
                 {{ $t('common.delete') }}
               </button>
@@ -195,13 +197,13 @@
       <div class="border-t border-slate-200 dark:border-slate-800 pt-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-bold text-base text-slate-800 dark:text-white">{{ $t('transport.routes_title') }}</h3>
-          <button type="button" class="btn-secondary text-xs" @click="openRouteModal">
+          <button type="button" class="btn-secondary text-xs" @click="openRouteModal()">
             + {{ $t('transport.add_route') }}
           </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="r in routes" :key="r.routeId" class="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm">
+          <div v-for="r in routes" :key="r.routeId" class="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm flex flex-col">
             <h4 class="font-bold text-base text-slate-800 dark:text-white">
               {{ locale === 'lo' ? r.routeNameLo : (r.routeNameEn || r.routeNameLo) }}
             </h4>
@@ -217,6 +219,14 @@
                 <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
                 <span>{{ locale === 'lo' ? stop.nameLo : (stop.nameEn || stop.nameLo) }} ({{ stop.time }})</span>
               </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-auto pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="openRouteModal(r)">
+                {{ $t('common.edit') }}
+              </button>
+              <button type="button" class="btn-danger text-xs px-2.5 py-1" @click="deleteRoute(r)">
+                {{ $t('common.delete') }}
+              </button>
             </div>
           </div>
         </div>
@@ -257,7 +267,7 @@
                 <p class="text-xs text-ink-muted font-mono">{{ bs.student.studentCode }}</p>
               </td>
               <td class="text-xs">
-                {{ (locale === 'lo' ? bs.student.classStudents[0]?.class?.nameLo : bs.student.classStudents[0]?.class?.nameEn) || '—' }}
+                {{ (locale === 'lo' ? bs.student.classStudents[0]?.class?.classNameLo : bs.student.classStudents[0]?.class?.classNameEn) || '—' }}
               </td>
               <td class="text-xs font-mono text-teal-500 font-bold">
                 {{ bs.student.cards[0]?.cardUid || $t('transport.no_card') }}
@@ -353,7 +363,7 @@
           <input
             v-model.trim="scanForm.cardUid"
             type="text"
-            class="input-field font-mono"
+            class="input-field"
             required
             :placeholder="$t('transport.card_uid_ph')"
           />
@@ -395,11 +405,11 @@
     </AppModal>
 
     <!-- Modal: Add Vehicle -->
-    <AppModal :open="vehicleModalOpen" :title="$t('transport.modal_add_vehicle')" @update:open="vehicleModalOpen = $event">
+    <AppModal :open="vehicleModalOpen" :title="editingVehicleId ? $t('transport.modal_edit_vehicle') : $t('transport.modal_add_vehicle')" @update:open="vehicleModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitVehicle">
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.plate_number') }} *</label>
-          <input v-model.trim="vehicleForm.plateNumber" type="text" class="input-field font-mono" required :placeholder="$t('transport.plate_ph')" />
+          <input v-model.trim="vehicleForm.plateNumber" type="text" class="input-field" required :placeholder="$t('transport.plate_ph')" />
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.model') }}</label>
@@ -424,7 +434,7 @@
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.driver_phone') }} *</label>
-          <input v-model.trim="vehicleForm.driverPhone" type="text" class="input-field font-mono" required :placeholder="$t('transport.driver_phone_ph')" />
+          <input v-model.trim="vehicleForm.driverPhone" type="text" class="input-field" required :placeholder="$t('transport.driver_phone_ph')" />
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <button type="button" class="btn-secondary" @click="vehicleModalOpen = false">{{ $t('common.cancel') }}</button>
@@ -434,7 +444,7 @@
     </AppModal>
 
     <!-- Modal: Add Route -->
-    <AppModal :open="routeModalOpen" :title="$t('transport.modal_add_route')" @update:open="routeModalOpen = $event">
+    <AppModal :open="routeModalOpen" :title="editingRouteId ? $t('transport.modal_edit_route') : $t('transport.modal_add_route')" @update:open="routeModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitRoute">
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.route_name_lo') }} *</label>
@@ -509,6 +519,7 @@ import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 definePageMeta({ layout: 'admin' });
 
 const { locale, t } = useI18n();
+const dialog = useDialog();
 const apiClient = useApiClient();
 
 const activeTab = ref<'manifest' | 'vehicles' | 'students' | 'logs'>('manifest');
@@ -669,52 +680,79 @@ const submitCardScan = async () => {
   }
 };
 
-const openVehicleModal = () => {
-  vehicleForm.plateNumber = '';
-  vehicleForm.model = '';
-  vehicleForm.capacity = 15;
-  vehicleForm.driverName = '';
-  vehicleForm.driverPhone = '';
-  vehicleForm.status = 'active';
+// The same modal adds a vehicle or, given one, edits it.
+const editingVehicleId = ref<number | null>(null);
+const openVehicleModal = (v?: any) => {
+  editingVehicleId.value = v?.vehicleId ?? null;
+  vehicleForm.plateNumber = v?.plateNumber ?? '';
+  vehicleForm.model = v?.model ?? '';
+  vehicleForm.capacity = v?.capacity ?? 15;
+  vehicleForm.driverName = v?.driverName ?? '';
+  vehicleForm.driverPhone = v?.driverPhone ?? '';
+  vehicleForm.status = v?.status ?? 'active';
   vehicleModalOpen.value = true;
 };
 
 const submitVehicle = async () => {
   try {
-    await apiClient(API_ENDPOINTS.bus.vehicles, { method: 'POST', body: vehicleForm });
+    if (editingVehicleId.value) {
+      await apiClient(`${API_ENDPOINTS.bus.vehicles}/${editingVehicleId.value}`, { method: 'PUT', body: vehicleForm });
+    } else {
+      await apiClient(API_ENDPOINTS.bus.vehicles, { method: 'POST', body: vehicleForm });
+    }
     vehicleModalOpen.value = false;
-    await fetchVehicles();
-  } catch (err: any) {
-    alert(err?.data?.message || 'Error creating vehicle');
-  }
-};
-
-const deleteVehicle = async (id: number) => {
-  if (!confirm(t('transport.confirm_delete_vehicle'))) return;
-  try {
-    await apiClient(`${API_ENDPOINTS.bus.vehicles}/${id}`, { method: 'DELETE' });
-    await fetchVehicles();
+    await Promise.all([fetchVehicles(), fetchRoutes()]);
   } catch (err) {
-    console.error('Error deleting vehicle:', err);
+    dialog.error(getErrorMessage(err));
   }
 };
 
-const openRouteModal = () => {
-  routeForm.routeNameLo = '';
-  routeForm.routeNameEn = '';
-  routeForm.vehicleId = vehicles.value[0]?.vehicleId;
-  routeForm.description = '';
+const deleteVehicle = (id: number) => {
+  dialog.confirm({
+    message: t('transport.confirm_delete_vehicle'),
+    tone: 'danger',
+    confirmLabel: t('common.delete'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.bus.vehicles}/${id}`, { method: 'DELETE' });
+      await fetchVehicles();
+    },
+  });
+};
+
+const editingRouteId = ref<number | null>(null);
+const openRouteModal = (r?: any) => {
+  editingRouteId.value = r?.routeId ?? null;
+  routeForm.routeNameLo = r?.routeNameLo ?? '';
+  routeForm.routeNameEn = r?.routeNameEn ?? '';
+  routeForm.vehicleId = r ? (r.vehicleId ?? undefined) : vehicles.value[0]?.vehicleId;
+  routeForm.description = r?.description ?? '';
   routeModalOpen.value = true;
 };
 
 const submitRoute = async () => {
   try {
-    await apiClient(API_ENDPOINTS.bus.routes, { method: 'POST', body: routeForm });
+    if (editingRouteId.value) {
+      await apiClient(`${API_ENDPOINTS.bus.routes}/${editingRouteId.value}`, { method: 'PUT', body: routeForm });
+    } else {
+      await apiClient(API_ENDPOINTS.bus.routes, { method: 'POST', body: routeForm });
+    }
     routeModalOpen.value = false;
     await fetchRoutes();
   } catch (err) {
-    console.error('Error creating route:', err);
+    dialog.error(getErrorMessage(err));
   }
+};
+
+const deleteRoute = (r: any) => {
+  dialog.confirm({
+    message: t('transport.confirm_delete_route', { name: locale.value === 'lo' ? r.routeNameLo : r.routeNameEn }),
+    tone: 'danger',
+    confirmLabel: t('common.delete'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.bus.routes}/${r.routeId}`, { method: 'DELETE' });
+      await Promise.all([fetchRoutes(), fetchBusStudents()]);
+    },
+  });
 };
 
 const openAssignModal = () => {
@@ -733,19 +771,20 @@ const submitAssign = async () => {
     await fetchBusStudents();
     await fetchManifest();
   } catch (err: any) {
-    alert(err?.data?.message || 'Error assigning student');
+    dialog.error(getErrorMessage(err));
   }
 };
 
-const removeBusStudent = async (studentId: number) => {
-  if (!confirm(t('transport.confirm_remove_student'))) return;
-  try {
-    await apiClient(`${API_ENDPOINTS.bus.students}/${studentId}`, { method: 'DELETE' });
-    await fetchBusStudents();
-    await fetchManifest();
-  } catch (err) {
-    console.error('Error removing student:', err);
-  }
+const removeBusStudent = (studentId: number) => {
+  dialog.confirm({
+    message: t('transport.confirm_remove_student'),
+    tone: 'danger',
+    confirmLabel: t('common.delete'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.bus.students}/${studentId}`, { method: 'DELETE' });
+      await Promise.all([fetchBusStudents(), fetchManifest()]);
+    },
+  });
 };
 
 onMounted(() => {

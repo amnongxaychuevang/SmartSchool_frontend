@@ -1,203 +1,165 @@
 <template>
-  <div class="flex flex-col gap-6 page-enter">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <p class="text-xs font-semibold text-rose-400 uppercase tracking-widest">{{ $t('nav.reports') }}</p>
-        <h2 class="text-2xl font-bold text-white">{{ locale === 'lo' ? 'ບົດລາຍງານສະຖິຕິນັກຮຽນ' : 'Student Demographics Report' }}</h2>
-        <p class="text-sm text-slate-400">{{ locale === 'lo' ? 'ພາບລວມຂໍ້ມູນສະຖິຕິ ແລະ ປະຊາກອນສາດຂອງນັກຮຽນ' : 'Overview of student statistics and demographics' }}</p>
-      </div>
+  <div class="flex flex-col gap-6">
+    <PageHeader :title="$t('students_report.title')" :subtitle="$t('students_report.subtitle')">
+      <button type="button" class="btn-secondary" :disabled="loading" @click="load">{{ $t('common.refresh') }}</button>
+      <button v-if="canExport" type="button" class="btn-secondary" :disabled="exporting || !stats?.total" @click="exportStudents">
+        {{ exporting ? $t('common.loading') : $t('common.export_excel') }}
+      </button>
+    </PageHeader>
 
-      <!-- Actions -->
-      <div class="flex items-center gap-3">
-        <button class="btn-secondary" @click="refreshData">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          {{ $t('common.refresh') }}
-        </button>
-        <button class="btn-secondary" @click="exportStudents">
-          {{ $t('common.export_excel') }}
-        </button>
-      </div>
-    </div>
+    <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
+    <LoadingSpinner v-if="loading && !stats" />
 
-    <!-- Overview Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ນັກຮຽນທັງໝົດ' : 'Total Students' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ totalStudents }}</span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-blue-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
+    <template v-else-if="stats">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div v-for="c in cards" :key="c.key" class="stat-card py-3 gap-1">
+          <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ c.label }}</p>
+          <p class="text-xl font-bold tnum">
+            {{ f.number(c.value) }}
+            <span v-if="c.share !== undefined" class="text-sm font-normal text-ink-muted">({{ c.share }}%)</span>
+          </p>
         </div>
       </div>
 
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ກຳລັງຮຽນຢູ່' : 'Active Status' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ activeStudents }}</span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-emerald-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ນັກຮຽນຊາຍ' : 'Male Students' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ maleStudents }} <span class="text-sm text-slate-500 font-normal">({{ Math.round((maleStudents/totalStudents)*100) || 0 }}%)</span></span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-sky-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="10" cy="14" r="5"/>
-            <line x1="13.5" y1="10.5" x2="19" y2="5"/>
-            <polyline points="14 5 19 5 19 10"/>
-          </svg>
-        </div>
-      </div>
-
-      <div class="glass-panel p-5 border border-slate-800/80 flex items-center justify-between gap-4">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ນັກຮຽນຍິງ' : 'Female Students' }}
-          </span>
-          <span class="text-2xl font-bold text-white font-mono">{{ femaleStudents }} <span class="text-sm text-slate-500 font-normal">({{ Math.round((femaleStudents/totalStudents)*100) || 0 }}%)</span></span>
-        </div>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-800/60 text-pink-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="10" r="5"/>
-            <line x1="12" y1="15" x2="12" y2="21"/>
-            <line x1="9" y1="18" x2="15" y2="18"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- Distribution Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      
-      <!-- Status Distribution -->
-      <div class="glass-panel p-5 border border-slate-800/80 flex flex-col gap-4">
-        <div>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ສະຖານະນັກຮຽນ' : 'Status Distribution' }}
-          </h3>
-        </div>
-        <div class="flex flex-col gap-4 mt-2">
-          <div class="flex flex-col gap-1">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-semibold text-emerald-400">{{ locale === 'lo' ? 'ກຳລັງຮຽນ' : 'Active' }}</span>
-              <span class="font-mono text-slate-300">{{ activeStudents }}</span>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section v-for="group in distributions" :key="group.key" class="panel p-5 flex flex-col gap-4">
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wider">{{ group.title }}</h3>
+            <p v-if="group.hint" class="text-xs text-ink-muted mt-0.5">{{ group.hint }}</p>
+          </div>
+          <div v-for="row in group.rows" :key="row.key" class="flex flex-col gap-1.5">
+            <div class="flex justify-between gap-3 text-sm">
+              <span class="font-semibold">{{ row.label }}</span>
+              <span class="tnum text-ink-muted">{{ f.number(row.value) }} · {{ pct(row.value, group.total) }}%</span>
             </div>
-            <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div class="h-full bg-emerald-400 rounded-full" :style="{ width: `${(activeStudents/totalStudents)*100 || 0}%` }"/>
+            <div class="h-2 rounded-full bg-surface-2 overflow-hidden">
+              <div class="h-full rounded-full" :class="row.bar" :style="{ width: `${pct(row.value, group.total)}%` }" />
             </div>
           </div>
-          
-          <div class="flex flex-col gap-1">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-semibold text-indigo-400">{{ locale === 'lo' ? 'ຮຽນຈົບແລ້ວ' : 'Graduated' }}</span>
-              <span class="font-mono text-slate-300">{{ graduatedStudents }}</span>
-            </div>
-            <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div class="h-full bg-indigo-400 rounded-full" :style="{ width: `${(graduatedStudents/totalStudents)*100 || 0}%` }"/>
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-semibold text-rose-400">{{ locale === 'lo' ? 'ຍ້າຍໂຮງຮຽນ' : 'Transferred' }}</span>
-              <span class="font-mono text-slate-300">{{ transferredStudents }}</span>
-            </div>
-            <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div class="h-full bg-rose-400 rounded-full" :style="{ width: `${(transferredStudents/totalStudents)*100 || 0}%` }"/>
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
 
-      <!-- Gender Distribution Bar -->
-      <div class="glass-panel p-5 border border-slate-800/80 flex flex-col gap-4">
-        <div>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">
-            {{ locale === 'lo' ? 'ອັດຕາສ່ວນເພດ' : 'Gender Ratio' }}
-          </h3>
+      <section class="panel overflow-hidden">
+        <h3 class="px-5 py-4 text-sm font-bold uppercase tracking-wider border-b border-line">{{ $t('students_report.by_class') }}</h3>
+        <p v-if="!stats.classes.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('students_report.no_classes') }}</p>
+        <div v-else class="overflow-x-auto">
+          <table class="data-table w-full min-w-max">
+            <thead>
+              <tr>
+                <th class="w-12 text-center">#</th>
+                <th>{{ $t('common.class') }}</th>
+                <th>{{ $t('students_report.grade_level') }}</th>
+                <th>{{ $t('students_report.academic_year') }}</th>
+                <th class="text-right">{{ $t('students_report.students') }}</th>
+                <th class="text-right">{{ $t('gender.male') }}</th>
+                <th class="text-right">{{ $t('gender.female') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(c, i) in stats.classes" :key="c.classId">
+                <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
+                <td class="font-semibold">{{ pick(c.classNameLo, c.classNameEn) }}</td>
+                <td class="text-ink-muted">{{ pick(c.gradeLevelLo, c.gradeLevelEn) || '—' }}</td>
+                <td class="tnum text-ink-muted">{{ c.academicYear }}</td>
+                <td class="text-right tnum font-semibold">{{ c.students }}</td>
+                <td class="text-right tnum">{{ c.male }}</td>
+                <td class="text-right tnum">{{ c.female }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        
-        <div class="flex items-center justify-center py-6">
-          <div class="w-full flex h-8 rounded-xl overflow-hidden shadow-lg border border-slate-700/50">
-            <div
-class="bg-sky-500 h-full flex items-center justify-center text-[10px] font-bold text-white transition-all" 
-                 :style="{ width: `${(maleStudents/totalStudents)*100 || 50}%` }">
-              {{ maleStudents > 0 ? (locale === 'lo' ? 'ຊາຍ' : 'Male') : '' }}
-            </div>
-            <div
-class="bg-pink-500 h-full flex items-center justify-center text-[10px] font-bold text-white transition-all" 
-                 :style="{ width: `${(femaleStudents/totalStudents)*100 || 50}%` }">
-              {{ femaleStudents > 0 ? (locale === 'lo' ? 'ຍິງ' : 'Female') : '' }}
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex justify-between text-xs mt-auto">
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-sky-500"/>
-            <span class="text-slate-400">{{ maleStudents }} {{ locale === 'lo' ? 'ຄົນ' : 'Students' }}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-pink-500"/>
-            <span class="text-slate-400">{{ femaleStudents }} {{ locale === 'lo' ? 'ຄົນ' : 'Students' }}</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
+      </section>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { useAdminStore } from '~/application/stores/admin';
-import { useExport } from '../../../composables/useExport';
+import { ref, computed, onMounted } from 'vue';
+import { useApiClient } from '../../../infrastructure/api/apiClient';
+import type { ApiResponse } from '../../../infrastructure/api/types';
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
+import { useServerExport } from '../../../composables/useServerExport';
+
+interface StudentStats {
+  total: number;
+  status: { active: number; inactive: number; graduated: number; transferred: number };
+  gender: { male: number; female: number; other: number; unknown: number };
+  classes: {
+    classId: number; classNameEn: string; classNameLo: string; gradeLevelEn: string | null; gradeLevelLo: string | null;
+    academicYear: string; students: number; male: number; female: number;
+  }[];
+}
 
 definePageMeta({ layout: 'admin' });
-
-const { locale, t } = useI18n();
+const { t, locale } = useI18n();
+const f = useFormat();
+const api = useApiClient();
 useHead({ title: () => t('page_titles.students_report') });
-const adminStore = useAdminStore();
-const { exportExcel } = useExport();
 
-const refreshData = async () => {
-  // Fetch up to 1000 students to get a good demographic overview
-  // Real world: backend should have a dedicated /analytics/students endpoint
-  await adminStore.fetchStudents({ page: 1 }); 
-};
+const stats = ref<StudentStats | null>(null);
+const loading = ref(true);
+const error = ref('');
 
-onMounted(() => {
-  refreshData();
+const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) || '';
+const pct = (part: number, whole: number) => (whole ? Math.round((part / whole) * 1000) / 10 : 0);
+
+// Gender counts cover active students; the status counts cover everyone on record.
+const activeTotal = computed(() => {
+  const g = stats.value?.gender;
+  return g ? g.male + g.female + g.other + g.unknown : 0;
 });
 
-// Computed properties for analytics
-const studentsList = computed(() => adminStore.students || []);
+const cards = computed(() => {
+  const s = stats.value!;
+  return [
+    { key: 'total', label: t('students_report.total'), value: s.total },
+    { key: 'active', label: t('students_report.active'), value: s.status.active, share: pct(s.status.active, s.total) },
+    { key: 'male', label: t('students_report.male'), value: s.gender.male, share: pct(s.gender.male, activeTotal.value) },
+    { key: 'female', label: t('students_report.female'), value: s.gender.female, share: pct(s.gender.female, activeTotal.value) },
+  ];
+});
 
-const totalStudents = computed(() => adminStore.studentsTotal || studentsList.value.length);
+const distributions = computed(() => {
+  const s = stats.value!;
+  const gender = [
+    { key: 'male', label: t('gender.male'), value: s.gender.male, bar: 'bg-primary' },
+    { key: 'female', label: t('gender.female'), value: s.gender.female, bar: 'bg-primary/60' },
+  ];
+  if (s.gender.other) gender.push({ key: 'other', label: t('gender.other'), value: s.gender.other, bar: 'bg-primary/35' });
+  if (s.gender.unknown) gender.push({ key: 'unknown', label: t('students_report.gender_unknown'), value: s.gender.unknown, bar: 'bg-line-strong' });
+  return [
+    {
+      key: 'status', title: t('students_report.status_distribution'), hint: '', total: s.total,
+      rows: [
+        { key: 'active', label: t('students_report.status_active'), value: s.status.active, bar: 'bg-success' },
+        { key: 'graduated', label: t('students_report.status_graduated'), value: s.status.graduated, bar: 'bg-primary' },
+        { key: 'transferred', label: t('students_report.status_transferred'), value: s.status.transferred, bar: 'bg-warning' },
+        { key: 'inactive', label: t('students_report.status_inactive'), value: s.status.inactive, bar: 'bg-line-strong' },
+      ],
+    },
+    { key: 'gender', title: t('students_report.gender_distribution'), hint: t('students_report.gender_hint'), total: activeTotal.value, rows: gender },
+  ];
+});
 
-const activeStudents = computed(() => studentsList.value.filter(s => s.status === 'active').length);
-const graduatedStudents = computed(() => studentsList.value.filter(s => s.status === 'graduated').length);
-const transferredStudents = computed(() => studentsList.value.filter(s => s.status === 'transferred').length);
+const load = async () => {
+  loading.value = true;
+  error.value = '';
+  try {
+    const res = await api<ApiResponse<StudentStats>>('/reports/students');
+    stats.value = res.data;
+  } catch (err) {
+    error.value = getErrorMessage(err);
+  } finally {
+    loading.value = false;
+  }
+};
 
-const maleStudents = computed(() => studentsList.value.filter(s => s.gender === 'male').length);
-const femaleStudents = computed(() => studentsList.value.filter(s => s.gender === 'female').length);
+// Standard export: the full student list, built and audit-logged by the server.
+const authStore = useAuthStore();
+const canExport = computed(() => hasPermission(authStore.permissions, 'students.export'));
+const { exporting, download } = useServerExport();
+const exportStudents = () => download('/students/export', {}, 'students');
+
+onMounted(load);
 </script>

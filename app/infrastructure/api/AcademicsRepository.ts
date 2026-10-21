@@ -86,13 +86,14 @@ export const academicsRepository = {
   },
 
   // Grades
-  async getGrades(params: { classId?: number; subjectId?: number; studentId?: number; academicYear?: string; search?: string; gradeMonth?: string; page?: number; limit?: number } = {}) {
+  async getGrades(params: { classId?: number; subjectId?: number; studentId?: number; termId?: number; academicYear?: string; search?: string; gradeMonth?: string; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();
     if (params.search) query.set('search', params.search);
     if (params.gradeMonth) query.set('gradeMonth', params.gradeMonth);
     if (params.classId) query.set('classId', String(params.classId));
     if (params.subjectId) query.set('subjectId', String(params.subjectId));
     if (params.studentId) query.set('studentId', String(params.studentId));
+    if (params.termId) query.set('termId', String(params.termId));
     if (params.academicYear) query.set('academicYear', params.academicYear);
     if (params.page) query.set('page', String(params.page));
     if (params.limit) query.set('limit', String(params.limit));

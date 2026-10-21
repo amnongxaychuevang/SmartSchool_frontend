@@ -130,7 +130,7 @@ const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => adminStore.fetchStudents({ search: searchInput.value, page: 1 }), 400);
 };
-const clearSearch = () => { searchInput.value = ''; adminStore.fetchStudents({ page: 1 }); };
+const clearSearch = () => { searchInput.value = ''; adminStore.fetchStudents({ search: '', page: 1 }); };
 const changePage = (page: number) => adminStore.fetchStudents({ search: searchInput.value, page });
 
 type MoneyKey = 'dailyMax' | 'weeklyMax' | 'perTransactionMax' | 'alertThreshold';

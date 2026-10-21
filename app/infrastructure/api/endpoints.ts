@@ -153,8 +153,4 @@ export const API_ENDPOINTS = {
     atRiskRun: '/analytics/at-risk/run',
     interventions: '/analytics/at-risk/interventions',
   },
-  schools: {
-    overview: '/schools/overview',
-    list: '/schools',
-  },
 } as const;

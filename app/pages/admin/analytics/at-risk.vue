@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader
-      :eyebrow="$t('at_risk.eyebrow')"
       :title="$t('at_risk.title')"
       :subtitle="$t('at_risk.subtitle')"
     >
@@ -135,7 +134,7 @@
               </td>
               <td>
                 <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  {{ (locale === 'lo' ? item.student.classStudents[0]?.class?.nameLo : item.student.classStudents[0]?.class?.nameEn) || '—' }}
+                  {{ (locale === 'lo' ? item.student.classStudents[0]?.class?.classNameLo : item.student.classStudents[0]?.class?.classNameEn) || '—' }}
                 </p>
                 <p class="text-[11px] text-ink-muted">
                   {{ $t('classes.teacher') }}: {{ (locale === 'lo' ? item.student.classStudents[0]?.class?.homeroomTeacher?.fullNameLo : item.student.classStudents[0]?.class?.homeroomTeacher?.fullNameEn) || $t('at_risk.no_teacher') }}
@@ -328,6 +327,7 @@ import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 definePageMeta({ layout: 'admin' });
 
 const { locale, t } = useI18n();
+const dialog = useDialog();
 const apiClient = useApiClient();
 
 const overview = ref({
@@ -416,11 +416,11 @@ const runAssessment = async () => {
   try {
     const res = await apiClient<any>(API_ENDPOINTS.analytics.atRiskRun, { method: 'POST', body: {} });
     const count = res?.data?.count ?? res?.data?.totalAssessed ?? res?.count ?? res?.totalAssessed ?? 0;
-    alert(t('at_risk.assessment_done', { count }));
+    dialog.success(t('at_risk.assessment_done', { count }));
     await fetchOverview();
     await fetchAssessments();
   } catch (err: any) {
-    alert(err?.data?.message || err?.message || 'Error running assessment');
+    dialog.error(getErrorMessage(err));
   } finally {
     runningAssessment.value = false;
   }
@@ -458,7 +458,7 @@ const submitIntervention = async () => {
       await openDetail(selectedStudentDetail.value.student.studentId);
     }
   } catch (err: any) {
-    alert(err?.data?.message || 'Error creating intervention');
+    dialog.error(getErrorMessage(err));
   } finally {
     submittingIntervention.value = false;
   }

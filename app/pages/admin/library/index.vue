@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader
-      :eyebrow="$t('library.eyebrow')"
       :title="$t('library.title')"
       :subtitle="$t('library.subtitle')"
     >
@@ -67,7 +66,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+    <div class="flex gap-6">
       <button
         type="button"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
@@ -114,7 +113,7 @@
             <input
               v-model.trim="borrowForm.cardUid"
               type="text"
-              class="input-field font-mono"
+              class="input-field"
               :placeholder="$t('library.card_ph')"
             />
           </div>
@@ -185,9 +184,14 @@
           :placeholder="$t('library.search_books_ph')"
           @input="fetchBooks"
         />
-        <button type="button" class="btn-primary text-xs" @click="openBookModal">
-          + {{ $t('library.add_book') }}
-        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" class="btn-secondary text-xs" @click="categoryModalOpen = true">
+            {{ $t('library.manage_categories') }}
+          </button>
+          <button type="button" class="btn-primary text-xs" @click="openBookModal()">
+            + {{ $t('library.add_book') }}
+          </button>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
@@ -232,7 +236,10 @@
                   {{ b.availableCopies }} {{ $t('library.copies_unit') }}
                 </span>
               </td>
-              <td class="text-right">
+              <td class="text-right whitespace-nowrap">
+                <button type="button" class="btn-secondary text-xs px-2.5 py-1 mr-2" @click="openBookModal(b)">
+                  {{ $t('common.edit') }}
+                </button>
                 <button type="button" class="btn-danger text-xs px-2.5 py-1" @click="deleteBook(b.bookId)">
                   {{ $t('common.delete') }}
                 </button>
@@ -289,6 +296,7 @@
               <td class="text-xs text-ink-muted">{{ formatDate(l.borrowedDate) }}</td>
               <td class="text-xs font-semibold" :class="l.isOverdue ? 'text-rose-500 font-bold' : 'text-slate-700 dark:text-slate-300'">
                 {{ formatDate(l.dueDate) }}
+                <span v-if="l.renewCount" class="block text-[11px] font-normal text-ink-subtle">{{ $t('library.renewed_times', { count: l.renewCount }) }}</span>
               </td>
               <td>
                 <span
@@ -298,9 +306,17 @@
                   {{ loanStatusLabel(l) }}
                 </span>
               </td>
-              <td class="text-right">
+              <td class="text-right whitespace-nowrap">
                 <button
-                  v-if="l.status === 'borrowed'"
+                  v-if="!l.returnedDate && l.status !== 'lost' && (l.renewCount ?? 0) < MAX_RENEWALS"
+                  type="button"
+                  class="btn-secondary text-xs px-3 py-1 mr-2"
+                  @click="renewLoan(l)"
+                >
+                  {{ $t('library.renew') }}
+                </button>
+                <button
+                  v-if="!l.returnedDate && l.status !== 'lost'"
                   type="button"
                   class="btn-primary text-xs px-3 py-1"
                   @click="returnBook(l.loanId)"
@@ -316,11 +332,42 @@
     </section>
 
     <!-- Modal: Add Book -->
-    <AppModal :open="bookModalOpen" :title="$t('library.modal_add_book')" @update:open="bookModalOpen = $event">
+    <!-- Modal: Manage categories -->
+    <AppModal :open="categoryModalOpen" :title="$t('library.manage_categories')" @update:open="categoryModalOpen = $event">
+      <div class="flex flex-col gap-4">
+        <ul v-if="categories.length" class="flex flex-col divide-y divide-line border border-line rounded-lg">
+          <li v-for="c in categories" :key="c.categoryId" class="flex items-center gap-3 px-3 py-2">
+            <template v-if="editingCategoryId === c.categoryId">
+              <input v-model.trim="categoryEdit.nameLo" type="text" class="input-field flex-1" :aria-label="$t('library.category_name_lo')" />
+              <input v-model.trim="categoryEdit.nameEn" type="text" class="input-field flex-1" :aria-label="$t('library.category_name_en')" />
+              <button type="button" class="btn-primary text-xs px-2.5 py-1" :disabled="!categoryEdit.nameLo || !categoryEdit.nameEn" @click="saveCategory(c.categoryId)">{{ $t('common.save') }}</button>
+              <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="editingCategoryId = null">{{ $t('common.cancel') }}</button>
+            </template>
+            <template v-else>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold truncate">{{ locale === 'lo' ? c.nameLo : c.nameEn }}</p>
+                <p class="text-xs text-ink-muted truncate">{{ locale === 'lo' ? c.nameEn : c.nameLo }} · {{ $t('library.category_books', { count: c._count?.books ?? 0 }) }}</p>
+              </div>
+              <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="startEditCategory(c)">{{ $t('common.edit') }}</button>
+              <button type="button" class="btn-danger text-xs px-2.5 py-1" @click="deleteCategory(c)">{{ $t('common.delete') }}</button>
+            </template>
+          </li>
+        </ul>
+        <p v-else class="text-sm text-ink-muted text-center py-4">{{ $t('library.no_categories') }}</p>
+
+        <form class="flex flex-col sm:flex-row gap-2 pt-4 border-t border-line" @submit.prevent="addCategory">
+          <input v-model.trim="categoryNew.nameLo" type="text" class="input-field flex-1" required :placeholder="$t('library.category_name_lo')" />
+          <input v-model.trim="categoryNew.nameEn" type="text" class="input-field flex-1" required :placeholder="$t('library.category_name_en')" />
+          <button type="submit" class="btn-primary shrink-0">+ {{ $t('library.add_category') }}</button>
+        </form>
+      </div>
+    </AppModal>
+
+    <AppModal :open="bookModalOpen" :title="editingBookId ? $t('library.modal_edit_book') : $t('library.modal_add_book')" @update:open="bookModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitBook">
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.col_isbn') }}</label>
-          <input v-model.trim="bookForm.isbn" type="text" class="input-field font-mono" :placeholder="$t('library.isbn_ph')" />
+          <input v-model.trim="bookForm.isbn" type="text" class="input-field" :placeholder="$t('library.isbn_ph')" />
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.title_lo') }} *</label>
@@ -375,6 +422,7 @@ import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 definePageMeta({ layout: 'admin' });
 
 const { locale, t } = useI18n();
+const dialog = useDialog();
 const apiClient = useApiClient();
 
 const activeTab = ref<'terminal' | 'books' | 'loans'>('terminal');
@@ -501,49 +549,111 @@ const submitBorrow = async () => {
   }
 };
 
-const returnBook = async (loanId: number) => {
-  if (!confirm(t('library.confirm_return'))) return;
-  try {
-    await apiClient(`${API_ENDPOINTS.library.loans}/${loanId}/return`, { method: 'POST', body: {} });
-    await fetchOverview();
-    await fetchBooks();
-    await fetchLoans();
-  } catch (err) {
-    console.error('Error returning book:', err);
-  }
+// Mirrors the server's limit (LibraryRepository.MAX_RENEWALS); the server is the one that enforces it.
+const MAX_RENEWALS = 2;
+const renewLoan = (loan: any) => {
+  dialog.confirm({
+    message: t('library.confirm_renew', { days: 14 }),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.library.loans}/${loan.loanId}/renew`, { method: 'POST', body: { days: 14 } });
+      await Promise.all([fetchOverview(), fetchLoans()]);
+    },
+  });
 };
 
-const openBookModal = () => {
-  bookForm.isbn = '';
-  bookForm.titleLo = '';
-  bookForm.titleEn = '';
-  bookForm.author = '';
-  bookForm.categoryId = categories.value[0]?.categoryId;
-  bookForm.shelfLocation = '';
-  bookForm.totalCopies = 1;
+const returnBook = (loanId: number) => {
+  dialog.confirm({
+    message: t('library.confirm_return'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.library.loans}/${loanId}/return`, { method: 'POST', body: {} });
+      await Promise.all([fetchOverview(), fetchBooks(), fetchLoans()]);
+    },
+  });
+};
+
+// The same modal adds a book or, given one, edits it.
+const editingBookId = ref<number | null>(null);
+const openBookModal = (b?: any) => {
+  editingBookId.value = b?.bookId ?? null;
+  bookForm.isbn = b?.isbn ?? '';
+  bookForm.titleLo = b?.titleLo ?? '';
+  bookForm.titleEn = b?.titleEn ?? '';
+  bookForm.author = b?.author ?? '';
+  bookForm.categoryId = b ? (b.categoryId ?? undefined) : categories.value[0]?.categoryId;
+  bookForm.shelfLocation = b?.shelfLocation ?? '';
+  bookForm.totalCopies = b?.totalCopies ?? 1;
   bookModalOpen.value = true;
 };
 
 const submitBook = async () => {
   try {
-    await apiClient(API_ENDPOINTS.library.books, { method: 'POST', body: bookForm });
+    if (editingBookId.value) {
+      await apiClient(`${API_ENDPOINTS.library.books}/${editingBookId.value}`, { method: 'PUT', body: bookForm });
+    } else {
+      await apiClient(API_ENDPOINTS.library.books, { method: 'POST', body: bookForm });
+    }
     bookModalOpen.value = false;
-    await fetchOverview();
-    await fetchBooks();
-  } catch (err: any) {
-    alert(err?.data?.message || 'Error creating book');
+    await Promise.all([fetchOverview(), fetchBooks()]);
+  } catch (err) {
+    dialog.error(getErrorMessage(err));
   }
 };
 
-const deleteBook = async (id: number) => {
-  if (!confirm(t('library.confirm_delete_book'))) return;
+const deleteBook = (id: number) => {
+  dialog.confirm({
+    message: t('library.confirm_delete_book'),
+    tone: 'danger',
+    confirmLabel: t('common.delete'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.library.books}/${id}`, { method: 'DELETE' });
+      await Promise.all([fetchOverview(), fetchBooks()]);
+    },
+  });
+};
+
+// ── Categories ──
+const categoryModalOpen = ref(false);
+const categoryNew = reactive({ nameLo: '', nameEn: '' });
+const categoryEdit = reactive({ nameLo: '', nameEn: '' });
+const editingCategoryId = ref<number | null>(null);
+
+const addCategory = async () => {
   try {
-    await apiClient(`${API_ENDPOINTS.library.books}/${id}`, { method: 'DELETE' });
-    await fetchOverview();
-    await fetchBooks();
+    await apiClient(API_ENDPOINTS.library.categories, { method: 'POST', body: { ...categoryNew } });
+    categoryNew.nameLo = '';
+    categoryNew.nameEn = '';
+    await fetchCategories();
   } catch (err) {
-    console.error('Error deleting book:', err);
+    dialog.error(getErrorMessage(err));
   }
+};
+
+const startEditCategory = (c: any) => {
+  editingCategoryId.value = c.categoryId;
+  categoryEdit.nameLo = c.nameLo;
+  categoryEdit.nameEn = c.nameEn;
+};
+
+const saveCategory = async (id: number) => {
+  try {
+    await apiClient(`${API_ENDPOINTS.library.categories}/${id}`, { method: 'PUT', body: { ...categoryEdit } });
+    editingCategoryId.value = null;
+    await Promise.all([fetchCategories(), fetchBooks()]);
+  } catch (err) {
+    dialog.error(getErrorMessage(err));
+  }
+};
+
+const deleteCategory = (c: any) => {
+  dialog.confirm({
+    message: t('library.confirm_delete_category', { name: locale.value === 'lo' ? c.nameLo : c.nameEn }),
+    tone: 'danger',
+    confirmLabel: t('common.delete'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.library.categories}/${c.categoryId}`, { method: 'DELETE' });
+      await Promise.all([fetchCategories(), fetchBooks()]);
+    },
+  });
 };
 
 onMounted(() => {

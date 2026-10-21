@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :eyebrow="$t('parentPortal.title')" :title="$t('parentPortal.childs_wallet')">
+    <PageHeader :title="$t('parentPortal.childs_wallet')">
       <select v-model="selectedChildId" class="input-field w-auto" :aria-label="$t('parentPortal.select_child')" @change="loadChild">
         <option v-for="child in parentStore.children" :key="child.studentId" :value="child.studentId">
           {{ personName(child) }}

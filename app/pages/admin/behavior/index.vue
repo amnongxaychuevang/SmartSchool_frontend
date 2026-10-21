@@ -2,7 +2,6 @@
   <div class="flex flex-col gap-6">
     <!-- Header -->
     <PageHeader
-      :eyebrow="$t('behavior.eyebrow')"
       :title="$t('behavior.title')"
       :subtitle="$t('behavior.subtitle')"
     >
@@ -68,7 +67,7 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+    <div class="flex gap-6">
       <button
         type="button"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
@@ -179,7 +178,10 @@
               <td class="text-xs text-ink-muted">
                 {{ rec.recorder ? (locale === 'lo' ? rec.recorder.fullNameLo : rec.recorder.fullNameEn) : '—' }}
               </td>
-              <td class="text-right">
+              <td class="text-right whitespace-nowrap">
+                <button type="button" class="btn-secondary text-xs px-2.5 py-1 mr-2" @click="openEditRecord(rec)">
+                  {{ $t('common.edit') }}
+                </button>
                 <button
                   type="button"
                   class="btn-danger text-xs px-2.5 py-1"
@@ -195,13 +197,16 @@
     </section>
 
     <!-- TAB 2: CONDUCT SCORES -->
-    <section v-if="activeTab === 'scores'" class="panel p-6 flex flex-col gap-4">
-      <div class="max-w-md">
-        <label class="block text-sm font-semibold mb-2">{{ $t('behavior.select_student_score') }}</label>
-        <StudentPicker v-model="selectedStudentId" @update:model-value="loadStudentConductScore" />
+    <section v-if="activeTab === 'scores'" class="panel overflow-hidden">
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-md">
+          <label class="block text-sm font-semibold mb-2">{{ $t('behavior.select_student_score') }}</label>
+          <StudentPicker v-model="selectedStudentId" @update:model-value="loadStudentConductScore" />
+        </div>
       </div>
 
-      <div v-if="studentProfile" class="mt-4 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-900/40 flex flex-col gap-6">
+      <div class="p-4">
+      <div v-if="studentProfile" class="border border-slate-200 dark:border-slate-800 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-900/40 flex flex-col gap-6">
         <!-- Student Header -->
         <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
           <div class="flex items-center gap-4">
@@ -264,19 +269,21 @@
           </div>
         </div>
       </div>
+      </div>
     </section>
 
     <!-- TAB 3: CATEGORIES -->
-    <section v-if="activeTab === 'categories'" class="panel p-6 flex flex-col gap-6">
-      <div class="flex items-center justify-between">
+    <section v-if="activeTab === 'categories'" class="panel overflow-hidden">
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <h3 class="font-bold text-base">{{ $t('behavior.category_title') }}</h3>
-        <button type="button" class="btn-secondary text-sm" @click="openCategoryModal">
+        <button type="button" class="btn-secondary text-sm" @click="openCategoryModal()">
           + {{ $t('behavior.add_category') }}
         </button>
       </div>
 
+      <div class="p-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div v-for="cat in categories" :key="cat.categoryId" class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div v-for="cat in categories" :key="cat.categoryId" class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
           <div>
             <div class="flex items-center gap-2">
               <span class="badge text-xs px-2 py-0.5 rounded" :class="cat.type === 'merit' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'">
@@ -286,19 +293,33 @@
             </div>
             <p class="text-xs text-ink-muted mt-0.5">{{ locale === 'lo' ? cat.nameEn : cat.nameLo }}</p>
           </div>
-          <span class="font-bold text-sm font-mono" :class="cat.type === 'merit' ? 'text-emerald-500' : 'text-rose-500'">
-            {{ cat.type === 'merit' ? `+${cat.defaultPoints}` : `-${cat.defaultPoints}` }} pts
-          </span>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="font-bold text-sm tnum" :class="cat.type === 'merit' ? 'text-emerald-500' : 'text-rose-500'">
+              {{ cat.type === 'merit' ? `+${cat.defaultPoints}` : `-${cat.defaultPoints}` }} {{ $t('behavior.points_unit') }}
+            </span>
+            <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="openCategoryModal(cat)">{{ $t('common.edit') }}</button>
+            <button type="button" class="btn-danger text-xs px-2.5 py-1" @click="deleteCategory(cat)">{{ $t('common.delete') }}</button>
+          </div>
         </div>
+      </div>
       </div>
     </section>
 
     <!-- Modal: Create Behavior Record -->
-    <AppModal :open="createModalOpen" :title="$t('behavior.modal_log_title')" @update:open="createModalOpen = $event">
+    <AppModal :open="createModalOpen" :title="editingRecord ? $t('behavior.modal_edit_title') : $t('behavior.modal_log_title')" @update:open="createModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitRecord">
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_student') }} *</label>
-          <StudentPicker v-model="form.studentId" input-id="behavior-student" />
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_student') }} *</label>
+            <p v-if="editingRecord" class="input-field bg-surface-2 text-ink-muted">
+              {{ locale === 'lo' ? editingRecord.student.fullNameLo : editingRecord.student.fullNameEn }}
+            </p>
+            <StudentPicker v-else v-model="form.studentId" input-id="behavior-student" />
+          </div>
+          <div>
+            <label for="behavior-date" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_date') }} *</label>
+            <input id="behavior-date" v-model="form.incidentDate" type="date" class="input-field" required :max="todayStr" />
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -315,19 +336,19 @@
             <select v-model="form.categoryId" class="input-field" @change="onCategorySelect">
               <option :value="undefined">---</option>
               <option v-for="c in filteredCategories" :key="c.categoryId" :value="c.categoryId">
-                {{ locale === 'lo' ? c.nameLo : c.nameEn }} ({{ c.defaultPoints }} pts)
+                {{ locale === 'lo' ? c.nameLo : c.nameEn }} ({{ c.defaultPoints }} {{ $t('behavior.points_unit') }})
               </option>
             </select>
           </div>
         </div>
 
         <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_title') }} (ລາວ) *</label>
+          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.title_lo') }} *</label>
           <input v-model.trim="form.titleLo" type="text" class="input-field" required />
         </div>
 
         <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_title') }} (English) *</label>
+          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.title_en') }} *</label>
           <input v-model.trim="form.titleEn" type="text" class="input-field" required />
         </div>
 
@@ -343,11 +364,11 @@
         </div>
 
         <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('common.description') || 'Description' }}</label>
+          <label class="block mb-1.5 text-sm font-semibold">{{ $t('common.description') }}</label>
           <textarea v-model.trim="form.description" class="input-field" rows="2"></textarea>
         </div>
 
-        <div class="flex items-center gap-2 pt-2">
+        <div v-if="!editingRecord" class="flex items-center gap-2 pt-2">
           <input id="notify-parent" v-model="form.notifyParent" type="checkbox" class="rounded text-teal-500 focus:ring-teal-400" />
           <label for="notify-parent" class="text-sm font-medium text-slate-700 dark:text-slate-300">
             {{ $t('behavior.notify_parent_checkbox') }}
@@ -364,14 +385,14 @@
     </AppModal>
 
     <!-- Modal: Add Category -->
-    <AppModal :open="categoryModalOpen" :title="$t('behavior.modal_cat_title')" @update:open="categoryModalOpen = $event">
+    <AppModal :open="categoryModalOpen" :title="editingCategoryId ? $t('behavior.modal_cat_edit_title') : $t('behavior.modal_cat_title')" @update:open="categoryModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitCategory">
         <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_title') }} (ລາວ) *</label>
+          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.name_lo') }} *</label>
           <input v-model.trim="categoryForm.nameLo" type="text" class="input-field" required />
         </div>
         <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_title') }} (English) *</label>
+          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.name_en') }} *</label>
           <input v-model.trim="categoryForm.nameEn" type="text" class="input-field" required />
         </div>
         <div class="grid grid-cols-2 gap-4">
@@ -407,6 +428,7 @@ import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 definePageMeta({ layout: 'admin' });
 
 const { locale, t } = useI18n();
+const dialog = useDialog();
 const apiClient = useApiClient();
 const activeTab = ref<'records' | 'scores' | 'categories'>('records');
 
@@ -440,6 +462,7 @@ const form = reactive({
   points: 5,
   actionTaken: '',
   notifyParent: true,
+  incidentDate: '',
 });
 
 const categoryForm = reactive({
@@ -529,7 +552,14 @@ const viewStudentConduct = (studentId: number) => {
   loadStudentConductScore(studentId);
 };
 
+// Calendar date on this device, as the date input expects (YYYY-MM-DD).
+const localDate = (d: Date) => d.toLocaleDateString('en-CA');
+const todayStr = computed(() => localDate(new Date()));
+const editingRecord = ref<any>(null);
+
 const openCreateModal = () => {
+  editingRecord.value = null;
+  form.incidentDate = todayStr.value;
   form.studentId = null;
   form.categoryId = undefined;
   form.type = 'merit';
@@ -539,6 +569,20 @@ const openCreateModal = () => {
   form.points = 5;
   form.actionTaken = '';
   form.notifyParent = true;
+  createModalOpen.value = true;
+};
+
+const openEditRecord = (rec: any) => {
+  editingRecord.value = rec;
+  form.studentId = rec.student.studentId;
+  form.categoryId = rec.categoryId ?? undefined;
+  form.type = rec.type;
+  form.titleLo = rec.titleLo;
+  form.titleEn = rec.titleEn;
+  form.description = rec.description ?? '';
+  form.points = rec.points;
+  form.actionTaken = rec.actionTaken ?? '';
+  form.incidentDate = localDate(new Date(rec.incidentDate));
   createModalOpen.value = true;
 };
 
@@ -559,44 +603,72 @@ const submitRecord = async () => {
   if (!form.studentId) return;
   savingRecord.value = true;
   try {
-    await apiClient(API_ENDPOINTS.behavior.records, { method: 'POST', body: form });
+    if (editingRecord.value) {
+      const { studentId: _s, notifyParent: _n, ...changes } = form;
+      await apiClient(`${API_ENDPOINTS.behavior.records}/${editingRecord.value.recordId}`, {
+        method: 'PUT',
+        body: { ...changes, categoryId: changes.categoryId ?? null },
+      });
+    } else {
+      await apiClient(API_ENDPOINTS.behavior.records, { method: 'POST', body: form });
+    }
     createModalOpen.value = false;
-    await fetchRecords();
-    await fetchOverview();
-  } catch (err: any) {
-    alert(err?.data?.message || err.message);
+    await Promise.all([fetchRecords(), fetchOverview()]);
+    if (selectedStudentId.value) loadStudentConductScore(selectedStudentId.value);
+  } catch (err) {
+    dialog.error(getErrorMessage(err));
   } finally {
     savingRecord.value = false;
   }
 };
 
-const deleteRecord = async (id: number) => {
-  if (!confirm(t('behavior.confirm_delete'))) return;
-  try {
-    await apiClient(`${API_ENDPOINTS.behavior.records}/${id}`, { method: 'DELETE' });
-    await fetchRecords();
-    await fetchOverview();
-  } catch (err) {
-    console.error('Error deleting record:', err);
-  }
+const deleteRecord = (id: number) => {
+  dialog.confirm({
+    message: t('behavior.confirm_delete'),
+    tone: 'danger',
+    confirmLabel: t('common.delete'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.behavior.records}/${id}`, { method: 'DELETE' });
+      await Promise.all([fetchRecords(), fetchOverview()]);
+    },
+  });
 };
 
-const openCategoryModal = () => {
-  categoryForm.nameLo = '';
-  categoryForm.nameEn = '';
-  categoryForm.type = 'merit';
-  categoryForm.defaultPoints = 5;
+// The same modal adds a category or, given one, edits it.
+const editingCategoryId = ref<number | null>(null);
+const openCategoryModal = (cat?: any) => {
+  editingCategoryId.value = cat?.categoryId ?? null;
+  categoryForm.nameLo = cat?.nameLo ?? '';
+  categoryForm.nameEn = cat?.nameEn ?? '';
+  categoryForm.type = cat?.type ?? 'merit';
+  categoryForm.defaultPoints = cat?.defaultPoints ?? 5;
   categoryModalOpen.value = true;
 };
 
 const submitCategory = async () => {
   try {
-    await apiClient(API_ENDPOINTS.behavior.categories, { method: 'POST', body: categoryForm });
+    if (editingCategoryId.value) {
+      await apiClient(`${API_ENDPOINTS.behavior.categories}/${editingCategoryId.value}`, { method: 'PUT', body: categoryForm });
+    } else {
+      await apiClient(API_ENDPOINTS.behavior.categories, { method: 'POST', body: categoryForm });
+    }
     categoryModalOpen.value = false;
     await fetchCategories();
   } catch (err) {
-    console.error('Error creating category:', err);
+    dialog.error(getErrorMessage(err));
   }
+};
+
+const deleteCategory = (cat: any) => {
+  dialog.confirm({
+    message: t('behavior.confirm_delete_category', { name: locale.value === 'lo' ? cat.nameLo : cat.nameEn }),
+    tone: 'danger',
+    confirmLabel: t('common.delete'),
+    onConfirm: async () => {
+      await apiClient(`${API_ENDPOINTS.behavior.categories}/${cat.categoryId}`, { method: 'DELETE' });
+      await fetchCategories();
+    },
+  });
 };
 
 onMounted(() => {

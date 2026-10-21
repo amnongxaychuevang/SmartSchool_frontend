@@ -300,11 +300,11 @@ const letterGradeColor = (grade: string) => {
 // Data loading
 async function loadGrades() {
   if (!selectedTermId.value || !studentId.value) return;
-  const term = terms.value.find(t => t.termId === selectedTermId.value);
+  // Only the chosen term's grades (the API filters by term; it has no academic-year filter).
   const res = await academicsRepository.getGrades({
     studentId: studentId.value,
-    academicYear: term?.academicYear,
-    limit: 200,
+    termId: selectedTermId.value,
+    limit: 500,
   });
   grades.value = res.grades;
 }

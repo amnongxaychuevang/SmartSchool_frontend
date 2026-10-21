@@ -1,23 +1,31 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('cards_admin.title')" :subtitle="$t('cards_admin.subtitle')">
-      <div class="relative w-64">
+    <PageHeader :title="$t('cards_admin.title')" :subtitle="$t('cards_admin.subtitle')" />
+
+    <!-- Filters -->
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative w-full sm:w-80">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('cards_admin.search')" @input="handleSearch">
-        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="clearSearch">
+        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('cards_admin.search')" :aria-label="$t('cards_admin.search')" @input="handleSearch">
+        <button v-if="searchInput" type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear_search')" @click="clearSearch">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="handleFilter">
+      <select v-model="statusFilter" class="input-field w-full sm:w-48" :aria-label="$t('common.status')" @change="handleFilter">
         <option value="">{{ $t('cards_admin.all_status') }}</option>
         <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
       </select>
-      <button type="button" class="btn-primary" @click="openCreate">{{ $t('cards_admin.issue') }}</button>
-    </PageHeader>
+      <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+        <button v-if="canExport" type="button" class="btn-secondary flex-1 sm:flex-none" :disabled="exporting || !academicsStore.cardsTotal" @click="exportList">
+          {{ exporting ? $t('common.loading') : $t('common.export_excel') }}
+        </button>
+        <button type="button" class="btn-primary flex-1 sm:flex-none" @click="openCreate">{{ $t('cards_admin.issue') }}</button>
+      </div>
+    </div>
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="academicsStore.cardsLoading" />
@@ -69,7 +77,7 @@
       <form id="card-form" class="flex flex-col gap-4" @submit.prevent="handleSubmit">
         <div>
           <label for="c-uid" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.uid') }}</label>
-          <input id="c-uid" v-model.trim="modal.form.cardUid" :disabled="!!modal.cardId" required maxlength="50" class="input-field font-mono" :placeholder="$t('cards_admin.uid_placeholder')">
+          <input id="c-uid" v-model.trim="modal.form.cardUid" :disabled="!!modal.cardId" required maxlength="50" class="input-field" :placeholder="$t('cards_admin.uid_placeholder')">
         </div>
         <div v-if="!modal.cardId">
           <label for="c-student" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.student') }}</label>
@@ -129,6 +137,9 @@ import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import StudentPicker from '../../../components/StudentPicker.vue';
 import { useFormat } from '../../../composables/useFormat';
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
+import { useServerExport } from '../../../composables/useServerExport';
 
 definePageMeta({ layout: 'admin' });
 
@@ -151,9 +162,15 @@ const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => academicsStore.fetchCards({ search: searchInput.value, page: 1 }), 400);
 };
-const clearSearch = () => { searchInput.value = ''; academicsStore.fetchCards({ page: 1 }); };
+const clearSearch = () => { searchInput.value = ''; academicsStore.fetchCards({ search: '', page: 1 }); };
 const handleFilter = () => academicsStore.fetchCards({ status: statusFilter.value, page: 1 });
 const changePage = (page: number) => academicsStore.fetchCards({ page });
+
+// Standard export: the server builds the file from the same filters (and audit-logs it).
+const authStore = useAuthStore();
+const canExport = computed(() => hasPermission(authStore.permissions, 'cards.export'));
+const { exporting, download } = useServerExport();
+const exportList = () => download('/cards/export', { search: searchInput.value, status: statusFilter.value }, 'student-cards');
 
 // ── Issue / edit ──
 const emptyForm = () => ({ cardUid: '', studentId: null as number | null, status: 'active' as Card['status'], expiredDate: '', notes: '' });

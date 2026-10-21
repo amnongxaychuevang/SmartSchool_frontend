@@ -130,7 +130,7 @@
                 maxlength="40"
                 pattern="[0-9\s\-]{6,40}"
                 autocomplete="off"
-                class="input-field font-mono tnum"
+                class="input-field tnum"
                 placeholder="0101 2000 1234 5678"
                 :title="L('6–30 digits; spaces and dashes are fine', 'ຕົວເລກ 6–30 ຕົວ, ມີຍະຫວ່າງ ຫຼື ຂີດ ໄດ້')"
               >
