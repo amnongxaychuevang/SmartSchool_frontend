@@ -60,6 +60,31 @@ export class AuthRepository implements IAuthRepository {
     return { token: res.data.token, refreshToken: res.data.refreshToken, user: res.data.user };
   }
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      await useApiClient()(API_ENDPOINTS.auth.changePassword, { method: 'POST', body: { currentPassword, newPassword } });
+    } catch (error) {
+      throw new Error(getErrorMessage(error, 'Could not change the password'), { cause: error });
+    }
+  }
+
+  /** Sends a reset code to the phone (WhatsApp) or email; succeeds whether or not the account exists. */
+  async forgotPassword(identifier: string): Promise<void> {
+    try {
+      await useApiClient()(API_ENDPOINTS.auth.forgotPassword, { method: 'POST', body: { identifier } });
+    } catch (error) {
+      throw new Error(getErrorMessage(error, 'Could not send the code'), { cause: error });
+    }
+  }
+
+  async resetPassword(identifier: string, code: string, newPassword: string): Promise<void> {
+    try {
+      await useApiClient()(API_ENDPOINTS.auth.resetPassword, { method: 'POST', body: { identifier, code, newPassword } });
+    } catch (error) {
+      throw new Error(getErrorMessage(error, 'Could not reset the password'), { cause: error });
+    }
+  }
+
   async logout(refreshToken?: string | null): Promise<void> {
     // Call logout endpoint; swallow failures — logging out client-side must
     // succeed even if this request fails (offline, server error, etc.), and

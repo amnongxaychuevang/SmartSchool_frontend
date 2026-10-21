@@ -39,6 +39,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/academics/schedule', key: 'nav.schedule', icon: 'IconSchedule', permission: 'academics.view' },
     { to: '/admin/academics/grades', key: 'nav.grades', icon: 'IconReports', permission: 'grades.view' },
     { to: '/admin/settings/academic-terms', key: 'nav.academicTerms', icon: 'IconSchedule', permission: 'academics.view' },
+    { to: '/admin/academics/promotion', key: 'nav.promotion', icon: 'IconStudents', permission: 'academics.manage' },
   ] },
   { key: 'finance', items: [
     { to: '/admin/finance/pos', key: 'nav.pos', icon: 'IconWallet', permission: 'finance.pos' },

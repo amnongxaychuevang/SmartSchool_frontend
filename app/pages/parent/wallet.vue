@@ -75,7 +75,10 @@
             <tbody>
               <tr v-for="tx in transactions" :key="tx.transactionId">
                 <td class="tnum whitespace-nowrap">{{ fmt.dateTime(tx.createdAt) }}</td>
-                <td>{{ $t(`parent_wallet.tx_${tx.transactionType}`) }}</td>
+                <td>
+                  {{ $t(`parent_wallet.tx_${tx.transactionType}`) }}
+                  <span v-if="tx.refund" class="badge-neutral ml-1">{{ $t('wallets_admin.refunded') }}</span>
+                </td>
                 <td class="text-ink-muted">{{ txDetail(tx) }}</td>
                 <td class="text-right font-semibold tnum" :class="tx.transactionType === 'purchase' ? 'text-danger' : 'text-success'">
                   {{ tx.transactionType === 'purchase' ? '−' : '+' }}{{ fmt.kip(tx.amount) }}
@@ -84,6 +87,32 @@
             </tbody>
           </table>
         </div>
+      </section>
+
+      <!-- Student cards: a lost card is blocked at once -->
+      <section class="panel overflow-hidden">
+        <div class="px-5 py-4 border-b border-line">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-muted">{{ $t('parent_cards.title') }}</h2>
+          <p class="mt-1 text-xs text-ink-subtle">{{ $t('parent_cards.subtitle') }}</p>
+        </div>
+        <p v-if="!cards.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('parent_cards.empty') }}</p>
+        <ul v-else class="divide-y divide-line">
+          <li v-for="card in cards" :key="card.cardId" class="px-5 py-3 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <p class="font-semibold font-mono tnum">{{ card.cardUid }}</p>
+              <p class="text-xs text-ink-subtle">
+                {{ $t('parent_cards.issued', { date: fmt.date(card.issuedDate) }) }}
+                <template v-if="card.expiredDate"> · {{ $t('parent_cards.expires', { date: fmt.date(card.expiredDate) }) }}</template>
+              </p>
+            </div>
+            <div class="flex items-center gap-3 shrink-0">
+              <span :class="CARD_BADGE[card.status]">{{ $t(`parent_cards.status_${card.status}`) }}</span>
+              <button v-if="card.status === 'active'" type="button" class="btn-danger min-h-8 px-3" @click="reportLost(card)">
+                {{ $t('parent_cards.report_lost') }}
+              </button>
+            </div>
+          </li>
+        </ul>
       </section>
     </template>
 
@@ -163,7 +192,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useParentStore } from '../../application/stores/parent';
 import { parentRepository } from '../../infrastructure/api/ParentRepository';
-import type { TopUpRequest, WalletTransaction } from '../../domain/models/Finance';
+import type { TopUpRequest, WalletTransaction, StudentCard } from '../../domain/models/Finance';
 import type { PaymentInfo } from '../../application/stores/settings';
 
 definePageMeta({ layout: 'parent' });
@@ -220,12 +249,14 @@ const loadChild = async () => {
   const studentId = selectedChildId.value;
   loadError.value = '';
   try {
-    const [, , reqs] = await Promise.all([
+    const [, , reqs, childCards] = await Promise.all([
       parentStore.fetchChildWallet(studentId),
       parentStore.fetchSpendingLimits(studentId),
       parentRepository.getTopUpRequests(studentId),
+      parentRepository.getChildCards(studentId),
     ]);
     requests.value = reqs;
+    cards.value = childCards;
   } catch (err) {
     loadError.value = getErrorMessage(err);
   }
@@ -285,6 +316,28 @@ const submitTopUp = async () => {
   } finally {
     topUp.saving = false;
   }
+};
+
+// ── Cards ──
+const cards = ref<StudentCard[]>([]);
+const CARD_BADGE: Record<StudentCard['status'], string> = {
+  active: 'badge-success', lost: 'badge-danger', deactivated: 'badge-neutral',
+};
+
+const reportLost = async (card: StudentCard) => {
+  const studentId = selectedChildId.value;
+  if (!studentId) return;
+  const ok = await dialog.confirm({
+    title: t('parent_cards.confirm_title'),
+    message: t('parent_cards.confirm_msg', { uid: card.cardUid, name: selectedChildName.value }),
+    confirmLabel: t('parent_cards.report_lost'),
+    tone: 'danger',
+    onConfirm: async () => {
+      const updated = await parentRepository.reportCardLost(studentId, card.cardId);
+      cards.value = cards.value.map((c) => (c.cardId === updated.cardId ? updated : c));
+    },
+  });
+  if (ok) dialog.success(t('parent_cards.reported'));
 };
 
 // ── Spending limits ──

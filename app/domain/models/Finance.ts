@@ -29,6 +29,19 @@ export interface WalletTransaction {
   referenceNo: string | null;
   createdAt: string;
   shop?: { shopId: number; shopNameEn: string; shopNameLo: string } | null;
+  processor?: { userId: number; fullNameEn: string; fullNameLo: string } | null;
+  /** Set on a purchase that has been refunded (a purchase is refunded at most once). */
+  refund?: { transactionId: number; createdAt: string } | null;
+  refundOfId?: number | null;
+}
+
+export interface StudentCard {
+  cardId: number;
+  cardUid: string;
+  status: 'active' | 'lost' | 'deactivated';
+  issuedDate: string;
+  expiredDate: string | null;
+  notes: string | null;
 }
 
 export interface TopUpRequest {

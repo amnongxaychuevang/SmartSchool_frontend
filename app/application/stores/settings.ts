@@ -35,6 +35,14 @@ export interface PaymentInfo {
   note?: string;
 }
 
+/** At the cut-off on a school day, students with no tap, leave or teacher mark become absent. */
+export interface AutoAbsenceSettings {
+  enabled: boolean;
+  cutoffTime: string; // "HH:MM"
+  schoolDays: number[]; // 0 = Sunday … 6 = Saturday
+  notifyParents: boolean;
+}
+
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     schoolInfo: {
@@ -54,6 +62,7 @@ export const useSettingsStore = defineStore("settings", {
     } as EmailConfig,
     notificationChannel: { default: "whatsapp" } as NotificationChannelConfig,
     paymentInfo: null as PaymentInfo | null,
+    autoAbsence: null as AutoAbsenceSettings | null,
     loaded: false,
   }),
 
@@ -68,6 +77,7 @@ export const useSettingsStore = defineStore("settings", {
       if (data.notificationChannel)
         this.notificationChannel = data.notificationChannel as NotificationChannelConfig;
       if (data.paymentInfo) this.paymentInfo = data.paymentInfo as PaymentInfo;
+      if (data.autoAbsence) this.autoAbsence = data.autoAbsence as AutoAbsenceSettings;
       this.loaded = true;
     },
 
@@ -79,6 +89,11 @@ export const useSettingsStore = defineStore("settings", {
     async savePaymentInfo(info: PaymentInfo) {
       await settingsRepository.updateSettings({ paymentInfo: info });
       this.paymentInfo = { ...info };
+    },
+
+    async saveAutoAbsence(value: AutoAbsenceSettings) {
+      await settingsRepository.updateSettings({ autoAbsence: value });
+      this.autoAbsence = { ...value, schoolDays: [...value.schoolDays] };
     },
 
     // Saves the chosen channel together with its connection details in one request.

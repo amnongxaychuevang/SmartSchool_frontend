@@ -50,6 +50,21 @@ export const financeRepository = {
     return res.data;
   },
 
+  async getWalletTransactions(walletId: number, page = 1, limit = 20) {
+    const url = `${API_ENDPOINTS.wallets.transactions.replace(':id', String(walletId))}?page=${page}&limit=${limit}`;
+    const res = await useApiClient()<ApiResponse<Paged<'transactions', WalletTransaction>>>(url, { method: 'GET' });
+    return res.data;
+  },
+
+  /** Gives a shop purchase back to the wallet; a purchase can be refunded once. */
+  async refundTransaction(transactionId: number, reason: string) {
+    const res = await useApiClient()<ApiResponse<{ transaction: WalletTransaction }>>(API_ENDPOINTS.wallets.refund.replace(':id', String(transactionId)), {
+      method: 'POST',
+      body: { reason }
+    });
+    return res.data.transaction;
+  },
+
   // Top Up Requests
   async getTopUpRequests(params: { status?: string; search?: string; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();

@@ -11,7 +11,7 @@ export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 export interface DailyAttendanceRecord {
   studentId: number;
   status: AttendanceStatus;
-  source: 'card' | 'teacher' | 'leave';
+  source: 'card' | 'teacher' | 'leave' | 'auto';
   firstCheckIn: string | null;
   note: string | null;
 }

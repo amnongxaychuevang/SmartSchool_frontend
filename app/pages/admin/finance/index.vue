@@ -49,6 +49,7 @@
               <td class="max-w-xs truncate text-ink-muted" :title="w.notes || undefined">{{ w.notes || '—' }}</td>
               <td class="text-right">
                 <div class="inline-flex gap-2">
+                  <button type="button" class="btn-secondary min-h-8 px-3" @click="openHistory(w)">{{ $t('wallets_admin.history') }}</button>
                   <button type="button" :class="w.status === 'active' ? 'btn-danger' : 'btn-secondary'" class="min-h-8 px-3" @click="openStatus(w)">
                     {{ w.status === 'active' ? $t('wallets_admin.freeze') : $t('wallets_admin.unfreeze') }}
                   </button>
@@ -88,6 +89,85 @@
       </template>
     </AppModal>
 
+    <!-- Transaction history, with refunds of shop purchases -->
+    <AppModal
+      :open="history.open"
+      :title="$t('wallets_admin.history_title')"
+      :subtitle="history.wallet ? `${studentName(history.wallet)} · ${f.kip(history.wallet.balance)}` : ''"
+      size="xl"
+      @update:open="history.open = $event"
+    >
+      <LoadingSpinner v-if="history.loading" />
+      <p v-else-if="history.error" role="alert" class="text-sm text-danger">{{ history.error }}</p>
+      <p v-else-if="!history.items.length" class="py-8 text-center text-sm text-ink-subtle">{{ $t('parentPortal.no_transactions') }}</p>
+      <div v-else class="overflow-x-auto">
+        <table class="data-table w-full min-w-max">
+          <thead>
+            <tr>
+              <th>{{ $t('parentPortal.date') }}</th>
+              <th>{{ $t('parentPortal.type') }}</th>
+              <th>{{ $t('parent_wallet.description') }}</th>
+              <th class="text-right">{{ $t('parentPortal.amount') }}</th>
+              <th class="text-right">{{ $t('wallets_admin.balance_after') }}</th>
+              <th class="text-right">{{ $t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="tx in history.items" :key="tx.transactionId">
+              <td class="tnum whitespace-nowrap">{{ f.dateTime(tx.createdAt) }}</td>
+              <td class="whitespace-nowrap">{{ $t(`parent_wallet.tx_${tx.transactionType}`) }}</td>
+              <td class="max-w-[14rem] truncate text-ink-muted" :title="txDetail(tx)">{{ txDetail(tx) }}</td>
+              <td class="text-right font-semibold tnum" :class="tx.transactionType === 'purchase' ? 'text-danger' : 'text-success'">
+                {{ tx.transactionType === 'purchase' ? '−' : '+' }}{{ f.kip(tx.amount) }}
+              </td>
+              <td class="text-right tnum text-ink-muted">{{ f.kip(tx.balanceAfter) }}</td>
+              <td class="text-right">
+                <span v-if="tx.refund" class="badge-neutral">{{ $t('wallets_admin.refunded') }}</span>
+                <button
+                  v-else-if="tx.transactionType === 'purchase' && canRefund"
+                  type="button"
+                  class="btn-secondary min-h-8 px-3"
+                  @click="openRefund(tx)"
+                >
+                  {{ $t('wallets_admin.refund') }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <PaginationBar
+        v-if="history.total > HISTORY_PER_PAGE"
+        :loading="history.loading"
+        :current-page="history.page"
+        :total-pages="Math.ceil(history.total / HISTORY_PER_PAGE)"
+        @update:page="loadHistory"
+      />
+    </AppModal>
+
+    <AppModal
+      :open="refund.open"
+      :title="$t('wallets_admin.refund_title')"
+      :subtitle="refund.tx ? $t('wallets_admin.refund_subtitle', { amount: f.kip(refund.tx.amount), detail: txDetail(refund.tx) }) : ''"
+      size="sm"
+      @update:open="refund.open = $event"
+    >
+      <form id="refund-form" class="flex flex-col gap-4" @submit.prevent="handleRefund">
+        <div>
+          <label for="r-reason" class="block mb-1.5 text-sm font-semibold">{{ $t('wallets_admin.refund_reason') }}</label>
+          <textarea id="r-reason" v-model.trim="refund.reason" rows="2" required minlength="3" maxlength="150" class="input-field" :placeholder="$t('wallets_admin.refund_reason_placeholder')" />
+        </div>
+        <p class="text-xs text-ink-muted">{{ $t('wallets_admin.refund_hint') }}</p>
+        <p v-if="refund.error" role="alert" class="rounded border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">{{ refund.error }}</p>
+      </form>
+      <template #footer>
+        <button type="button" class="btn-secondary" :disabled="refund.saving" @click="refund.open = false">{{ $t('common.cancel') }}</button>
+        <button type="submit" form="refund-form" class="btn-primary" :disabled="refund.saving || refund.reason.length < 3">
+          {{ refund.saving ? $t('common.saving') : $t('wallets_admin.confirm_refund') }}
+        </button>
+      </template>
+    </AppModal>
+
     <ConfirmDialog
       :open="status.open"
       :tone="status.wallet && status.wallet.status === 'active' ? 'danger' : 'primary'"
@@ -103,7 +183,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Wallet } from '../../../domain/models/Finance';
+import type { Wallet, WalletTransaction } from '../../../domain/models/Finance';
+import { financeRepository } from '../../../infrastructure/api/FinanceRepository';
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceStore, WALLETS_PER_PAGE } from '../../../application/stores/finance';
@@ -149,6 +232,59 @@ async function handleTopUp() {
     topUp.error = getErrorMessage(err, t('common.error'));
   } finally {
     topUp.saving = false;
+  }
+}
+
+// ── Transaction history and refunds ──
+const HISTORY_PER_PAGE = 20;
+const authStore = useAuthStore();
+const canRefund = computed(() => hasPermission(authStore.permissions, 'finance.wallets_manage'));
+const history = reactive({
+  open: false, loading: false, error: '', wallet: null as Wallet | null,
+  items: [] as WalletTransaction[], page: 1, total: 0,
+});
+
+const txDetail = (tx: WalletTransaction) => {
+  const description = (locale.value === 'lo' ? tx.descriptionLo : tx.descriptionEn) || tx.descriptionEn;
+  if (description) return description;
+  return (tx.shop && ((locale.value === 'lo' ? tx.shop.shopNameLo : tx.shop.shopNameEn) || tx.shop.shopNameEn)) || '—';
+};
+
+async function loadHistory(page: number) {
+  if (!history.wallet) return;
+  history.loading = true;
+  history.error = '';
+  try {
+    const data = await financeRepository.getWalletTransactions(history.wallet.walletId, page, HISTORY_PER_PAGE);
+    Object.assign(history, { items: data.transactions, total: data.total, page });
+  } catch (err) {
+    history.error = getErrorMessage(err, t('common.error'));
+  } finally {
+    history.loading = false;
+  }
+}
+const openHistory = (w: Wallet) => {
+  Object.assign(history, { open: true, wallet: w, items: [], page: 1, total: 0 });
+  loadHistory(1);
+};
+
+const refund = reactive({ open: false, saving: false, error: '', tx: null as WalletTransaction | null, reason: '' });
+const openRefund = (tx: WalletTransaction) => Object.assign(refund, { open: true, saving: false, error: '', tx, reason: '' });
+async function handleRefund() {
+  if (!refund.tx) return;
+  refund.saving = true;
+  refund.error = '';
+  try {
+    await financeRepository.refundTransaction(refund.tx.transactionId, refund.reason);
+    refund.open = false;
+    // The balance changed: refresh the list behind the modal and the history itself.
+    await Promise.all([loadHistory(history.page), load(financeStore.walletsPage)]);
+    const updated = financeStore.wallets.find((w) => w.walletId === history.wallet?.walletId);
+    if (updated) history.wallet = updated;
+  } catch (err) {
+    refund.error = getErrorMessage(err, t('common.error'));
+  } finally {
+    refund.saving = false;
   }
 }
 

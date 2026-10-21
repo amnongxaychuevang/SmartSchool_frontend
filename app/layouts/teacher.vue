@@ -98,7 +98,29 @@ class="w-8 h-8 rounded-lg flex items-center justify-center text-amber-300 font-b
               <p class="text-xs font-semibold text-slate-800 dark:text-white leading-tight">{{ authStore.user?.fullNameEn }}</p>
               <p class="text-[10px] text-slate-500 capitalize">{{ authStore.user?.role }}</p>
             </div>
+            <svg
+xmlns="http://www.w3.org/2000/svg"
+              :class="['h-4 w-4 text-slate-500 transition-transform', profileOpen ? 'rotate-180' : '']"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
+
+          <!-- Dropdown -->
+          <transition name="profile-drop">
+            <div
+v-if="profileOpen"
+              class="absolute right-0 top-full mt-2 w-56 rounded-2xl overflow-hidden z-50 bg-white dark:bg-[#0a1120] border border-slate-200 dark:border-slate-800 shadow-xl">
+              <div class="p-2">
+                <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all text-sm" @click="openChangePassword">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                  {{ $t('password.change_title') }}
+                </button>
+              </div>
+            </div>
+          </transition>
         </div>
       </header>
 
@@ -106,6 +128,7 @@ class="w-8 h-8 rounded-lg flex items-center justify-center text-amber-300 font-b
       <main class="flex-1 p-6 overflow-auto">
         <slot />
       </main>
+      <ChangePasswordModal v-model:open="passwordOpen" />
     </div>
   </div>
 </template>
@@ -117,6 +140,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../application/stores/auth';
 import LangSwitch from '../components/LangSwitch.vue';
 import ThemeSwitch from '../components/ThemeSwitch.vue';
+import ChangePasswordModal from '../components/ChangePasswordModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -148,6 +172,12 @@ const currentPageTitle = computed(() => {
   return current ? current.label : 'Teacher Portal';
 });
 
+const passwordOpen = ref(false);
+const openChangePassword = () => {
+  profileOpen.value = false;
+  passwordOpen.value = true;
+};
+
 const handleLogout = () => {
   authStore.logout();
   router.push('/');
@@ -167,4 +197,7 @@ const handleLogout = () => {
 .fade-slide-leave-to   { opacity: 0; transform: translateX(-6px); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+.profile-drop-enter-active, .profile-drop-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.profile-drop-enter-from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+.profile-drop-leave-to   { opacity: 0; transform: translateY(-8px) scale(0.97); }
 </style>

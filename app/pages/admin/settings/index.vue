@@ -119,6 +119,62 @@
         </form>
       </section>
 
+      <!-- Automatic absence at the daily cut-off -->
+      <section v-show="activeTab === 'attendance'" id="panel-attendance" role="tabpanel" aria-labelledby="tab-attendance" class="panel p-6 max-w-3xl flex flex-col gap-5">
+        <p class="text-sm text-ink-muted">{{ $t('auto_absence.subtitle') }}</p>
+
+        <form class="flex flex-col gap-5" @submit.prevent="handleAutoAbsenceSave">
+          <label class="flex items-center gap-3 cursor-pointer self-start">
+            <input v-model="autoAbsenceForm.enabled" type="checkbox" class="h-4 w-4 accent-primary">
+            <span class="text-sm font-semibold">{{ $t('auto_absence.enabled') }}</span>
+          </label>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label for="aa-cutoff" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('auto_absence.cutoff') }}</label>
+              <input id="aa-cutoff" v-model="autoAbsenceForm.cutoffTime" type="time" required class="input-field tnum w-40" :disabled="!autoAbsenceForm.enabled">
+              <p class="text-xs text-ink-subtle">{{ $t('auto_absence.cutoff_hint') }}</p>
+            </div>
+            <label class="flex items-start gap-3 cursor-pointer sm:pt-6">
+              <input v-model="autoAbsenceForm.notifyParents" type="checkbox" class="mt-0.5 h-4 w-4 accent-primary" :disabled="!autoAbsenceForm.enabled">
+              <span class="text-sm">{{ $t('auto_absence.notify_parents') }}</span>
+            </label>
+          </div>
+
+          <fieldset class="flex flex-col gap-2" :disabled="!autoAbsenceForm.enabled">
+            <legend class="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-1.5">{{ $t('auto_absence.school_days') }}</legend>
+            <div class="flex flex-wrap gap-2">
+              <label
+                v-for="d in WEEKDAYS"
+                :key="d"
+                :class="[
+                  'h-9 px-3 inline-flex items-center gap-2 rounded-lg border text-sm cursor-pointer select-none',
+                  autoAbsenceForm.schoolDays.includes(d) ? 'border-primary bg-primary-soft text-primary-ink font-semibold' : 'border-line text-ink-muted',
+                ]"
+              >
+                <input v-model="autoAbsenceForm.schoolDays" type="checkbox" :value="d" class="sr-only">
+                {{ $t(`auto_absence.day_${d}`) }}
+              </label>
+            </div>
+          </fieldset>
+
+          <p class="rounded-lg border border-line bg-surface-2 px-4 py-3 text-xs text-ink-muted">{{ $t('auto_absence.rules') }}</p>
+
+          <p v-if="autoAbsenceError" role="alert" class="text-sm text-danger">{{ autoAbsenceError }}</p>
+
+          <div class="flex flex-wrap items-center justify-end gap-3">
+            <span v-if="autoAbsenceSaved" class="text-xs text-success">{{ $t('auto_absence.saved') }}</span>
+            <span v-if="runResult" class="text-xs text-ink-muted">{{ runResult }}</span>
+            <button v-if="canRunAutoAbsence" type="button" class="btn-secondary" :disabled="runningAutoAbsence" @click="handleRunAutoAbsence">
+              {{ runningAutoAbsence ? $t('common.saving') : $t('auto_absence.run_now') }}
+            </button>
+            <button type="submit" :disabled="savingAutoAbsence" class="btn-primary">
+              {{ savingAutoAbsence ? $t('common.saving') : $t('settings.save') }}
+            </button>
+          </div>
+        </form>
+      </section>
+
       <!-- Active term (read from the academic terms, managed on their own page) -->
       <section v-show="activeTab === 'term'" id="panel-term" role="tabpanel" aria-labelledby="tab-term" class="panel p-6 max-w-3xl flex flex-col gap-5">
         <dl v-if="activeTerm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -149,12 +205,14 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from 'vue';
-import { useSettingsStore } from '../../../application/stores/settings';
+import { useSettingsStore, type AutoAbsenceSettings } from '../../../application/stores/settings';
+import { useAuthStore } from '../../../application/stores/auth';
+import { hasPermission } from '../../../components/layout/adminNav';
 import { settingsRepository } from '../../../infrastructure/api/SettingsRepository';
 import { academicsRepository, type AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
 
-type TabId = 'school' | 'payment' | 'term';
-const TAB_IDS: TabId[] = ['school', 'payment', 'term'];
+type TabId = 'school' | 'payment' | 'attendance' | 'term';
+const TAB_IDS: TabId[] = ['school', 'payment', 'attendance', 'term'];
 
 definePageMeta({ layout: 'admin' });
 const { t, locale } = useI18n();
@@ -198,6 +256,12 @@ const tabs = computed(() => [
     icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
   },
   {
+    id: 'attendance' as const,
+    label: t('auto_absence.title'),
+    ok: Boolean(settingsStore.autoAbsence?.enabled),
+    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+  },
+  {
     id: 'term' as const,
     label: t('settings.academic_settings'),
     ok: Boolean(activeTerm.value),
@@ -224,6 +288,13 @@ const load = async () => {
       note: pay?.note ?? '',
     });
     qrUrl.value = pay?.qrUrl ?? '';
+    const aa = settingsStore.autoAbsence;
+    Object.assign(autoAbsenceForm, {
+      enabled: aa?.enabled ?? false,
+      cutoffTime: aa?.cutoffTime ?? '09:00',
+      schoolDays: [...(aa?.schoolDays ?? [1, 2, 3, 4, 5])],
+      notifyParents: aa?.notifyParents ?? true,
+    });
   } catch (err) {
     loadError.value = getErrorMessage(err);
   } finally {
@@ -288,6 +359,49 @@ const handlePaymentSave = async () => {
     paymentError.value = getErrorMessage(err, t('settings_ui.save_error'));
   } finally {
     savingPayment.value = false;
+  }
+};
+
+// ── Automatic absence ──
+// Monday first, as on a school timetable; 0 = Sunday.
+const WEEKDAYS = [1, 2, 3, 4, 5, 6, 0];
+const authStore = useAuthStore();
+const canRunAutoAbsence = computed(() => hasPermission(authStore.permissions, 'attendance.manage'));
+const autoAbsenceForm = reactive<AutoAbsenceSettings>({ enabled: false, cutoffTime: '09:00', schoolDays: [1, 2, 3, 4, 5], notifyParents: true });
+const savingAutoAbsence = ref(false);
+const autoAbsenceSaved = ref(false);
+const autoAbsenceError = ref('');
+const runningAutoAbsence = ref(false);
+const runResult = ref('');
+
+const handleAutoAbsenceSave = async () => {
+  savingAutoAbsence.value = true;
+  autoAbsenceSaved.value = false;
+  autoAbsenceError.value = '';
+  try {
+    await settingsStore.saveAutoAbsence({ ...autoAbsenceForm, schoolDays: [...autoAbsenceForm.schoolDays].sort() });
+    autoAbsenceSaved.value = true;
+    setTimeout(() => { autoAbsenceSaved.value = false; }, 3000);
+  } catch (err) {
+    autoAbsenceError.value = getErrorMessage(err, t('settings_ui.save_error'));
+  } finally {
+    savingAutoAbsence.value = false;
+  }
+};
+
+const handleRunAutoAbsence = async () => {
+  runningAutoAbsence.value = true;
+  runResult.value = '';
+  autoAbsenceError.value = '';
+  try {
+    const result = await settingsRepository.runAutoAbsence();
+    runResult.value = result.ran
+      ? t('auto_absence.run_done', { marked: result.marked, notified: result.notified })
+      : t(`auto_absence.run_skipped_${result.reason}`);
+  } catch (err) {
+    autoAbsenceError.value = getErrorMessage(err);
+  } finally {
+    runningAutoAbsence.value = false;
   }
 };
 </script>

@@ -4,7 +4,7 @@ import type { ApiResponse } from './types';
 import type { ScheduleSlot } from './AcademicsRepository';
 import type { Student } from '../../domain/models/Student';
 import type { Grade } from '../../domain/models/Academics';
-import type { Wallet, SpendingLimit, TopUpRequest } from '../../domain/models/Finance';
+import type { Wallet, SpendingLimit, TopUpRequest, StudentCard } from '../../domain/models/Finance';
 import type { Announcement, DailyAttendance, LeaveRequest } from '../../domain/models/School';
 import type { PaymentInfo } from '../../application/stores/settings';
 
@@ -70,6 +70,17 @@ export class ParentRepository {
       { method: 'GET' },
     );
     return res.data.requests;
+  }
+
+  async getChildCards(studentId: number) {
+    const res = await useApiClient()<ApiResponse<StudentCard[]>>(`/parents/me/children/${studentId}/cards`, { method: 'GET' });
+    return res.data;
+  }
+
+  /** Blocks the card at once (no taps, no purchases); only the school can issue a new one. */
+  async reportCardLost(studentId: number, cardId: number) {
+    const res = await useApiClient()<ApiResponse<StudentCard>>(`/parents/me/children/${studentId}/cards/${cardId}/report-lost`, { method: 'POST' });
+    return res.data;
   }
 
   async getPaymentInfo() {

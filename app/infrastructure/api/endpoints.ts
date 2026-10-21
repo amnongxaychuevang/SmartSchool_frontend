@@ -6,6 +6,9 @@ export const API_ENDPOINTS = {
     me: '/auth/me',
     logout: '/auth/logout',
     refresh: '/auth/refresh',
+    changePassword: '/auth/change-password',
+    forgotPassword: '/auth/forgot-password',
+    resetPassword: '/auth/reset-password',
   },
   dashboard: {
     stats: '/dashboard/stats',
@@ -38,11 +41,16 @@ export const API_ENDPOINTS = {
     list: '/classes',
     academicYears: '/classes/academic-years',
   },
+  promotion: {
+    preview: '/promotion/preview',
+    apply: '/promotion/apply',
+  },
   attendance: {
     base: '/attendance',
     scan: '/attendance/scan',
     scanManual: '/attendance/scan/manual',
     daily: '/attendance/daily',
+    autoAbsenceRun: '/attendance/auto-absence/run',
   },
   wallets: {
     list: '/wallets',
@@ -51,6 +59,8 @@ export const API_ENDPOINTS = {
     status: '/wallets/:id/status',
     process: '/wallet/process',
     card: '/wallet/card',
+    transactions: '/wallets/:id/transactions',
+    refund: '/wallet-transactions/:id/refund',
   },
   topUps: {
     requests: '/topup-requests'

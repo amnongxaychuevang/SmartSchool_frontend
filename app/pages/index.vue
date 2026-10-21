@@ -58,8 +58,53 @@
             </div>
           </div>
 
+          <!-- ══ Forgotten password: ask for a code, then set a new password ══ -->
+          <template v-if="mode !== 'login'">
+            <h2 class="text-2xl font-bold">{{ t('password.forgot_title') }}</h2>
+            <p class="mt-1 text-sm text-ink-muted">
+              {{ mode === 'forgot' ? t('password.forgot_desc') : t('password.reset_desc', { identifier: reset.identifier }) }}
+            </p>
+
+            <p v-if="reset.error" role="alert" class="mt-6 rounded border border-danger-line bg-danger-soft px-3 py-2.5 text-sm text-danger">{{ reset.error }}</p>
+
+            <form v-if="mode === 'forgot'" class="mt-6 space-y-4" novalidate @submit.prevent="sendCode">
+              <div>
+                <label for="reset-identifier" class="block mb-1.5 text-sm font-semibold">{{ t('auth.email_label') }}</label>
+                <input id="reset-identifier" v-model.trim="reset.identifier" type="text" required autocomplete="username" class="input-field h-10" :placeholder="t('auth.email_placeholder')">
+              </div>
+              <button type="submit" class="btn-primary w-full h-10" :disabled="reset.busy || reset.identifier.length < 3">
+                {{ reset.busy ? t('password.sending') : t('password.send_code') }}
+              </button>
+            </form>
+
+            <form v-else class="mt-6 space-y-4" novalidate @submit.prevent="submitReset">
+              <div>
+                <label for="reset-code" class="block mb-1.5 text-sm font-semibold">{{ t('password.code') }}</label>
+                <input id="reset-code" v-model.trim="reset.code" type="text" inputmode="numeric" maxlength="6" required autocomplete="one-time-code" class="input-field h-10 tnum tracking-[0.4em]">
+              </div>
+              <div>
+                <label for="reset-new" class="block mb-1.5 text-sm font-semibold">{{ t('password.new') }}</label>
+                <input id="reset-new" v-model="reset.password" type="password" required minlength="6" autocomplete="new-password" class="input-field h-10">
+                <p class="mt-1 text-xs text-ink-subtle">{{ t('password.min_length') }}</p>
+              </div>
+              <div>
+                <label for="reset-confirm" class="block mb-1.5 text-sm font-semibold">{{ t('password.confirm') }}</label>
+                <input id="reset-confirm" v-model="reset.confirm" type="password" required autocomplete="new-password" class="input-field h-10">
+              </div>
+              <button type="submit" class="btn-primary w-full h-10" :disabled="reset.busy || reset.code.length !== 6 || !reset.password">
+                {{ reset.busy ? t('common.saving') : t('password.reset_btn') }}
+              </button>
+              <button type="button" class="w-full text-sm text-primary hover:underline" :disabled="reset.busy" @click="sendCode">{{ t('password.resend') }}</button>
+            </form>
+
+            <button type="button" class="mt-6 text-sm text-ink-muted hover:text-ink" @click="backToLogin">← {{ t('password.back_to_login') }}</button>
+          </template>
+
+          <template v-else>
           <h2 class="text-2xl font-bold">{{ t('auth.welcome') }}</h2>
           <p class="mt-1 text-sm text-ink-muted">{{ t('auth.sign_in_desc') }}</p>
+
+          <p v-if="resetDone" role="status" class="mt-6 rounded border border-success-line bg-success-soft px-3 py-2.5 text-sm text-success">{{ t('password.reset_done') }}</p>
 
           <div
             v-if="authStore.error"
@@ -87,7 +132,10 @@
             </div>
 
             <div>
-              <label for="password" class="block mb-1.5 text-sm font-semibold">{{ t('auth.password_label') }}</label>
+              <div class="flex items-baseline justify-between mb-1.5">
+                <label for="password" class="block text-sm font-semibold">{{ t('auth.password_label') }}</label>
+                <button type="button" class="text-xs text-primary hover:underline" @click="openForgot">{{ t('password.forgot_link') }}</button>
+              </div>
               <div class="relative">
                 <input
                   id="password"
@@ -123,6 +171,7 @@
               {{ authStore.loading ? t('auth.signing_in') : t('auth.sign_in_btn') }}
             </button>
           </form>
+          </template>
 
           <p class="lg:hidden mt-10 text-center text-xs text-ink-subtle">© {{ year }} {{ t('auth.title') }} · {{ t('auth.footer') }}</p>
         </div>
@@ -132,9 +181,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../application/stores/auth';
+import { authRepository } from '../infrastructure/api/AuthRepository';
 import LangSwitch from '../components/LangSwitch.vue';
 import ThemeSwitch from '../components/ThemeSwitch.vue';
 import { firstAllowedAdminPath } from '../components/layout/adminNav';
@@ -156,6 +206,50 @@ const featureIcons: Record<(typeof features)[number], string> = {
   attendance: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
   wallet: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
   academics: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+};
+
+// ── Forgotten password ──
+const mode = ref<'login' | 'forgot' | 'reset'>('login');
+const resetDone = ref(false);
+const reset = reactive({ identifier: '', code: '', password: '', confirm: '', busy: false, error: '' });
+
+const openForgot = () => {
+  Object.assign(reset, { identifier: loginIdentifier.value.trim(), code: '', password: '', confirm: '', busy: false, error: '' });
+  resetDone.value = false;
+  mode.value = 'forgot';
+};
+const backToLogin = () => { mode.value = 'login'; };
+
+const sendCode = async () => {
+  reset.busy = true;
+  reset.error = '';
+  try {
+    await authRepository.forgotPassword(reset.identifier);
+    reset.code = '';
+    mode.value = 'reset';
+  } catch (err) {
+    reset.error = passwordErrorMessage(err, t);
+  } finally {
+    reset.busy = false;
+  }
+};
+
+const submitReset = async () => {
+  if (reset.password.length < 6) { reset.error = t('password.min_length'); return; }
+  if (reset.password !== reset.confirm) { reset.error = t('password.mismatch'); return; }
+  reset.busy = true;
+  reset.error = '';
+  try {
+    await authRepository.resetPassword(reset.identifier, reset.code, reset.password);
+    loginIdentifier.value = reset.identifier;
+    password.value = '';
+    resetDone.value = true;
+    mode.value = 'login';
+  } catch (err) {
+    reset.error = passwordErrorMessage(err, t);
+  } finally {
+    reset.busy = false;
+  }
 };
 
 const handleLogin = async () => {
