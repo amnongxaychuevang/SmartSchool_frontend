@@ -154,6 +154,7 @@ const userInitial = computed(() => authStore.user?.fullNameEn?.[0]?.toUpperCase(
 const navItems = computed(() => [
   { to: '/teacher',               label: t('nav.dashboard'),      icon: resolveComponent('IconDashboard') },
   { to: '/teacher/schedule',      label: t('teacherPortal.my_schedule'),    icon: resolveComponent('IconClasses') },
+  { to: '/teacher/calendar',      label: t('calendar.title'),     icon: resolveComponent('IconSchedule') },
   { to: '/teacher/classes',       label: t('nav.classes'),     icon: resolveComponent('IconClasses') },
   { to: '/teacher/attendance',    label: t('nav.attendance'),     icon: resolveComponent('IconAttendance') },
   { to: '/teacher/grades',        label: t('nav.grades'),         icon: resolveComponent('IconReports') },

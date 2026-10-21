@@ -78,8 +78,8 @@ onMounted(async () => {
       walletBalances[child.studentId] = Number(wRes.data?.balance ?? 0);
     } catch { /* wallet may not exist */ }
     try {
-      const iRes = await parentRepository.getChildInvoices(child.studentId);
-      unpaidCount.value += (iRes.data ?? []).filter((inv: any) => inv.status === 'unpaid' || inv.status === 'partial').length;
+      const invoices = await parentRepository.getChildInvoices(child.studentId);
+      unpaidCount.value += invoices.filter((inv) => inv.status === 'unpaid' || inv.status === 'partial').length;
     } catch { /* no invoices */ }
   }));
 });

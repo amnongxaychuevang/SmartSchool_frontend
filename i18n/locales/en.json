@@ -72,7 +72,8 @@
     "feeStructures": "Fee Structures",
     "pos": "Point of Sale",
     "shopSales": "Shop Sales",
-    "promotion": "Year-end promotion"
+    "promotion": "Year-end promotion",
+    "calendar": "School calendar"
   },
   "common": {
     "age": "Age",
@@ -830,7 +831,8 @@
       "absence": "Absence",
       "grade": "Grade",
       "transaction": "Wallet",
-      "general": "General"
+      "general": "General",
+      "fee": "Fees"
     },
     "channels": {
       "whatsapp": "WhatsApp",
@@ -1098,7 +1100,10 @@
     "tx_purchase": "Purchase",
     "tx_refund": "Refund",
     "description": "Details",
-    "limits_saved": "Spending limits saved"
+    "limits_saved": "Spending limits saved",
+    "low_balance_alert": "Alert when the balance is below (₭)",
+    "school_default": "School default",
+    "low_balance_hint": "You get one alert when a purchase takes the balance below this amount."
   },
   "permissions_ui": {
     "new_role": "New staff role",
@@ -1476,7 +1481,8 @@
     "run_now": "Run for today now",
     "run_done": "{marked} marked absent, {notified} parents notified",
     "run_skipped_not_school_day": "Today is not a school day, nothing was marked",
-    "run_skipped_no_active_term": "Today is not inside the active term, nothing was marked"
+    "run_skipped_no_active_term": "Today is not inside the active term, nothing was marked",
+    "run_skipped_holiday": "Today is a day off on the calendar, nothing was marked"
   },
   "parent_cards": {
     "title": "Student cards",
@@ -1519,5 +1525,116 @@
     "all_decided": "All chosen",
     "clear": "Clear choice",
     "clear_class": "Clear the whole class"
+  },
+  "low_balance": {
+    "title": "Low balance alert",
+    "subtitle": "The default for parents who set none. Parents get one alert when their child's balance drops below this amount. Leave empty to turn it off.",
+    "threshold": "Below (₭)",
+    "off": "Off"
+  },
+  "fee_reminders": {
+    "title": "Fee reminders",
+    "subtitle": "Remind parents automatically before and after a fee is due, until it is paid.",
+    "enabled": "Send fee reminders automatically",
+    "days_before": "Remind before the due date (days)",
+    "days_before_hint": "0 = no reminder before the due date",
+    "send_time": "Send time",
+    "repeat_every": "When overdue, repeat every (days)",
+    "max_overdue": "Overdue reminders, at most",
+    "max_overdue_hint": "0 = no overdue reminders",
+    "rules": "An invoice gets one reminder before it is due. Once overdue it gets one at once, then again at the set interval, up to the maximum. Paid and voided invoices get none. When first switched on, every invoice that is already overdue gets a reminder that day.",
+    "save_first": "Switch it on and save first",
+    "run_done": "Sent: {before} before due, {overdue} overdue"
+  },
+  "calendar": {
+    "title": "School calendar",
+    "subtitle": "Holidays, exams and school events",
+    "subtitle_admin": "Holidays, exams and events. Teachers and parents see this calendar too. Nobody is marked absent on a day marked \"school closed\".",
+    "prev": "Previous month",
+    "next": "Next month",
+    "today": "Today",
+    "add": "Add event",
+    "edit": "Edit event",
+    "this_month": "Events this month",
+    "empty": "No events this month",
+    "closed": "School closed",
+    "type": "Type",
+    "title_lo": "Title (Lao)",
+    "title_en": "Title (English)",
+    "description_lo": "Description (Lao)",
+    "description_en": "Description (English)",
+    "start": "Start date",
+    "end": "End date",
+    "school_closed": "School closed (day off)",
+    "school_closed_hint": "No student is marked absent on these days",
+    "delete_title": "Delete event?",
+    "delete_msg": "Remove \"{title}\" from the calendar?",
+    "types": {
+      "holiday": "Holiday",
+      "exam": "Exam",
+      "activity": "Activity",
+      "meeting": "Meeting",
+      "other": "Other"
+    },
+    "month_1": "January",
+    "month_2": "February",
+    "month_3": "March",
+    "month_4": "April",
+    "month_5": "May",
+    "month_6": "June",
+    "month_7": "July",
+    "month_8": "August",
+    "month_9": "September",
+    "month_10": "October",
+    "month_11": "November",
+    "month_12": "December"
+  },
+  "receipt": {
+    "title": "Receipt",
+    "kind_fee": "School fees",
+    "kind_topup": "Wallet top-up",
+    "view": "Receipt",
+    "download": "Download PDF / Print",
+    "pdf_hint": "Choose \"Save as PDF\" in the dialog to save it as a PDF file",
+    "no": "Receipt no.",
+    "date": "Date",
+    "student": "Student",
+    "student_code": "Student code",
+    "class": "Class",
+    "invoice_no": "Invoice no.",
+    "academic_year": "School year",
+    "description": "Description",
+    "amount": "Amount",
+    "topup_line": "Top-up of the student's wallet",
+    "method": "Paid by",
+    "reference": "Reference",
+    "received": "Received",
+    "amount_due": "Total due",
+    "paid_to_date": "Paid to date",
+    "outstanding": "Still owed",
+    "paid_in_full": "Paid in full",
+    "balance_before": "Balance before",
+    "balance_after": "Balance after",
+    "method_cash": "Cash",
+    "method_transfer": "Bank transfer",
+    "method_office": "School office",
+    "generated": "This receipt was issued by Smart School",
+    "received_by": "Received by"
+  },
+  "parent_fees": {
+    "title": "School fees",
+    "subtitle": "Your child's invoices, what is still owed, and receipts",
+    "outstanding": "Total still owed",
+    "overdue": "Overdue invoices",
+    "paid_total": "Paid in total",
+    "empty": "No invoices",
+    "due": "Due {date}",
+    "still_owed": "{amount} still owed",
+    "no_payments": "No payments yet",
+    "status_unpaid": "Unpaid",
+    "status_partial": "Partly paid",
+    "status_paid": "Paid",
+    "status_overdue": "Overdue",
+    "how_to_pay": "Fees are paid at the school office. A receipt appears here as soon as the school records the payment."
   }
 }

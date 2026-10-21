@@ -24,7 +24,7 @@
     </div>
 
     <!-- Invoice document -->
-    <div v-else-if="invoice" id="invoice-document" class="invoice-paper mx-auto w-full max-w-[800px] bg-white text-slate-900 rounded-lg shadow-xl print:shadow-none print:rounded-none">
+    <div v-else-if="invoice" id="invoice-document" class="print-document invoice-paper mx-auto w-full max-w-[800px] bg-white text-slate-900 rounded-lg shadow-xl print:shadow-none print:rounded-none">
 
       <!-- School header -->
       <header class="border-b-2 border-teal-600 pb-5 mb-6">
@@ -151,7 +151,9 @@
           </thead>
           <tbody>
             <tr v-for="p in invoice.payments" :key="p.paymentId" class="border-b border-slate-200">
-              <td class="py-2.5 px-3 font-mono text-xs">{{ p.receiptNo }}</td>
+              <td class="py-2.5 px-3 font-mono text-xs">
+                <NuxtLink :to="`/admin/fees/receipt/${p.paymentId}`" class="text-blue-700 hover:underline" :title="$t('receipt.view')">{{ p.receiptNo }}</NuxtLink>
+              </td>
               <td class="py-2.5 px-3">{{ f.dateTime(p.paidAt) }}</td>
               <td class="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-green-700">{{ f.kip(p.amount) }}</td>
               <td class="py-2.5 px-3">

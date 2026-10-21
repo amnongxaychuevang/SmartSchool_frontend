@@ -79,7 +79,10 @@
                   {{ $t(`parent_wallet.tx_${tx.transactionType}`) }}
                   <span v-if="tx.refund" class="badge-neutral ml-1">{{ $t('wallets_admin.refunded') }}</span>
                 </td>
-                <td class="text-ink-muted">{{ txDetail(tx) }}</td>
+                <td class="text-ink-muted">
+                  {{ txDetail(tx) }}
+                  <NuxtLink v-if="tx.transactionType === 'top_up'" :to="`/parent/receipt/topup/${tx.transactionId}`" class="ml-2 text-xs text-primary hover:underline">{{ $t('receipt.view') }}</NuxtLink>
+                </td>
                 <td class="text-right font-semibold tnum" :class="tx.transactionType === 'purchase' ? 'text-danger' : 'text-success'">
                   {{ tx.transactionType === 'purchase' ? '−' : '+' }}{{ fmt.kip(tx.amount) }}
                 </td>
@@ -174,7 +177,8 @@
       <form id="limits-form" class="flex flex-col gap-4" @submit.prevent="saveLimits">
         <div v-for="field in LIMIT_FIELDS" :key="field.key" class="flex flex-col gap-1.5">
           <label :for="`limit-${field.key}`" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t(field.label) }}</label>
-          <input :id="`limit-${field.key}`" v-model.number="limits.form[field.key]" type="number" min="0" step="1000" class="input-field tnum" :placeholder="$t('parentPortal.no_limit')">
+          <input :id="`limit-${field.key}`" v-model.number="limits.form[field.key]" type="number" min="0" step="1000" class="input-field tnum" :placeholder="$t(field.empty)">
+          <p v-if="field.hint" class="text-xs text-ink-subtle">{{ $t(field.hint) }}</p>
         </div>
         <p v-if="limits.error" role="alert" class="text-sm text-danger">{{ limits.error }}</p>
       </form>
@@ -206,11 +210,13 @@ useHead({ title: () => `${t('parentPortal.childs_wallet')} — ${t('parentPortal
 const STATUS_BADGE: Record<TopUpRequest['status'], string> = {
   pending: 'badge-warning', approved: 'badge-success', rejected: 'badge-danger',
 };
-type LimitKey = 'dailyMax' | 'weeklyMax' | 'perTransactionMax';
-const LIMIT_FIELDS: { key: LimitKey; label: string }[] = [
-  { key: 'dailyMax', label: 'parentPortal.daily_max' },
-  { key: 'weeklyMax', label: 'parentPortal.weekly_max' },
-  { key: 'perTransactionMax', label: 'parentPortal.per_transaction_max' },
+type LimitKey = 'dailyMax' | 'weeklyMax' | 'perTransactionMax' | 'alertThreshold';
+// `empty` is what an unset value means: no cap for the limits, the school's default for the alert.
+const LIMIT_FIELDS: { key: LimitKey; label: string; empty: string; hint?: string }[] = [
+  { key: 'dailyMax', label: 'parentPortal.daily_max', empty: 'parentPortal.no_limit' },
+  { key: 'weeklyMax', label: 'parentPortal.weekly_max', empty: 'parentPortal.no_limit' },
+  { key: 'perTransactionMax', label: 'parentPortal.per_transaction_max', empty: 'parentPortal.no_limit' },
+  { key: 'alertThreshold', label: 'parent_wallet.low_balance_alert', empty: 'parent_wallet.school_default', hint: 'parent_wallet.low_balance_hint' },
 ];
 
 const parentStore = useParentStore();
@@ -235,7 +241,7 @@ const limitRows = computed(() => {
   const sl = parentStore.spendingLimits;
   return LIMIT_FIELDS.map((f) => ({
     label: t(f.label),
-    value: sl?.[f.key] ? fmt.kip(sl[f.key]!) : t('parentPortal.no_limit'),
+    value: sl?.[f.key] ? fmt.kip(sl[f.key]!) : t(f.empty),
   }));
 });
 
@@ -345,7 +351,7 @@ const limits = reactive({
   open: false,
   saving: false,
   error: '',
-  form: { dailyMax: null, weeklyMax: null, perTransactionMax: null } as Record<LimitKey, number | null>,
+  form: { dailyMax: null, weeklyMax: null, perTransactionMax: null, alertThreshold: null } as Record<LimitKey, number | null>,
 });
 
 const openLimits = () => {
@@ -363,7 +369,7 @@ const saveLimits = async () => {
       dailyMax: limits.form.dailyMax || null,
       weeklyMax: limits.form.weeklyMax || null,
       perTransactionMax: limits.form.perTransactionMax || null,
-      alertThreshold: null,
+      alertThreshold: limits.form.alertThreshold || null,
     });
     await parentStore.fetchSpendingLimits(selectedChildId.value);
     limits.open = false;

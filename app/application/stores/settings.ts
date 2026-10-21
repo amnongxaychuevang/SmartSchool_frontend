@@ -43,6 +43,15 @@ export interface AutoAbsenceSettings {
   notifyParents: boolean;
 }
 
+/** Automatic reminders to parents about unpaid fees, before and after the due date. */
+export interface FeeReminderSettings {
+  enabled: boolean;
+  daysBefore: number;
+  repeatEveryDays: number;
+  maxOverdue: number;
+  sendTime: string; // "HH:MM"
+}
+
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     schoolInfo: {
@@ -63,6 +72,9 @@ export const useSettingsStore = defineStore("settings", {
     notificationChannel: { default: "whatsapp" } as NotificationChannelConfig,
     paymentInfo: null as PaymentInfo | null,
     autoAbsence: null as AutoAbsenceSettings | null,
+    // Low wallet balance alert for parents who set no threshold themselves; null = off.
+    lowBalanceDefault: null as number | null,
+    feeReminders: null as FeeReminderSettings | null,
     loaded: false,
   }),
 
@@ -78,6 +90,8 @@ export const useSettingsStore = defineStore("settings", {
         this.notificationChannel = data.notificationChannel as NotificationChannelConfig;
       if (data.paymentInfo) this.paymentInfo = data.paymentInfo as PaymentInfo;
       if (data.autoAbsence) this.autoAbsence = data.autoAbsence as AutoAbsenceSettings;
+      if (data.feeReminders) this.feeReminders = data.feeReminders as FeeReminderSettings;
+      this.lowBalanceDefault = (data.lowBalanceAlert as { defaultThreshold?: number | null } | undefined)?.defaultThreshold ?? null;
       this.loaded = true;
     },
 
@@ -89,6 +103,16 @@ export const useSettingsStore = defineStore("settings", {
     async savePaymentInfo(info: PaymentInfo) {
       await settingsRepository.updateSettings({ paymentInfo: info });
       this.paymentInfo = { ...info };
+    },
+
+    async saveFeeReminders(value: FeeReminderSettings) {
+      await settingsRepository.updateSettings({ feeReminders: value });
+      this.feeReminders = { ...value };
+    },
+
+    async saveLowBalanceDefault(defaultThreshold: number | null) {
+      await settingsRepository.updateSettings({ lowBalanceAlert: { defaultThreshold } });
+      this.lowBalanceDefault = defaultThreshold;
     },
 
     async saveAutoAbsence(value: AutoAbsenceSettings) {

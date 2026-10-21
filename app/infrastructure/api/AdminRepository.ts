@@ -9,6 +9,19 @@ import type { SchoolClass, SchoolClassDetail, TeacherOption } from '../../domain
 import type { AuditLog, DashboardStats } from '../../domain/models/School';
 import type { Student, StudentPayload, BloodTypeOption, Ethnicity, Province } from '../../domain/models/Student';
 
+/** An upcoming item on the dashboard: a calendar event, or ("term") a term's first day. */
+export interface DashboardEvent {
+  id: string;
+  nameEn: string;
+  nameLo: string;
+  descriptionEn: string | null;
+  descriptionLo: string | null;
+  date: string;
+  endDate: string;
+  type: 'holiday' | 'exam' | 'activity' | 'meeting' | 'other' | 'term';
+  schoolClosed: boolean;
+}
+
 interface StudentsResponse {
   success: boolean;
   data: { students: Student[]; total: number; page: number; limit: number };
@@ -333,7 +346,7 @@ export const adminRepository = {
 
   async getUpcomingEvents(limit: number = 5) {
     const url = `${API_ENDPOINTS.dashboard.upcomingEvents}?limit=${limit}`;
-    const res = await useApiClient()<ApiResponse<{ events: any[] }>>(url, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<{ events: DashboardEvent[] }>>(url, { method: 'GET' });
     return res.data;
   },
 

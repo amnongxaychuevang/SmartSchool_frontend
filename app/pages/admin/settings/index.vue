@@ -117,6 +117,25 @@
             </button>
           </div>
         </form>
+
+        <!-- Low balance alert: the default for parents who set none -->
+        <form class="flex flex-col gap-3 border-t border-line pt-5" @submit.prevent="handleLowBalanceSave">
+          <div>
+            <h3 class="text-sm font-semibold">{{ $t('low_balance.title') }}</h3>
+            <p class="text-xs text-ink-muted mt-0.5">{{ $t('low_balance.subtitle') }}</p>
+          </div>
+          <div class="flex flex-wrap items-end gap-3">
+            <div class="flex flex-col gap-1.5">
+              <label for="low-balance" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('low_balance.threshold') }}</label>
+              <input id="low-balance" v-model.number="lowBalanceInput" type="number" min="0" step="1000" class="input-field tnum w-48" :placeholder="$t('low_balance.off')">
+            </div>
+            <button type="submit" :disabled="savingLowBalance" class="btn-primary">
+              {{ savingLowBalance ? $t('common.saving') : $t('settings.save') }}
+            </button>
+            <span v-if="lowBalanceSaved" class="text-xs text-success">{{ $t('payment_info.saved') }}</span>
+          </div>
+          <p v-if="lowBalanceError" role="alert" class="text-sm text-danger">{{ lowBalanceError }}</p>
+        </form>
       </section>
 
       <!-- Automatic absence at the daily cut-off -->
@@ -175,6 +194,55 @@
         </form>
       </section>
 
+      <!-- Automatic fee reminders -->
+      <section v-show="activeTab === 'fees'" id="panel-fees" role="tabpanel" aria-labelledby="tab-fees" class="panel p-6 max-w-3xl flex flex-col gap-5">
+        <p class="text-sm text-ink-muted">{{ $t('fee_reminders.subtitle') }}</p>
+
+        <form class="flex flex-col gap-5" @submit.prevent="handleFeeRemindersSave">
+          <label class="flex items-center gap-3 cursor-pointer self-start">
+            <input v-model="feeForm.enabled" type="checkbox" class="h-4 w-4 accent-primary">
+            <span class="text-sm font-semibold">{{ $t('fee_reminders.enabled') }}</span>
+          </label>
+
+          <fieldset class="grid grid-cols-1 sm:grid-cols-2 gap-4" :disabled="!feeForm.enabled">
+            <div class="flex flex-col gap-1.5">
+              <label for="fr-before" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('fee_reminders.days_before') }}</label>
+              <input id="fr-before" v-model.number="feeForm.daysBefore" type="number" min="0" max="60" required class="input-field tnum w-32">
+              <p class="text-xs text-ink-subtle">{{ $t('fee_reminders.days_before_hint') }}</p>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="fr-time" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('fee_reminders.send_time') }}</label>
+              <input id="fr-time" v-model="feeForm.sendTime" type="time" required class="input-field tnum w-40">
+              <p class="text-xs text-ink-subtle">{{ $t('auto_absence.cutoff_hint') }}</p>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="fr-repeat" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('fee_reminders.repeat_every') }}</label>
+              <input id="fr-repeat" v-model.number="feeForm.repeatEveryDays" type="number" min="1" max="60" required class="input-field tnum w-32">
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="fr-max" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('fee_reminders.max_overdue') }}</label>
+              <input id="fr-max" v-model.number="feeForm.maxOverdue" type="number" min="0" max="12" required class="input-field tnum w-32">
+              <p class="text-xs text-ink-subtle">{{ $t('fee_reminders.max_overdue_hint') }}</p>
+            </div>
+          </fieldset>
+
+          <p class="rounded-lg border border-line bg-surface-2 px-4 py-3 text-xs text-ink-muted">{{ $t('fee_reminders.rules') }}</p>
+
+          <p v-if="feeError" role="alert" class="text-sm text-danger">{{ feeError }}</p>
+
+          <div class="flex flex-wrap items-center justify-end gap-3">
+            <span v-if="feeSaved" class="text-xs text-success">{{ $t('auto_absence.saved') }}</span>
+            <span v-if="feeRunResult" class="text-xs text-ink-muted">{{ feeRunResult }}</span>
+            <button v-if="canRunFeeReminders" type="button" class="btn-secondary" :disabled="runningFeeReminders || !feeRemindersOn" :title="feeRemindersOn ? undefined : $t('fee_reminders.save_first')" @click="handleRunFeeReminders">
+              {{ runningFeeReminders ? $t('common.saving') : $t('auto_absence.run_now') }}
+            </button>
+            <button type="submit" :disabled="savingFee" class="btn-primary">
+              {{ savingFee ? $t('common.saving') : $t('settings.save') }}
+            </button>
+          </div>
+        </form>
+      </section>
+
       <!-- Active term (read from the academic terms, managed on their own page) -->
       <section v-show="activeTab === 'term'" id="panel-term" role="tabpanel" aria-labelledby="tab-term" class="panel p-6 max-w-3xl flex flex-col gap-5">
         <dl v-if="activeTerm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -205,14 +273,14 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from 'vue';
-import { useSettingsStore, type AutoAbsenceSettings } from '../../../application/stores/settings';
+import { useSettingsStore, type AutoAbsenceSettings, type FeeReminderSettings } from '../../../application/stores/settings';
 import { useAuthStore } from '../../../application/stores/auth';
 import { hasPermission } from '../../../components/layout/adminNav';
 import { settingsRepository } from '../../../infrastructure/api/SettingsRepository';
 import { academicsRepository, type AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
 
-type TabId = 'school' | 'payment' | 'attendance' | 'term';
-const TAB_IDS: TabId[] = ['school', 'payment', 'attendance', 'term'];
+type TabId = 'school' | 'payment' | 'attendance' | 'fees' | 'term';
+const TAB_IDS: TabId[] = ['school', 'payment', 'attendance', 'fees', 'term'];
 
 definePageMeta({ layout: 'admin' });
 const { t, locale } = useI18n();
@@ -262,6 +330,12 @@ const tabs = computed(() => [
     icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
+    id: 'fees' as const,
+    label: t('fee_reminders.title'),
+    ok: feeRemindersOn.value,
+    icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
+  },
+  {
     id: 'term' as const,
     label: t('settings.academic_settings'),
     ok: Boolean(activeTerm.value),
@@ -288,6 +362,8 @@ const load = async () => {
       note: pay?.note ?? '',
     });
     qrUrl.value = pay?.qrUrl ?? '';
+    lowBalanceInput.value = settingsStore.lowBalanceDefault ?? '';
+    Object.assign(feeForm, settingsStore.feeReminders ?? FEE_DEFAULTS);
     const aa = settingsStore.autoAbsence;
     Object.assign(autoAbsenceForm, {
       enabled: aa?.enabled ?? false,
@@ -359,6 +435,68 @@ const handlePaymentSave = async () => {
     paymentError.value = getErrorMessage(err, t('settings_ui.save_error'));
   } finally {
     savingPayment.value = false;
+  }
+};
+
+// ── Fee reminders ──
+const FEE_DEFAULTS: FeeReminderSettings = { enabled: false, daysBefore: 3, repeatEveryDays: 7, maxOverdue: 3, sendTime: '08:00' };
+const feeForm = reactive<FeeReminderSettings>({ ...FEE_DEFAULTS });
+const feeRemindersOn = computed(() => Boolean(settingsStore.feeReminders && settingsStore.feeReminders.enabled));
+const canRunFeeReminders = computed(() => hasPermission(authStore.permissions, 'fees.manage'));
+const savingFee = ref(false);
+const feeSaved = ref(false);
+const feeError = ref('');
+const runningFeeReminders = ref(false);
+const feeRunResult = ref('');
+
+const handleFeeRemindersSave = async () => {
+  savingFee.value = true;
+  feeSaved.value = false;
+  feeError.value = '';
+  try {
+    await settingsStore.saveFeeReminders({ ...feeForm });
+    feeSaved.value = true;
+    setTimeout(() => { feeSaved.value = false; }, 3000);
+  } catch (err) {
+    feeError.value = getErrorMessage(err, t('settings_ui.save_error'));
+  } finally {
+    savingFee.value = false;
+  }
+};
+
+const handleRunFeeReminders = async () => {
+  runningFeeReminders.value = true;
+  feeRunResult.value = '';
+  feeError.value = '';
+  try {
+    const result = await settingsRepository.runFeeReminders();
+    feeRunResult.value = t('fee_reminders.run_done', { before: result.before, overdue: result.overdue });
+  } catch (err) {
+    feeError.value = getErrorMessage(err);
+  } finally {
+    runningFeeReminders.value = false;
+  }
+};
+
+// ── Low balance alert default ──
+const lowBalanceInput = ref<number | ''>('');
+const savingLowBalance = ref(false);
+const lowBalanceSaved = ref(false);
+const lowBalanceError = ref('');
+
+const handleLowBalanceSave = async () => {
+  savingLowBalance.value = true;
+  lowBalanceSaved.value = false;
+  lowBalanceError.value = '';
+  try {
+    const value = typeof lowBalanceInput.value === 'number' && lowBalanceInput.value > 0 ? Math.round(lowBalanceInput.value) : null;
+    await settingsStore.saveLowBalanceDefault(value);
+    lowBalanceSaved.value = true;
+    setTimeout(() => { lowBalanceSaved.value = false; }, 3000);
+  } catch (err) {
+    lowBalanceError.value = getErrorMessage(err, t('settings_ui.save_error'));
+  } finally {
+    savingLowBalance.value = false;
   }
 };
 

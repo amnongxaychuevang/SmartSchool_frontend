@@ -373,3 +373,33 @@
   animation: shimmer 1.5s infinite;
   border-radius: 0.25rem;
 }
+
+/* ── Printing a document page (receipt, invoice) ──
+   The sidebar and top bar belong to the layout, outside the page component, so a
+   page's scoped styles cannot hide them; this rule applies to any page that holds
+   an element with .print-document. */
+@media print {
+  body:has(.print-document) aside,
+  body:has(.print-document) header:not(.print-document header),
+  body:has(.print-document) nav,
+  body:has(.print-document) .print\:hidden {
+    display: none !important;
+  }
+  body:has(.print-document) .min-h-screen {
+    margin-left: 0 !important;
+    min-height: 0 !important;
+  }
+  body:has(.print-document) main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  body:has(.print-document),
+  body:has(.print-document) main {
+    background: white !important;
+  }
+  .print-document {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: none !important;
+  }
+}

@@ -15,7 +15,7 @@ export interface SettingsApiResponse {
 }
 
 export type AutoAbsenceRunResult =
-  | { date: string; ran: false; reason: 'not_school_day' | 'no_active_term' }
+  | { date: string; ran: false; reason: 'not_school_day' | 'no_active_term' | 'holiday' }
   | { date: string; ran: true; marked: number; notified: number };
 
 export class SettingsRepository {
@@ -30,6 +30,12 @@ export class SettingsRepository {
   /** Runs today's auto-absence marking now instead of waiting for the cut-off. */
   async runAutoAbsence() {
     const res = await useApiClient()<{ data: AutoAbsenceRunResult }>(API_ENDPOINTS.attendance.autoAbsenceRun, { method: 'POST' });
+    return res.data;
+  }
+
+  /** Sends today's due fee reminders now instead of waiting for the send time. */
+  async runFeeReminders() {
+    const res = await useApiClient()<{ data: { date: string; before: number; overdue: number } }>(API_ENDPOINTS.fees.runReminders, { method: 'POST' });
     return res.data;
   }
 

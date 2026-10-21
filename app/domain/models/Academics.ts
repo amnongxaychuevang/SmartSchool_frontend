@@ -71,7 +71,7 @@ export interface AppNotification {
   notificationId: number;
   recipientUserId: number;
   studentId: number | null;
-  type: 'check_in' | 'check_out' | 'absence' | 'grade' | 'transaction' | 'general';
+  type: 'check_in' | 'check_out' | 'absence' | 'grade' | 'transaction' | 'general' | 'fee';
   channel: 'whatsapp' | 'app_push' | 'email';
   messageEn: string;
   messageLo: string;

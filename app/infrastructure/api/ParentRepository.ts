@@ -4,7 +4,7 @@ import type { ApiResponse } from './types';
 import type { ScheduleSlot } from './AcademicsRepository';
 import type { Student } from '../../domain/models/Student';
 import type { Grade } from '../../domain/models/Academics';
-import type { Wallet, SpendingLimit, TopUpRequest, StudentCard } from '../../domain/models/Finance';
+import type { Wallet, SpendingLimit, TopUpRequest, StudentCard, Invoice } from '../../domain/models/Finance';
 import type { Announcement, DailyAttendance, LeaveRequest } from '../../domain/models/School';
 import type { PaymentInfo } from '../../application/stores/settings';
 
@@ -49,8 +49,10 @@ export class ParentRepository {
     return useApiClient()<ApiResponse<SpendingLimit>>(`/parents/me/children/${studentId}/spending-limits`, { method: 'PUT', body: data });
   }
 
+  /** The child's invoices (voided ones left out), each with its payments, newest due date first. */
   async getChildInvoices(studentId: number) {
-    return useApiClient()<ApiResponse<any[]>>(`/parents/me/children/${studentId}/invoices`, { method: 'GET' });
+    const res = await useApiClient()<ApiResponse<{ invoices: Invoice[] }>>(`/parents/me/children/${studentId}/invoices`, { method: 'GET' });
+    return res.data.invoices;
   }
 
   async uploadSlip(file: File) {

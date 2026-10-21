@@ -122,7 +122,8 @@
               </td>
               <td class="text-right tnum text-ink-muted">{{ f.kip(tx.balanceAfter) }}</td>
               <td class="text-right">
-                <span v-if="tx.refund" class="badge-neutral">{{ $t('wallets_admin.refunded') }}</span>
+                <NuxtLink v-if="tx.transactionType === 'top_up'" :to="`/admin/finance/receipt/${tx.transactionId}`" class="btn-secondary min-h-8 px-3">{{ $t('receipt.view') }}</NuxtLink>
+                <span v-else-if="tx.refund" class="badge-neutral">{{ $t('wallets_admin.refunded') }}</span>
                 <button
                   v-else-if="tx.transactionType === 'purchase' && canRefund"
                   type="button"

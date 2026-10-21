@@ -41,6 +41,8 @@ export const API_ENDPOINTS = {
     list: '/classes',
     academicYears: '/classes/academic-years',
   },
+  calendar: '/calendar',
+  receipts: '/receipts',
   promotion: {
     preview: '/promotion/preview',
     apply: '/promotion/apply',
@@ -122,5 +124,6 @@ export const API_ENDPOINTS = {
     types: '/fee-types',
     structures: '/fee-structures',
     invoices: '/invoices',
+    runReminders: '/fees/reminders/run',
   }
 } as const;
