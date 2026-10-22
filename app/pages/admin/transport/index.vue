@@ -1,19 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
-      :title="$t('transport.title')"
-      :subtitle="$t('transport.subtitle')"
-    >
-      <div class="flex items-center gap-3">
-        <button type="button" class="btn-primary flex items-center gap-2" @click="scanModalOpen = true">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>{{ $t('transport.tap_card') }}</span>
-        </button>
-      </div>
-    </PageHeader>
-
     <!-- Stat cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="panel p-4 flex items-center gap-4">
@@ -65,48 +51,103 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex gap-6">
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'manifest' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'manifest'"
-      >
-        {{ $t('transport.tab_manifest') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'map' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'map'"
-      >
-        {{ $t('transport.tab_map') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'vehicles' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'vehicles'"
-      >
-        {{ $t('transport.tab_vehicles') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'students' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'students'"
-      >
-        {{ $t('transport.tab_students') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'logs' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'logs'"
-      >
-        {{ $t('transport.tab_logs') }}
-      </button>
+    <!-- Tabs with Action Button on the Right -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex gap-6 overflow-x-auto">
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'manifest' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'manifest'"
+        >
+          {{ $t('transport.tab_manifest') }}
+        </button>
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'map' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'map'"
+        >
+          {{ $t('transport.tab_map') }}
+        </button>
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'vehicles' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'vehicles'"
+        >
+          {{ $t('transport.tab_vehicles') }}
+        </button>
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'students' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'students'"
+        >
+          {{ $t('transport.tab_students') }}
+        </button>
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'logs' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'logs'"
+        >
+          {{ $t('transport.tab_logs') }}
+        </button>
+      </div>
+
+      <div class="pb-2.5 sm:pb-2 sm:ml-auto shrink-0 flex items-center gap-2">
+        <!-- Vehicles Tab Action -->
+        <button
+          v-if="activeTab === 'vehicles'"
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="openVehicleModal()"
+        >
+          <span>+ {{ $t('transport.add_vehicle') }}</span>
+        </button>
+
+        <!-- Students Tab Action -->
+        <button
+          v-else-if="activeTab === 'students'"
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="openAssignModal"
+        >
+          <span>+ {{ $t('transport.assign_student') }}</span>
+        </button>
+
+        <!-- Logs Tab Action -->
+        <template v-else-if="activeTab === 'logs'">
+          <button
+            type="button"
+            class="btn-secondary inline-flex items-center gap-1.5"
+            @click="fetchLogs"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>{{ $t('transport.refresh') }}</span>
+          </button>
+          <button
+            type="button"
+            class="btn-primary inline-flex items-center gap-1.5"
+            @click="scanModalOpen = true"
+          >
+            <span>{{ $t('transport.tap_card') }}</span>
+          </button>
+        </template>
+
+        <!-- Manifest / Map Tab Action -->
+        <button
+          v-else
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="scanModalOpen = true"
+        >
+          <span>{{ $t('transport.tap_card') }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- TAB 1: LIVE MANIFEST -->
@@ -170,16 +211,13 @@
       <div>
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-bold text-base text-slate-800 dark:text-white">{{ $t('transport.fleet_title') }}</h3>
-          <button type="button" class="btn-primary text-xs" @click="openVehicleModal()">
-            + {{ $t('transport.add_vehicle') }}
-          </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div v-for="v in vehicles" :key="v.vehicleId" class="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <span class="font-mono text-base font-extrabold text-teal-500">{{ v.plateNumber }}</span>
+                <span class="text-base font-bold text-teal-500 tracking-wide">{{ v.plateNumber }}</span>
                 <span
                   class="badge text-xs px-2 py-0.5 rounded font-semibold"
                   :class="v.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'"
@@ -191,7 +229,7 @@
               <p class="text-xs text-ink-muted mt-1">{{ $t('transport.capacity_label') }}: {{ v.capacity }} {{ $t('transport.seats') }}</p>
               <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <p class="text-ink-muted">{{ $t('transport.driver') }}: <span class="font-semibold text-slate-700 dark:text-slate-300">{{ v.driverName }}</span></p>
-                <p class="text-ink-muted font-mono mt-0.5">{{ $t('transport.phone') }}: {{ v.driverPhone }}</p>
+                <p class="text-ink-muted mt-0.5">{{ $t('transport.phone') }}: <span class="font-medium text-slate-700 dark:text-slate-300 tnum">{{ v.driverPhone }}</span></p>
               </div>
             </div>
             <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -247,14 +285,7 @@
     </section>
 
     <!-- TAB 3: ASSIGNED STUDENTS -->
-    <section v-if="activeTab === 'students'" class="panel p-6 flex flex-col gap-6">
-      <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base text-slate-800 dark:text-white">{{ $t('transport.students_title') }}</h3>
-        <button type="button" class="btn-primary text-xs" @click="openAssignModal">
-          + {{ $t('transport.assign_student') }}
-        </button>
-      </div>
-
+    <section v-if="activeTab === 'students'" class="panel overflow-hidden">
       <div class="overflow-x-auto">
         <table class="data-table w-full">
           <thead>
@@ -282,8 +313,13 @@
               <td class="text-xs">
                 {{ (locale === 'lo' ? bs.student.classStudents[0]?.class?.classNameLo : bs.student.classStudents[0]?.class?.classNameEn) || '—' }}
               </td>
-              <td class="text-xs font-mono text-teal-500 font-bold">
-                {{ bs.student.cards[0]?.cardUid || $t('transport.no_card') }}
+              <td class="text-xs">
+                <span v-if="bs.student.cards[0]" class="font-mono text-teal-500 font-bold">
+                  {{ bs.student.cards[0].cardUid }}
+                </span>
+                <span v-else class="text-ink-subtle">
+                  {{ $t('transport.no_card') }}
+                </span>
               </td>
               <td class="text-xs font-semibold text-slate-700 dark:text-slate-300">
                 {{ (locale === 'lo' ? bs.route?.routeNameLo : bs.route?.routeNameEn) || bs.route?.routeNameLo }}
@@ -303,11 +339,6 @@
 
     <!-- TAB 4: SCAN LOGS -->
     <section v-if="activeTab === 'logs'" class="panel overflow-hidden">
-      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="font-bold text-sm text-slate-800 dark:text-white">{{ $t('transport.logs_title') }}</h3>
-        <button type="button" class="btn-secondary text-xs" @click="fetchLogs">{{ $t('transport.refresh') }}</button>
-      </div>
-
       <div class="overflow-x-auto">
         <table class="data-table w-full">
           <thead>
@@ -345,7 +376,7 @@
               <td class="text-xs">
                 {{ log.direction === 'to_school' ? $t('transport.to_school') : $t('transport.to_home') }}
               </td>
-              <td class="text-xs font-mono font-semibold text-amber-500">
+              <td class="text-xs font-semibold text-amber-500">
                 {{ log.vehicle?.plateNumber || '—' }}
               </td>
               <td class="text-xs text-ink-muted">{{ log.location || '—' }}</td>
@@ -523,7 +554,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import PageHeader from '../../../components/PageHeader.vue';
 import AppModal from '../../../components/AppModal.vue';
 import StudentPicker from '../../../components/StudentPicker.vue';
 import AdminFleetMap from '../../../components/transport/AdminFleetMap.vue';

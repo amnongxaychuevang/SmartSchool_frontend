@@ -133,36 +133,39 @@
           </thead>
           <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60">
             <tr v-for="(grade, index) in academicsStore.grades" :key="grade.gradeId" class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-              <td class="text-sm text-slate-500 dark:text-slate-400 text-center">{{ (academicsStore.gradesPage - 1) * 10 + index + 1 }}</td>
-              <td>
-                <div class="flex items-center gap-3">
-                  <PersonAvatar :name="personName(grade.student)" :photo-url="grade.student && grade.student.photoUrl" size="sm" />
+              <td class="text-xs text-slate-500 dark:text-slate-400 text-center tnum whitespace-nowrap">{{ (academicsStore.gradesPage - 1) * 10 + index + 1 }}</td>
+              <td class="whitespace-nowrap">
+                <div class="flex items-center gap-2.5">
+                  <PersonAvatar :name="personName(grade.student)" :photo-url="grade.student && grade.student.photoUrl" size="xs" />
                   <div class="flex flex-col leading-tight">
-                    <span class="text-sm font-semibold text-slate-900 dark:text-white">{{ personName(grade.student) }}</span>
-                    <span class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">{{ grade.student && grade.student.studentCode }}</span>
+                    <span class="text-xs font-semibold text-slate-900 dark:text-white">{{ personName(grade.student) }}</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{{ grade.student && grade.student.studentCode }}</span>
                   </div>
                 </div>
               </td>
-              <td class="text-sm text-slate-700 dark:text-slate-300">{{ grade.class ? className(grade.class) : '—' }}</td>
-              <td class="text-sm text-slate-700 dark:text-slate-300">{{ grade.subject ? subjectName(grade.subject) : '—' }}</td>
-              <td class="text-sm text-slate-500 dark:text-slate-400">{{ grade.gradeType ? (locale === 'lo' ? grade.gradeType.typeNameLo : grade.gradeType.typeNameEn) : '—' }}</td>
-              <td class="text-sm text-slate-500 dark:text-slate-400 tnum">{{ grade.gradeMonth || '—' }}</td>
-              <td class="text-right tnum"><span class="text-sm font-semibold text-slate-900 dark:text-white">{{ f.number(grade.score, 2) }}</span><span class="text-xs text-slate-500 dark:text-slate-400"> / {{ f.number(grade.maxScore, 2) }}</span></td>
-              <td class="align-middle">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" :class="grade.isPublished ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 ring-1 ring-inset ring-teal-600/20 dark:ring-teal-500/20' : 'bg-slate-50 dark:bg-slate-500/10 text-slate-700 dark:text-slate-400 ring-1 ring-inset ring-slate-600/20 dark:ring-slate-500/20'">
+              <td class="text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ grade.class ? className(grade.class) : '—' }}</td>
+              <td class="text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ grade.subject ? subjectName(grade.subject) : '—' }}</td>
+              <td class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ grade.gradeType ? (locale === 'lo' ? grade.gradeType.typeNameLo : grade.gradeType.typeNameEn) : '—' }}</td>
+              <td class="text-xs text-slate-500 dark:text-slate-400 tnum whitespace-nowrap">{{ grade.gradeMonth || '—' }}</td>
+              <td class="text-right tnum whitespace-nowrap">
+                <span class="text-xs font-semibold text-slate-900 dark:text-white">{{ f.number(grade.score, 2) }}</span>
+                <span class="text-[10px] text-slate-500 dark:text-slate-400"> / {{ f.number(grade.maxScore, 2) }}</span>
+              </td>
+              <td class="align-middle whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium" :class="grade.isPublished ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 ring-1 ring-inset ring-teal-600/20 dark:ring-teal-500/20' : 'bg-slate-50 dark:bg-slate-500/10 text-slate-700 dark:text-slate-400 ring-1 ring-inset ring-slate-600/20 dark:ring-slate-500/20'">
                   <div class="w-1.5 h-1.5 rounded-full mr-1.5" :class="grade.isPublished ? 'bg-teal-500' : 'bg-slate-400'"></div>
                   {{ grade.isPublished ? $t('grades_admin.col_published') : $t('grades_admin.draft') }}
                 </span>
               </td>
-              <td class="align-middle text-right">
+              <td class="align-middle text-right whitespace-nowrap">
                 <div class="inline-flex items-center justify-end gap-1">
-                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openEdit(grade)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <button type="button" class="p-1 rounded text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openEdit(grade)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
-                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="openDelete(grade)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <button type="button" class="p-1 rounded text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="openDelete(grade)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>

@@ -459,6 +459,7 @@
     "no_cards": "No active cards",
     "recorded": "Recorded",
     "history": "Taps this session",
+    "history_empty": "No taps recorded in this session yet",
     "auto_direction": "Check-in or check-out is decided by the system",
     "tab_kiosk": "Gate Kiosk Mode",
     "tab_simulator": "Manual Simulator",
@@ -769,7 +770,11 @@
     "upcoming": "Upcoming",
     "completed": "Completed",
     "graduated": "Graduated",
-    "transferred": "Transferred"
+    "transferred": "Transferred",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "partial": "Partial",
+    "overdue": "Overdue"
   },
   "topups": {
     "title": "Top-up requests",
@@ -906,6 +911,10 @@
     "col_name": "Shop",
     "col_location": "Location",
     "col_description": "Description",
+    "col_vendor": "Tenant",
+    "col_phone": "Contact Phone",
+    "col_rental_type": "Rental Scheme",
+    "col_rental_amount": "Rent Rate",
     "name_lo": "Name (Lao)",
     "name_en": "Name (English)",
     "location_lo": "Location (Lao)",
@@ -966,6 +975,7 @@
     "title": "Notifications",
     "subtitle": "Messages sent to parents and staff, with their delivery status",
     "all_status": "All statuses",
+    "search_placeholder": "Search recipient, message...",
     "send": "Send notification",
     "empty": "No notifications",
     "col_type": "Type",
@@ -1002,6 +1012,7 @@
   "pos": {
     "title": "Point of Sale (POS)",
     "subtitle": "Scan a student card and deduct from their wallet",
+    "search_placeholder": "Search transactions or card UID...",
     "select_shop": "Select shop",
     "choose_shop": "— Choose your shop —",
     "card_uid": "Student card UID",
@@ -1627,7 +1638,9 @@
     "generate_title": "Generate Invoices",
     "generate_msg": "This will create invoices for all eligible students in the relevant classes who have not been billed yet.",
     "generate_confirm": "Generate",
-    "generate_result": "Created {created} invoices, {existing} already existed"
+    "generate_result": "Created {created} invoices, {existing} already existed",
+    "search_placeholder": "Search fee structures, classes, terms...",
+    "search_type_placeholder": "Search fee types..."
   },
   "password": {
     "change_title": "Change password",
@@ -2358,6 +2371,7 @@
     "subtitle": "Monthly salary calculation, approval, and payout processing",
     "periods": "Payroll Periods",
     "generate_period": "Generate Monthly Payroll",
+    "search_placeholder": "Search payroll periods...",
     "generate_desc": "The system will automatically pull all active teachers along with their base salary and bank transfer details.",
     "select_month": "Select Month (YYYY-MM)",
     "period_month": "Month",

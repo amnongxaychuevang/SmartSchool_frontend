@@ -232,9 +232,14 @@ export const financeRepository = {
   },
 
   // Fee Types
-  async getFeeTypes() {
-    const res = await useApiClient()<ApiResponse<{ feeTypes: FeeType[] }>>(API_ENDPOINTS.fees.types, { method: 'GET' });
-    return res.data.feeTypes;
+  async getFeeTypes(params?: { search?: string; page?: number; limit?: number }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.limit) query.set('limit', String(params.limit));
+    const url = query.toString() ? `${API_ENDPOINTS.fees.types}?${query}` : API_ENDPOINTS.fees.types;
+    const res = await useApiClient()<ApiResponse<Paged<'feeTypes', FeeType>>>(url, { method: 'GET' });
+    return res.data;
   },
   async createFeeType(payload: Partial<FeeType>) {
     const res = await useApiClient()<ApiResponse<{ feeType: FeeType }>>(API_ENDPOINTS.fees.types, { method: 'POST', body: payload });
@@ -253,12 +258,16 @@ export const financeRepository = {
   },
 
   // Fee Structures
-  async getFeeStructures(academicYear?: string) {
+  async getFeeStructures(params?: { academicYear?: string; search?: string; page?: number; limit?: number } | string) {
+    const p = typeof params === 'string' ? { academicYear: params } : params;
     const query = new URLSearchParams();
-    if (academicYear) query.set('academicYear', academicYear);
+    if (p?.academicYear) query.set('academicYear', p.academicYear);
+    if (p?.search) query.set('search', p.search);
+    if (p?.page) query.set('page', String(p.page));
+    if (p?.limit) query.set('limit', String(p.limit));
     const url = query.toString() ? `${API_ENDPOINTS.fees.structures}?${query}` : API_ENDPOINTS.fees.structures;
-    const res = await useApiClient()<ApiResponse<{ structures: FeeStructure[] }>>(url, { method: 'GET' });
-    return res.data.structures;
+    const res = await useApiClient()<ApiResponse<Paged<'structures', FeeStructure>>>(url, { method: 'GET' });
+    return res.data;
   },
   async createFeeStructure(payload: Record<string, unknown>) {
     const res = await useApiClient()<ApiResponse<{ structure: FeeStructure }>>(API_ENDPOINTS.fees.structures, { method: 'POST', body: payload });

@@ -34,6 +34,7 @@ export const useAcademicsStore = defineStore('academics', {
     notificationsTotal: 0,
     notificationsPage: 1,
     notificationsSearch: '',
+    notificationsStatus: '',
     notificationsLoading: false,
 
     error: null as string | null,
@@ -202,9 +203,15 @@ export const useAcademicsStore = defineStore('academics', {
     async fetchNotifications(params?: { search?: string; status?: string; page?: number }) {
       this.notificationsLoading = true;
       if (params?.search !== undefined) this.notificationsSearch = params.search;
+      if (params?.status !== undefined) this.notificationsStatus = params.status;
       if (params?.page !== undefined) this.notificationsPage = params.page;
       try {
-        const res = await academicsRepository.getNotifications({ search: this.notificationsSearch, status: params?.status, page: this.notificationsPage, limit: NOTIFICATIONS_PER_PAGE });
+        const res = await academicsRepository.getNotifications({
+          search: this.notificationsSearch,
+          status: this.notificationsStatus || undefined,
+          page: this.notificationsPage,
+          limit: NOTIFICATIONS_PER_PAGE,
+        });
         this.notifications = res.notifications;
         this.notificationsTotal = res.total;
       } catch (err) {

@@ -38,8 +38,11 @@
           <tr>
             <th class="w-12 text-center">#</th>
             <th>{{ $t('shops_admin.col_name') }}</th>
-            <th>{{ $t('shops_admin.vendor_contact') }}</th>
-            <th>{{ $t('shops_admin.rental_scheme') }}</th>
+            <th>{{ $t('shops_admin.col_description') }}</th>
+            <th>{{ $t('shops_admin.col_vendor') }}</th>
+            <th>{{ $t('shops_admin.col_phone') }}</th>
+            <th>{{ $t('shops_admin.col_rental_type') }}</th>
+            <th class="text-right">{{ $t('shops_admin.col_rental_amount') }}</th>
             <th class="text-right">{{ $t('shops_admin.outstanding_rent') }}</th>
             <th>{{ $t('shops_admin.col_location') }}</th>
             <th>{{ $t('common.status') }}</th>
@@ -51,35 +54,39 @@
             <td class="text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
               {{ (financeStore.shopsPage - 1) * 15 + index + 1 }}
             </td>
-            <td class="text-sm font-medium text-slate-900 dark:text-white">
-              <div>{{ pick(shop.shopNameLo, shop.shopNameEn) }}</div>
-              <span v-if="shop.descriptionLo || shop.descriptionEn" class="text-xs text-slate-400 truncate max-w-xs block">
-                {{ pick(shop.descriptionLo, shop.descriptionEn) }}
-              </span>
+            <td class="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+              {{ pick(shop.shopNameLo, shop.shopNameEn) }}
             </td>
-            <td class="text-sm text-slate-600 dark:text-slate-300">
-              <div v-if="shop.vendorName" class="font-medium text-slate-900 dark:text-white">{{ shop.vendorName }}</div>
-              <div v-if="shop.vendorPhone" class="text-xs text-slate-400">{{ shop.vendorPhone }}</div>
-              <div v-if="!shop.vendorName && !shop.vendorPhone" class="text-xs text-slate-400">—</div>
+            <td class="text-xs text-slate-500 dark:text-slate-400 max-w-xs truncate" :title="pick(shop.descriptionLo, shop.descriptionEn) || ''">
+              {{ pick(shop.descriptionLo, shop.descriptionEn) || '—' }}
             </td>
-            <td class="text-sm">
+            <td class="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
+              {{ shop.vendorName || '—' }}
+            </td>
+            <td class="text-xs font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
+              {{ shop.vendorPhone || '—' }}
+            </td>
+            <td class="text-sm whitespace-nowrap">
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                 {{ formatBillingType(shop.rentalBillingType) }}
               </span>
-              <div v-if="shop.rentalAmount" class="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5">
-                {{ format.kip(shop.rentalAmount) }}
-              </div>
             </td>
-            <td class="text-sm text-right font-medium">
+            <td class="text-sm text-right font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+              {{ shop.rentalAmount ? format.kip(shop.rentalAmount) : '—' }}
+            </td>
+            <td class="text-sm text-right font-medium whitespace-nowrap">
               <span v-if="(shop.outstandingRental ?? 0) > 0" class="text-amber-600 dark:text-amber-400 font-bold">
                 {{ format.kip(shop.outstandingRental) }}
               </span>
-              <span v-else class="text-slate-400 text-xs">
+              <span v-else class="text-emerald-600 dark:text-emerald-400 font-semibold text-xs inline-flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
                 {{ $t('status.paid') }}
               </span>
             </td>
-            <td class="text-sm text-slate-500 dark:text-slate-400">{{ pick(shop.locationLo, shop.locationEn) || '—' }}</td>
-            <td>
+            <td class="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ pick(shop.locationLo, shop.locationEn) || '—' }}</td>
+            <td class="whitespace-nowrap">
               <span
                 class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                 :class="shop.isActive ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20' : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20'"

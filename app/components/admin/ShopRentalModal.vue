@@ -81,8 +81,23 @@
             <input v-model="newPeriod.dueDate" type="date" required class="input-field text-xs">
           </div>
           <div>
-            <label class="block text-xs font-semibold mb-1">{{ $t('shops_admin.rental_amount') }} (LAK)</label>
-            <input v-model.number="newPeriod.amount" type="number" min="1" step="1000" required class="input-field text-xs">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold">{{ $t('shops_admin.rental_amount') }} (LAK)</label>
+              <span v-if="newPeriod.amount" class="text-[11px] font-mono font-bold text-teal-600 dark:text-teal-400">
+                {{ format.kip(newPeriod.amount) }}
+              </span>
+            </div>
+            <div class="relative">
+              <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 select-none">₭</span>
+              <input
+                v-model="displayNewPeriodAmount"
+                type="text"
+                inputmode="numeric"
+                required
+                placeholder="0"
+                class="input-field pl-6 text-xs font-mono font-semibold"
+              >
+            </div>
           </div>
           <div class="sm:col-span-3">
             <label class="block text-xs font-semibold mb-1">{{ $t('shops_admin.rental_notes') }}</label>
@@ -215,7 +230,7 @@
     </div>
 
     <!-- Record Payment Sub-Modal -->
-    <AppModal :open="!!selectedRental" :title="$t('shops_admin.record_payment_modal_title')" size="md" @update:open="if (!$event) selectedRental = null">
+    <AppModal :open="!!selectedRental" :title="$t('shops_admin.record_payment_modal_title')" size="md" @update:open="(val: boolean) => { if (!val) selectedRental = null; }">
       <form v-if="selectedRental" id="payment-form" class="space-y-4 text-sm" @submit.prevent="submitRecordPayment">
         <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex justify-between items-center">
           <div>
@@ -231,15 +246,23 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold mb-1.5">{{ $t('shops_admin.payment_amount') }} (LAK)</label>
-          <input
-            v-model.number="payForm.amount"
-            type="number"
-            min="1000"
-            step="1000"
-            required
-            class="input-field"
-          >
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold">{{ $t('shops_admin.payment_amount') }} (LAK)</label>
+            <span v-if="payForm.amount" class="text-xs font-mono font-bold text-teal-600 dark:text-teal-400">
+              {{ format.kip(payForm.amount) }}
+            </span>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 select-none">₭</span>
+            <input
+              v-model="displayPayAmount"
+              type="text"
+              inputmode="numeric"
+              required
+              placeholder="0"
+              class="input-field pl-7 font-mono font-semibold text-teal-600 dark:text-teal-400"
+            >
+          </div>
         </div>
 
         <div>
@@ -278,7 +301,7 @@
     </AppModal>
 
     <!-- Slip Image Preview Modal -->
-    <AppModal :open="!!previewSlipUrl" :title="$t('shops_admin.transfer_slip_preview')" size="md" @update:open="if (!$event) previewSlipUrl = null">
+    <AppModal :open="!!previewSlipUrl" :title="$t('shops_admin.transfer_slip_preview')" size="md" @update:open="(val: boolean) => { if (!val) previewSlipUrl = null; }">
       <div v-if="previewSlipUrl" class="flex flex-col items-center justify-center p-2">
         <img :src="previewSlipUrl" alt="Transfer Slip" class="max-h-[70vh] rounded-lg shadow object-contain">
       </div>
@@ -352,6 +375,22 @@ const newPeriod = reactive({
   dueDate: new Date().toISOString().slice(0, 10),
   amount: 0,
   notes: '',
+});
+
+const displayNewPeriodAmount = computed({
+  get: () => (newPeriod.amount ? Number(newPeriod.amount).toLocaleString('en-US') : ''),
+  set: (val: string) => {
+    const cleaned = val.replace(/\D/g, '');
+    newPeriod.amount = cleaned ? Number(cleaned) : 0;
+  },
+});
+
+const displayPayAmount = computed({
+  get: () => (payForm.amount ? Number(payForm.amount).toLocaleString('en-US') : ''),
+  set: (val: string) => {
+    const cleaned = val.replace(/\D/g, '');
+    payForm.amount = cleaned ? Number(cleaned) : 0;
+  },
 });
 
 const totalOutstanding = computed(() => {

@@ -8,6 +8,8 @@ export const INVOICES_PER_PAGE = 15;
 export const WALLETS_PER_PAGE = 15;
 export const TOPUPS_PER_PAGE = 15;
 export const SHOPS_PER_PAGE = 15;
+export const FEE_STRUCTURES_PER_PAGE = 10;
+export const FEE_TYPES_PER_PAGE = 10;
 
 export const useFinanceStore = defineStore('finance', {
   state: () => ({
@@ -32,11 +34,18 @@ export const useFinanceStore = defineStore('finance', {
     shopsLoading: false,
 
     feeTypes: [] as FeeType[],
+    feeTypesTotal: 0,
+    feeTypesPage: 1,
+    feeTypesSearch: '',
     feeTypesLoading: false,
+    allFeeTypes: [] as FeeType[],
 
     feeStructures: [] as FeeStructure[],
-    feeStructuresLoading: false,
+    feeStructuresTotal: 0,
+    feeStructuresPage: 1,
+    feeStructuresSearch: '',
     feeStructuresYear: '',
+    feeStructuresLoading: false,
 
     invoices: [] as Invoice[],
     invoicesTotal: 0,
@@ -175,38 +184,69 @@ export const useFinanceStore = defineStore('finance', {
     },
 
     // Fee Types
-    async fetchFeeTypes() {
+    async fetchFeeTypes(params?: { search?: string; page?: number; limit?: number }) {
       this.feeTypesLoading = true;
+      if (params?.search !== undefined) this.feeTypesSearch = params.search;
+      if (params?.page !== undefined) this.feeTypesPage = params.page;
       try {
-        this.feeTypes = await financeRepository.getFeeTypes();
+        const res = await financeRepository.getFeeTypes({
+          search: this.feeTypesSearch,
+          page: this.feeTypesPage,
+          limit: params?.limit || FEE_TYPES_PER_PAGE,
+        });
+        this.feeTypes = res.feeTypes;
+        this.feeTypesTotal = res.total;
       } catch (err) {
         this.error = getErrorMessage(err);
       } finally {
         this.feeTypesLoading = false;
       }
     },
+    async fetchAllFeeTypes() {
+      try {
+        const res = await financeRepository.getFeeTypes();
+        this.allFeeTypes = res.feeTypes;
+      } catch (err) {
+        this.error = getErrorMessage(err);
+      }
+    },
     async createFeeType(payload: Partial<FeeType>) {
       const ft = await financeRepository.createFeeType(payload);
-      this.feeTypes.unshift(ft);
+      await this.fetchFeeTypes();
+      await this.fetchAllFeeTypes();
       return ft;
     },
     async updateFeeType(id: number, payload: Partial<FeeType>) {
       const ft = await financeRepository.updateFeeType(id, payload);
-      const idx = this.feeTypes.findIndex(t => t.feeTypeId === id);
-      if (idx !== -1) this.feeTypes[idx] = ft;
+      await this.fetchFeeTypes();
+      await this.fetchAllFeeTypes();
       return ft;
     },
     async deleteFeeType(id: number) {
       await financeRepository.deleteFeeType(id);
-      this.feeTypes = this.feeTypes.filter(t => t.feeTypeId !== id);
+      await this.fetchFeeTypes();
+      await this.fetchAllFeeTypes();
     },
 
     // Fee Structures
-    async fetchFeeStructures(academicYear?: string) {
+    async fetchFeeStructures(params?: { academicYear?: string; search?: string; page?: number; limit?: number } | string) {
       this.feeStructuresLoading = true;
-      if (academicYear !== undefined) this.feeStructuresYear = academicYear;
+      if (typeof params === 'string') {
+        this.feeStructuresYear = params;
+      } else if (params) {
+        if (params.academicYear !== undefined) this.feeStructuresYear = params.academicYear;
+        if (params.search !== undefined) this.feeStructuresSearch = params.search;
+        if (params.page !== undefined) this.feeStructuresPage = params.page;
+      }
       try {
-        this.feeStructures = await financeRepository.getFeeStructures(this.feeStructuresYear || undefined);
+        const res = await financeRepository.getFeeStructures({
+          academicYear: this.feeStructuresYear || undefined,
+          search: this.feeStructuresSearch,
+          page: this.feeStructuresPage,
+          limit: typeof params === 'object' && params?.limit ? params.limit : FEE_STRUCTURES_PER_PAGE,
+        });
+        this.feeStructures = res.structures;
+        this.feeStructuresTotal = res.total;
       } catch (err) {
         this.error = getErrorMessage(err);
       } finally {
@@ -225,7 +265,7 @@ export const useFinanceStore = defineStore('finance', {
     },
     async deleteFeeStructure(id: number) {
       await financeRepository.deleteFeeStructure(id);
-      this.feeStructures = this.feeStructures.filter(s => s.feeStructureId !== id);
+      await this.fetchFeeStructures();
     },
     async generateInvoices(feeStructureId: number) {
       const result = await financeRepository.generateInvoices(feeStructureId);

@@ -1,19 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
-      :title="$t('library.title')"
-      :subtitle="$t('library.subtitle')"
-    >
-      <div class="flex items-center gap-3">
-        <button type="button" class="btn-primary flex items-center gap-2" @click="activeTab = 'terminal'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
-          <span>{{ $t('library.borrow_terminal') }}</span>
-        </button>
-      </div>
-    </PageHeader>
-
     <!-- Stats -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="panel p-4 flex items-center gap-4">
@@ -65,32 +51,57 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex gap-6">
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'terminal' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'terminal'"
-      >
-        {{ $t('library.tab_terminal') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'books' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'books'"
-      >
-        {{ $t('library.tab_catalog') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'loans' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'loans'"
-      >
-        {{ $t('library.tab_loans') }}
-      </button>
+    <!-- Tabs with Action Button on the Right -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex gap-6 overflow-x-auto">
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'terminal' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'terminal'"
+        >
+          {{ $t('library.tab_terminal') }}
+        </button>
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'books' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'books'"
+        >
+          {{ $t('library.tab_catalog') }}
+        </button>
+        <button
+          type="button"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
+          :class="activeTab === 'loans' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+          @click="activeTab = 'loans'"
+        >
+          {{ $t('library.tab_loans') }}
+        </button>
+      </div>
+
+      <div class="pb-2.5 sm:pb-2 sm:ml-auto shrink-0 flex items-center gap-2">
+        <button
+          v-if="activeTab === 'books'"
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="openBookModal()"
+        >
+          <span>+ {{ $t('library.add_book') }}</span>
+        </button>
+
+        <button
+          v-else
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="activeTab = 'terminal'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span>{{ $t('library.borrow_terminal') }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- TAB 1: SMART CARD BORROW TERMINAL -->
@@ -413,7 +424,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import PageHeader from '../../../components/PageHeader.vue';
 import AppModal from '../../../components/AppModal.vue';
 import StudentPicker from '../../../components/StudentPicker.vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';

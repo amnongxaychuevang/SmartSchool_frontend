@@ -1,10 +1,8 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('cards_admin.title')" :subtitle="$t('cards_admin.subtitle')" />
-
-    <!-- Filters -->
-    <div class="flex flex-wrap items-center gap-2">
-      <div class="relative w-full sm:w-80">
+    <!-- Header + Search / Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="relative flex-1 max-w-md">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
@@ -15,11 +13,11 @@
           </svg>
         </button>
       </div>
-      <select v-model="statusFilter" class="input-field w-full sm:w-48" :aria-label="$t('common.status')" @change="handleFilter">
+      <select v-model="statusFilter" class="input-field w-full sm:w-44" :aria-label="$t('common.status')" @change="handleFilter">
         <option value="">{{ $t('cards_admin.all_status') }}</option>
         <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
       </select>
-      <div class="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-auto">
+      <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
         <NuxtLink to="/admin/cards/print" class="btn-secondary flex-1 sm:flex-none flex items-center justify-center gap-1.5 font-semibold text-teal-600 dark:text-teal-400">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -40,34 +38,34 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
-              <th>{{ $t('cards_admin.col_uid') }}</th>
-              <th>{{ $t('cards_admin.col_student_code') }}</th>
-              <th>{{ $t('cards_admin.col_student') }}</th>
-              <th>{{ $t('common.status') }}</th>
-              <th>{{ $t('cards_admin.col_issued') }}</th>
-              <th>{{ $t('cards_admin.col_expires') }}</th>
-              <th>{{ $t('cards_admin.col_notes') }}</th>
-              <th class="text-right">{{ $t('common.actions') }}</th>
+              <th class="whitespace-nowrap">{{ $t('cards_admin.col_uid') }}</th>
+              <th class="whitespace-nowrap">{{ $t('cards_admin.col_student_code') }}</th>
+              <th class="whitespace-nowrap">{{ $t('cards_admin.col_student') }}</th>
+              <th class="whitespace-nowrap">{{ $t('common.status') }}</th>
+              <th class="whitespace-nowrap">{{ $t('cards_admin.col_issued') }}</th>
+              <th class="whitespace-nowrap">{{ $t('cards_admin.col_expires') }}</th>
+              <th class="whitespace-nowrap">{{ $t('cards_admin.col_notes') }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="card in academicsStore.cards" :key="card.cardId">
-              <td class="font-mono font-semibold text-primary-ink whitespace-nowrap">{{ card.cardUid }}</td>
+              <td class="font-mono text-xs font-semibold text-primary-ink whitespace-nowrap">{{ card.cardUid }}</td>
               <td class="font-mono text-xs text-ink-subtle whitespace-nowrap">{{ (card.student && card.student.studentCode) || '—' }}</td>
-              <td class="font-medium whitespace-nowrap">{{ studentName(card) }}</td>
-              <td><span :class="statusBadge[card.status]">{{ $t(`status.${card.status}`) }}</span></td>
-              <td class="tnum">{{ f.date(card.issuedDate) }}</td>
-              <td class="tnum">{{ f.date(card.expiredDate) }}</td>
-              <td class="max-w-xs truncate text-ink-muted" :title="card.notes || undefined">{{ card.notes || '—' }}</td>
-              <td class="text-right">
-                <div class="inline-flex gap-2">
-                  <NuxtLink :to="`/admin/cards/print?cardId=${card.cardId}`" class="btn-secondary min-h-8 px-2.5 flex items-center gap-1" :title="$t('card_print.title')">
+              <td class="text-xs font-medium whitespace-nowrap">{{ studentName(card) }}</td>
+              <td class="whitespace-nowrap"><span :class="statusBadge[card.status]">{{ $t(`status.${card.status}`) }}</span></td>
+              <td class="text-xs tnum whitespace-nowrap">{{ f.date(card.issuedDate) }}</td>
+              <td class="text-xs tnum whitespace-nowrap">{{ f.date(card.expiredDate) }}</td>
+              <td class="text-xs max-w-xs truncate text-ink-muted whitespace-nowrap" :title="card.notes || undefined">{{ card.notes || '—' }}</td>
+              <td class="text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <NuxtLink :to="`/admin/cards/print?cardId=${card.cardId}`" class="btn-secondary h-7 px-2 flex items-center gap-1 text-xs" :title="$t('card_print.title')">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
                   </NuxtLink>
-                  <button type="button" class="btn-secondary min-h-8 px-3" @click="openEdit(card)">{{ $t('common.edit') }}</button>
-                  <button type="button" class="btn-danger min-h-8 px-3" @click="openDelete(card)">{{ $t('common.delete') }}</button>
+                  <button type="button" class="btn-secondary h-7 px-2.5 text-xs" @click="openEdit(card)">{{ $t('common.edit') }}</button>
+                  <button type="button" class="btn-danger h-7 px-2.5 text-xs" @click="openDelete(card)">{{ $t('common.delete') }}</button>
                 </div>
               </td>
             </tr>

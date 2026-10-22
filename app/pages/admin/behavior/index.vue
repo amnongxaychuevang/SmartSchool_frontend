@@ -1,20 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Header -->
-    <PageHeader
-      :title="$t('behavior.title')"
-      :subtitle="$t('behavior.subtitle')"
-    >
-      <div class="flex items-center gap-3">
-        <button type="button" class="btn-primary flex items-center gap-2" @click="openCreateModal">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>{{ $t('behavior.log_incident') }}</span>
-        </button>
-      </div>
-    </PageHeader>
-
     <!-- Overview Stats -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="panel p-4 flex items-center gap-4">
@@ -71,7 +56,7 @@
       <button
         type="button"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'records' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+        :class="activeTab === 'records' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'records'"
       >
         {{ $t('behavior.tab_records') }}
@@ -79,7 +64,7 @@
       <button
         type="button"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'scores' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+        :class="activeTab === 'scores' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'scores'"
       >
         {{ $t('behavior.tab_scores') }}
@@ -87,7 +72,7 @@
       <button
         type="button"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'categories' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+        :class="activeTab === 'categories' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'categories'"
       >
         {{ $t('behavior.tab_categories') }}
@@ -95,106 +80,145 @@
     </div>
 
     <!-- TAB 1: RECORDS -->
-    <section v-if="activeTab === 'records'" class="panel overflow-hidden">
-      <!-- Filters -->
-      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3 flex-1 min-w-[240px]">
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="input-field max-w-sm"
-            :placeholder="$t('behavior.search_placeholder')"
-            @input="debouncedFetch"
-          />
-          <select v-model="typeFilter" class="input-field w-auto" @change="fetchRecords">
+    <div v-if="activeTab === 'records'" class="flex flex-col gap-4">
+      <!-- Filters & Action in same row (separated from table) -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[240px]">
+          <div class="relative flex-1 max-w-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="search-bar"
+              :placeholder="$t('behavior.search_placeholder')"
+              @input="debouncedFetch"
+            />
+            <button
+              v-if="searchQuery"
+              type="button"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+              @click="clearSearch"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <select v-model="typeFilter" class="input-field w-full sm:w-auto" :aria-label="$t('behavior.col_type')" @change="onFilterChange">
             <option value="">{{ $t('behavior.all_types') }}</option>
             <option value="merit">{{ $t('behavior.type_merit') }}</option>
             <option value="demerit">{{ $t('behavior.type_demerit') }}</option>
           </select>
         </div>
+
+        <button type="button" class="btn-primary inline-flex items-center gap-1.5 self-start sm:self-auto shrink-0 sm:ml-auto" @click="openCreateModal">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>{{ $t('behavior.log_incident') }}</span>
+        </button>
       </div>
 
-      <!-- Table -->
-      <div class="overflow-x-auto">
-        <table class="data-table w-full">
-          <thead>
-            <tr>
-              <th>{{ $t('behavior.col_date') }}</th>
-              <th>{{ $t('behavior.col_student') }}</th>
-              <th>{{ $t('behavior.col_type') }}</th>
-              <th>{{ $t('behavior.col_title') }}</th>
-              <th>{{ $t('behavior.col_points') }}</th>
-              <th>{{ $t('behavior.col_action') }}</th>
-              <th>{{ $t('behavior.col_recorded_by') }}</th>
-              <th class="text-right">{{ $t('behavior.col_actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="loadingRecords">
-              <td colspan="8" class="text-center py-10 text-ink-muted">{{ $t('common.loading') }}</td>
-            </tr>
-            <tr v-else-if="!records.length">
-              <td colspan="8" class="text-center py-10 text-ink-muted">{{ $t('behavior.empty_records') }}</td>
-            </tr>
-            <tr v-for="rec in records" :key="rec.recordId">
-              <td class="text-xs text-ink-muted whitespace-nowrap">
-                {{ formatDate(rec.incidentDate) }}
-              </td>
-              <td>
-                <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
-                    {{ (locale === 'lo' ? rec.student.fullNameLo : rec.student.fullNameEn).charAt(0) }}
+      <!-- Table Panel -->
+      <section class="panel overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="data-table w-full min-w-max">
+            <thead>
+              <tr>
+                <th class="w-12 text-center whitespace-nowrap">#</th>
+                <th class="whitespace-nowrap">{{ $t('behavior.col_date') }}</th>
+                <th class="whitespace-nowrap">{{ $t('behavior.col_student') }}</th>
+                <th class="whitespace-nowrap">{{ $t('behavior.col_type') }}</th>
+                <th class="whitespace-nowrap">{{ $t('behavior.col_title') }}</th>
+                <th class="whitespace-nowrap">{{ $t('behavior.col_points') }}</th>
+                <th class="whitespace-nowrap">{{ $t('behavior.col_action') }}</th>
+                <th class="whitespace-nowrap">{{ $t('behavior.col_recorded_by') }}</th>
+                <th class="text-right whitespace-nowrap">{{ $t('behavior.col_actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loadingRecords">
+                <td colspan="9" class="text-center py-10 text-ink-muted">
+                  <LoadingSpinner />
+                </td>
+              </tr>
+              <tr v-else-if="!records.length">
+                <td colspan="9" class="text-center py-10 text-ink-muted">{{ $t('behavior.empty_records') }}</td>
+              </tr>
+              <tr v-for="(rec, i) in records" :key="rec.recordId">
+                <td class="text-center tnum text-ink-subtle text-xs">{{ (page - 1) * pageSize + i + 1 }}</td>
+                <td class="text-xs text-ink-muted whitespace-nowrap">
+                  {{ formatDate(rec.incidentDate) }}
+                </td>
+                <td class="whitespace-nowrap">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
+                      {{ (locale === 'lo' ? rec.student.fullNameLo : rec.student.fullNameEn).charAt(0) }}
+                    </div>
+                    <div>
+                      <button type="button" class="font-semibold text-xs text-slate-800 dark:text-white hover:text-primary text-left" @click="viewStudentConduct(rec.student.studentId)">
+                        {{ locale === 'lo' ? rec.student.fullNameLo : rec.student.fullNameEn }}
+                      </button>
+                      <p class="text-[11px] text-ink-muted font-mono">{{ rec.student.studentCode }}</p>
+                    </div>
                   </div>
-                  <div>
-                    <button type="button" class="font-semibold text-slate-800 dark:text-white hover:text-teal-500 text-left" @click="viewStudentConduct(rec.student.studentId)">
-                      {{ locale === 'lo' ? rec.student.fullNameLo : rec.student.fullNameEn }}
+                </td>
+                <td class="whitespace-nowrap">
+                  <span
+                    class="badge font-semibold text-xs px-2 py-0.5 rounded-md"
+                    :class="rec.type === 'merit' ? 'badge-success' : 'badge-danger'"
+                  >
+                    {{ rec.type === 'merit' ? $t('behavior.type_merit') : $t('behavior.type_demerit') }}
+                  </span>
+                </td>
+                <td>
+                  <p class="font-medium text-xs text-slate-800 dark:text-white">
+                    {{ locale === 'lo' ? rec.titleLo : rec.titleEn }}
+                  </p>
+                  <p v-if="rec.description" class="text-[11px] text-ink-muted line-clamp-1">{{ rec.description }}</p>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="font-bold text-xs" :class="rec.type === 'merit' ? 'text-emerald-500' : 'text-rose-500'">
+                    {{ rec.type === 'merit' ? `+${rec.points}` : `-${rec.points}` }}
+                  </span>
+                </td>
+                <td class="text-xs text-ink-muted max-w-[150px] truncate">
+                  {{ rec.actionTaken || '—' }}
+                </td>
+                <td class="text-xs text-ink-muted whitespace-nowrap">
+                  {{ rec.recorder ? (locale === 'lo' ? rec.recorder.fullNameLo : rec.recorder.fullNameEn) : '—' }}
+                </td>
+                <td class="text-right whitespace-nowrap">
+                  <div class="inline-flex gap-1">
+                    <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="openEditRecord(rec)">
+                      {{ $t('common.edit') }}
                     </button>
-                    <p class="text-[11px] text-ink-muted font-mono">{{ rec.student.studentCode }}</p>
+                    <button
+                      type="button"
+                      class="btn-danger text-xs px-2.5 py-1"
+                      @click="deleteRecord(rec.recordId)"
+                    >
+                      {{ $t('common.delete') }}
+                    </button>
                   </div>
-                </div>
-              </td>
-              <td>
-                <span
-                  class="badge font-semibold text-xs px-2 py-0.5 rounded-md"
-                  :class="rec.type === 'merit' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'"
-                >
-                  {{ rec.type === 'merit' ? $t('behavior.type_merit') : $t('behavior.type_demerit') }}
-                </span>
-              </td>
-              <td>
-                <p class="font-medium text-sm text-slate-800 dark:text-white">
-                  {{ locale === 'lo' ? rec.titleLo : rec.titleEn }}
-                </p>
-                <p v-if="rec.description" class="text-xs text-ink-muted line-clamp-1">{{ rec.description }}</p>
-              </td>
-              <td>
-                <span class="font-bold text-sm" :class="rec.type === 'merit' ? 'text-emerald-500' : 'text-rose-500'">
-                  {{ rec.type === 'merit' ? `+${rec.points}` : `-${rec.points}` }}
-                </span>
-              </td>
-              <td class="text-xs text-ink-muted max-w-[150px] truncate">
-                {{ rec.actionTaken || '—' }}
-              </td>
-              <td class="text-xs text-ink-muted">
-                {{ rec.recorder ? (locale === 'lo' ? rec.recorder.fullNameLo : rec.recorder.fullNameEn) : '—' }}
-              </td>
-              <td class="text-right whitespace-nowrap">
-                <button type="button" class="btn-secondary text-xs px-2.5 py-1 mr-2" @click="openEditRecord(rec)">
-                  {{ $t('common.edit') }}
-                </button>
-                <button
-                  type="button"
-                  class="btn-danger text-xs px-2.5 py-1"
-                  @click="deleteRecord(rec.recordId)"
-                >
-                  {{ $t('common.delete') }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <PaginationBar
+          :loading="loadingRecords"
+          :current-page="page"
+          :total-pages="totalPages"
+          :total="total"
+          :page-size="pageSize"
+          @update:page="onPageChange"
+          @update:page-size="onPageSizeChange"
+        />
+      </section>
+    </div>
 
     <!-- TAB 2: CONDUCT SCORES -->
     <section v-if="activeTab === 'scores'" class="panel overflow-hidden">
@@ -305,26 +329,31 @@
       </div>
     </section>
 
-    <!-- Modal: Create Behavior Record -->
-    <AppModal :open="createModalOpen" :title="editingRecord ? $t('behavior.modal_edit_title') : $t('behavior.modal_log_title')" @update:open="createModalOpen = $event">
-      <form class="flex flex-col gap-4" @submit.prevent="submitRecord">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Modal: Create / Edit Behavior Record -->
+    <AppModal
+      :open="createModalOpen"
+      :title="editingRecord ? $t('behavior.modal_edit_title') : $t('behavior.modal_log_title')"
+      size="lg"
+      @update:open="createModalOpen = $event"
+    >
+      <form id="incident-form" class="flex flex-col gap-3" @submit.prevent="submitRecord">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="sm:col-span-2">
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_student') }} *</label>
+            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_student') }} *</label>
             <p v-if="editingRecord" class="input-field bg-surface-2 text-ink-muted">
               {{ locale === 'lo' ? editingRecord.student.fullNameLo : editingRecord.student.fullNameEn }}
             </p>
             <StudentPicker v-else v-model="form.studentId" input-id="behavior-student" />
           </div>
           <div>
-            <label for="behavior-date" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_date') }} *</label>
+            <label for="behavior-date" class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_date') }} *</label>
             <input id="behavior-date" v-model="form.incidentDate" type="date" class="input-field" required :max="todayStr" />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_type') }} *</label>
+            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_type') }} *</label>
             <select v-model="form.type" class="input-field" required @change="onTypeChange">
               <option value="merit">{{ $t('behavior.type_merit') }}</option>
               <option value="demerit">{{ $t('behavior.type_demerit') }}</option>
@@ -332,7 +361,7 @@
           </div>
 
           <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.tab_categories') }}</label>
+            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.tab_categories') }}</label>
             <select v-model="form.categoryId" class="input-field" @change="onCategorySelect">
               <option :value="undefined">---</option>
               <option v-for="c in filteredCategories" :key="c.categoryId" :value="c.categoryId">
@@ -342,46 +371,46 @@
           </div>
         </div>
 
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.title_lo') }} *</label>
-          <input v-model.trim="form.titleLo" type="text" class="input-field" required />
-        </div>
-
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.title_en') }} *</label>
-          <input v-model.trim="form.titleEn" type="text" class="input-field" required />
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_points') }} *</label>
+            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.title_lo') }} *</label>
+            <input v-model.trim="form.titleLo" type="text" class="input-field" required />
+          </div>
+          <div>
+            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.title_en') }} *</label>
+            <input v-model.trim="form.titleEn" type="text" class="input-field" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_points') }} *</label>
             <input v-model.number="form.points" type="number" min="1" max="50" class="input-field" required />
           </div>
           <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_action') }}</label>
+            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_action') }}</label>
             <input v-model.trim="form.actionTaken" type="text" class="input-field" />
           </div>
         </div>
 
         <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('common.description') }}</label>
-          <textarea v-model.trim="form.description" class="input-field" rows="2"></textarea>
+          <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('common.description') }}</label>
+          <textarea v-model.trim="form.description" class="input-field py-1.5" rows="2"></textarea>
         </div>
 
-        <div v-if="!editingRecord" class="flex items-center gap-2 pt-2">
+        <div v-if="!editingRecord" class="flex items-center gap-2 pt-1">
           <input id="notify-parent" v-model="form.notifyParent" type="checkbox" class="rounded text-teal-500 focus:ring-teal-400" />
-          <label for="notify-parent" class="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <label for="notify-parent" class="text-xs font-medium text-slate-700 dark:text-slate-300">
             {{ $t('behavior.notify_parent_checkbox') }}
           </label>
         </div>
-
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-          <button type="button" class="btn-secondary" @click="createModalOpen = false">{{ $t('common.cancel') }}</button>
-          <button type="submit" class="btn-primary" :disabled="savingRecord">
-            {{ savingRecord ? $t('common.loading') : $t('common.save') }}
-          </button>
-        </div>
       </form>
+      <template #footer>
+        <button type="button" class="btn-secondary" @click="createModalOpen = false">{{ $t('common.cancel') }}</button>
+        <button type="submit" form="incident-form" class="btn-primary" :disabled="savingRecord || !form.studentId">
+          {{ savingRecord ? $t('common.loading') : $t('common.save') }}
+        </button>
+      </template>
     </AppModal>
 
     <!-- Modal: Add Category -->
@@ -419,9 +448,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import PageHeader from '../../../components/PageHeader.vue';
 import AppModal from '../../../components/AppModal.vue';
 import StudentPicker from '../../../components/StudentPicker.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
+import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 
@@ -444,6 +474,11 @@ const categories = ref<any[]>([]);
 const loadingRecords = ref(false);
 const searchQuery = ref('');
 const typeFilter = ref('');
+
+const page = ref(1);
+const pageSize = ref(15);
+const total = ref(0);
+const totalPages = ref(1);
 
 const selectedStudentId = ref<number | null>(null);
 const studentProfile = ref<any>(null);
@@ -512,14 +547,23 @@ const fetchCategories = async () => {
   }
 };
 
-const fetchRecords = async () => {
+const fetchRecords = async (p?: number) => {
+  if (typeof p === 'number') page.value = p;
   loadingRecords.value = true;
   try {
-    const query: any = {};
+    const query: any = {
+      page: page.value,
+      limit: pageSize.value,
+    };
     if (searchQuery.value) query.search = searchQuery.value;
     if (typeFilter.value) query.type = typeFilter.value;
     const res = await apiClient<any>(API_ENDPOINTS.behavior.records, { method: 'GET', query });
-    if (res?.data?.records) records.value = res.data.records;
+    if (res?.data?.records) {
+      records.value = res.data.records;
+      total.value = res.data.total ?? res.data.pagination?.total ?? 0;
+      totalPages.value = res.data.totalPages ?? res.data.pagination?.totalPages ?? 1;
+      page.value = res.data.page ?? res.data.pagination?.page ?? page.value;
+    }
   } catch (err) {
     console.error('Error fetching records:', err);
   } finally {
@@ -527,10 +571,28 @@ const fetchRecords = async () => {
   }
 };
 
+const onPageChange = (p: number) => {
+  fetchRecords(p);
+};
+
+const onPageSizeChange = (size: number) => {
+  pageSize.value = size;
+  fetchRecords(1);
+};
+
+const onFilterChange = () => {
+  fetchRecords(1);
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+  fetchRecords(1);
+};
+
 let debounceTimer: any = null;
 const debouncedFetch = () => {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(fetchRecords, 300);
+  debounceTimer = setTimeout(() => fetchRecords(1), 300);
 };
 
 const loadStudentConductScore = async (studentId: number | null) => {

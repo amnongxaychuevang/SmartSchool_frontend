@@ -1,7 +1,32 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('pos.title')" :subtitle="$t('pos.subtitle')">
-      <div class="flex items-center gap-3">
+    <!-- Header + Search & Sound Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="text"
+          :placeholder="$t('pos.search_placeholder')"
+          class="search-bar"
+          @keydown.enter.prevent="handleTopSearch"
+        >
+        <button
+          v-if="searchQuery"
+          type="button"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+          :aria-label="$t('common.clear')"
+          @click="searchQuery = ''"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0 sm:ml-auto">
         <!-- Sound toggle -->
         <button
           type="button"
@@ -19,7 +44,7 @@
           <span>{{ $t('pos.sound_enabled') }}</span>
         </button>
       </div>
-    </PageHeader>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left: scan + student info -->
@@ -228,8 +253,9 @@
             <span class="text-xs text-ink-muted font-mono">{{ history.length }} {{ $t('pos.transactions') }}</span>
           </div>
           <p v-if="!history.length" class="text-sm text-ink-subtle py-8 text-center">{{ $t('pos.no_transactions') }}</p>
+          <p v-else-if="!filteredHistory.length" class="text-sm text-ink-subtle py-8 text-center">{{ $t('common.empty') }}</p>
           <ul v-else class="flex flex-col gap-2 max-h-[60vh] overflow-y-auto divide-y divide-line">
-            <li v-for="(h, i) in history" :key="i" class="flex items-center justify-between gap-2 py-2.5">
+            <li v-for="(h, i) in filteredHistory" :key="i" class="flex items-center justify-between gap-2 py-2.5">
               <div class="min-w-0">
                 <p class="text-sm font-semibold truncate">{{ h.studentName }}</p>
                 <p class="text-xs text-ink-muted">{{ h.time }} · {{ h.shopName }}</p>
@@ -280,7 +306,6 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import type { Shop } from '../../../domain/models/Finance';
 import { financeRepository, type PosCard } from '../../../infrastructure/api/FinanceRepository';
-import PageHeader from '../../../components/PageHeader.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import { useFormat } from '../../../composables/useFormat';
 
@@ -312,6 +337,7 @@ const PRESET_AMOUNTS = [3000, 5000, 7000, 10000, 15000, 20000, 25000, 30000];
 const shops = ref<Shop[]>([]);
 const shopId = ref(0);
 const cardUid = ref('');
+const searchQuery = ref('');
 const lookingUp = ref(false);
 const lookupError = ref('');
 const student = ref<PosCard['student'] | null>(null);
@@ -321,6 +347,22 @@ const amount = ref<number | null>(null);
 const processing = ref(false);
 const lastResult = ref<LastResult | null>(null);
 const history = ref<HistoryEntry[]>([]);
+
+const filteredHistory = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return history.value;
+  return history.value.filter(h =>
+    h.studentName.toLowerCase().includes(q) ||
+    h.shopName.toLowerCase().includes(q) ||
+    String(h.amount).includes(q)
+  );
+});
+
+function handleTopSearch() {
+  if (!searchQuery.value) return;
+  cardUid.value = searchQuery.value.trim();
+  lookupCard();
+}
 
 // Audio & Rapid mode
 const soundEnabled = ref(true);

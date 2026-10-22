@@ -1,31 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('expenses.title')" :subtitle="$t('expenses.subtitle')">
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="btn-secondary flex items-center gap-2"
-          @click="openCategoryModal"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-ink-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
-          <span>{{ $t('expenses.add_category_quick') }}</span>
-        </button>
-
-        <button
-          type="button"
-          class="btn-primary flex items-center gap-2"
-          @click="openAddModal"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>{{ $t('expenses.add_expense') }}</span>
-        </button>
-      </div>
-    </PageHeader>
-
     <!-- Metrics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="panel p-5 flex items-center gap-4">
@@ -65,85 +39,113 @@
       </div>
     </div>
 
-    <!-- Filters Row under 3 Cards (All aligned to the Left) -->
-    <div class="flex flex-wrap items-center gap-3">
-      <!-- Search Bar -->
-      <div class="relative w-full sm:w-72">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input
-          v-model="searchInput"
-          type="text"
-          class="search-bar"
-          :placeholder="$t('expenses.search_placeholder')"
-          @input="handleSearch"
-        />
-        <button
-          v-if="searchInput"
-          type="button"
-          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
-          :aria-label="$t('common.clear')"
-          @click="clearSearch"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    <!-- Filters & Actions Row (Same row) -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <!-- Filters Group -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Search Bar -->
+        <div class="relative w-full sm:w-64">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
+          <input
+            v-model="searchInput"
+            type="text"
+            class="search-bar"
+            :placeholder="$t('expenses.search_placeholder')"
+            @input="handleSearch"
+          />
+          <button
+            v-if="searchInput"
+            type="button"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+            :aria-label="$t('common.clear')"
+            @click="clearSearch"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Category Filter -->
+        <select
+          v-model="filters.categoryId"
+          class="input-field w-auto"
+          :aria-label="$t('expenses.category_col')"
+          @change="applyFilters"
+        >
+          <option :value="undefined">{{ $t('expenses.all_categories') }}</option>
+          <option v-for="c in categories" :key="c.categoryId" :value="c.categoryId">
+            {{ pick(c.nameLo, c.nameEn) }}
+          </option>
+        </select>
+
+        <!-- Academic Year Filter -->
+        <select
+          v-model="filters.academicYear"
+          class="input-field w-auto"
+          :aria-label="$t('common.academic_year')"
+          @change="applyFilters"
+        >
+          <option value="">{{ $t('expenses.all_years') }}</option>
+          <option v-for="y in academicYears" :key="y" :value="y">{{ y }}</option>
+        </select>
+
+        <!-- Date Range Filter -->
+        <div class="flex items-center gap-1.5 text-xs text-ink-muted">
+          <input
+            v-model="filters.startDate"
+            type="date"
+            class="input-field w-auto text-xs"
+            :aria-label="$t('expenses.date')"
+            @change="applyFilters"
+          />
+          <span>-</span>
+          <input
+            v-model="filters.endDate"
+            type="date"
+            class="input-field w-auto text-xs"
+            :aria-label="$t('expenses.date')"
+            @change="applyFilters"
+          />
+        </div>
+
+        <!-- Clear Filters Button -->
+        <button
+          v-if="hasActiveFilters"
+          type="button"
+          class="btn-secondary text-xs px-2.5 py-1.5 text-ink-muted hover:text-rose-500 transition-colors"
+          @click="clearFilters"
+        >
+          {{ $t('common.clear') }}
         </button>
       </div>
 
-      <!-- Category Filter -->
-      <select
-        v-model="filters.categoryId"
-        class="input-field w-auto"
-        :aria-label="$t('expenses.category_col')"
-        @change="applyFilters"
-      >
-        <option :value="undefined">{{ $t('expenses.all_categories') }}</option>
-        <option v-for="c in categories" :key="c.categoryId" :value="c.categoryId">
-          {{ pick(c.nameLo, c.nameEn) }}
-        </option>
-      </select>
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 shrink-0 lg:ml-auto">
+        <button
+          type="button"
+          class="btn-secondary flex items-center gap-2"
+          @click="openCategoryModal"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-ink-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          <span>{{ $t('expenses.add_category_quick') }}</span>
+        </button>
 
-      <!-- Academic Year Filter -->
-      <select
-        v-model="filters.academicYear"
-        class="input-field w-auto"
-        :aria-label="$t('common.academic_year')"
-        @change="applyFilters"
-      >
-        <option value="">{{ $t('expenses.all_years') }}</option>
-        <option v-for="y in academicYears" :key="y" :value="y">{{ y }}</option>
-      </select>
-
-      <!-- Date Range Filter -->
-      <div class="flex items-center gap-1.5 text-xs text-ink-muted">
-        <input
-          v-model="filters.startDate"
-          type="date"
-          class="input-field w-auto text-xs"
-          :aria-label="$t('expenses.date')"
-          @change="applyFilters"
-        />
-        <span>-</span>
-        <input
-          v-model="filters.endDate"
-          type="date"
-          class="input-field w-auto text-xs"
-          :aria-label="$t('expenses.date')"
-          @change="applyFilters"
-        />
+        <button
+          type="button"
+          class="btn-primary flex items-center gap-2"
+          @click="openAddModal"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>{{ $t('expenses.add_expense') }}</span>
+        </button>
       </div>
-
-      <!-- Clear Filters Button -->
-      <button
-        v-if="hasActiveFilters"
-        type="button"
-        class="btn-secondary text-xs px-2.5 py-1.5 text-ink-muted hover:text-rose-500 transition-colors"
-        @click="clearFilters"
-      >
-        {{ $t('common.clear') }}
-      </button>
     </div>
 
     <!-- Table Section -->
@@ -334,18 +336,25 @@
           <!-- Amount & Payment Method -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
-                {{ $t('expenses.amount_col') }} *
-              </label>
-              <input
-                v-model.number="form.amount"
-                required
-                type="number"
-                min="1000"
-                step="500"
-                placeholder="50000"
-                class="input-field w-full font-mono font-bold text-rose-600 dark:text-rose-400"
-              />
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold text-ink uppercase tracking-wider block">
+                  {{ $t('expenses.amount_col') }} *
+                </label>
+                <span v-if="form.amount" class="text-xs font-mono font-bold text-rose-600 dark:text-rose-400">
+                  {{ f.kip(form.amount) }}
+                </span>
+              </div>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-subtle select-none">₭</span>
+                <input
+                  v-model="displayExpenseAmount"
+                  type="text"
+                  inputmode="numeric"
+                  required
+                  placeholder="50,000"
+                  class="input-field pl-7 w-full font-mono font-bold text-rose-600 dark:text-rose-400"
+                />
+              </div>
             </div>
             <div>
               <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
@@ -630,6 +639,14 @@ const form = ref({
   paymentMethod: 'cash',
   paidTo: '',
   referenceNo: '',
+});
+
+const displayExpenseAmount = computed({
+  get: () => (form.value.amount ? Number(form.value.amount).toLocaleString('en-US') : ''),
+  set: (val: string) => {
+    const cleaned = val.replace(/\D/g, '');
+    form.value.amount = cleaned ? Number(cleaned) : 0;
+  },
 });
 
 const newCategory = ref({

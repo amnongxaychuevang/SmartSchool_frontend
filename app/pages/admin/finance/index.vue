@@ -1,23 +1,26 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('wallets_admin.title')" :subtitle="$t('wallets_admin.subtitle')">
-      <div class="relative w-64">
+    <!-- Header + Search -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="relative flex-1 max-w-md">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('wallets_admin.search')" @input="handleSearch">
-        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="clearSearch">
+        <input v-model="searchInput" type="text" :placeholder="$t('wallets_admin.search')" class="search-bar" @input="handleSearch">
+        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear')" @click="clearSearch">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="load(1)">
-        <option value="">{{ $t('wallets_admin.all_status') }}</option>
-        <option value="active">{{ $t('status.active') }}</option>
-        <option value="frozen">{{ $t('status.frozen') }}</option>
-      </select>
-    </PageHeader>
+      <div class="flex flex-1 flex-wrap items-center gap-3">
+        <select v-model="statusFilter" class="input-field w-auto sm:w-44" :aria-label="$t('common.status')" @change="load(1)">
+          <option value="">{{ $t('wallets_admin.all_status') }}</option>
+          <option value="active">{{ $t('status.active') }}</option>
+          <option value="frozen">{{ $t('status.frozen') }}</option>
+        </select>
+      </div>
+    </div>
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="financeStore.walletsLoading" />
@@ -210,7 +213,6 @@ import { hasPermission } from '../../../components/layout/adminNav';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceStore, WALLETS_PER_PAGE } from '../../../application/stores/finance';
-import PageHeader from '../../../components/PageHeader.vue';
 import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';

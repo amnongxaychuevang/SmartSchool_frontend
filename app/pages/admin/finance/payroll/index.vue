@@ -1,19 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('payroll.title')" :subtitle="$t('payroll.subtitle')">
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="btn-primary flex items-center gap-2"
-          @click="openGenerateModal"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>{{ $t('payroll.generate_period') }}</span>
-        </button>
-      </div>
-    </PageHeader>
 
     <!-- Metrics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -66,15 +52,54 @@
       </div>
     </div>
 
+    <!-- Filters & Action Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          v-model="searchInput"
+          type="text"
+          :placeholder="$t('payroll.search_placeholder')"
+          class="search-bar"
+        >
+        <button
+          v-if="searchInput"
+          type="button"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+          :aria-label="$t('common.clear')"
+          @click="searchInput = ''"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0 sm:ml-auto">
+        <button
+          type="button"
+          class="btn-primary flex items-center gap-2"
+          @click="openGenerateModal"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>{{ $t('payroll.generate_period') }}</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Table Section -->
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="loading && !periods.length" />
-      <div v-else-if="!periods.length" class="py-16 text-center text-sm text-ink-subtle">
+      <div v-else-if="!filteredPeriods.length" class="py-16 text-center text-sm text-ink-subtle">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-ink-subtle/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
         </svg>
-        <p class="font-medium text-base text-ink mb-1">{{ $t('payroll.no_periods') }}</p>
-        <p class="text-xs text-ink-muted">{{ $t('payroll.generate_desc') }}</p>
+        <p class="font-medium text-base text-ink mb-1">{{ searchInput ? $t('common.empty') : $t('payroll.no_periods') }}</p>
+        <p class="text-xs text-ink-muted">{{ searchInput ? '' : $t('payroll.generate_desc') }}</p>
       </div>
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
@@ -92,7 +117,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(p, i) in periods" :key="p.periodId">
+            <tr v-for="(p, i) in filteredPeriods" :key="p.periodId">
               <td class="text-center tnum text-ink-subtle">{{ (page - 1) * limit + i + 1 }}</td>
               <td class="font-bold text-brand-600 dark:text-brand-400">
                 <NuxtLink :to="`/admin/finance/payroll/${p.periodId}`" class="hover:underline flex items-center gap-2">
@@ -168,21 +193,21 @@
       v-if="showModal"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
-      <div class="panel max-w-md w-full p-6 shadow-2xl relative">
-        <div class="flex items-center justify-between pb-4 border-b border-line mb-4">
-          <h3 class="font-bold text-lg text-ink">{{ $t('payroll.generate_period') }}</h3>
-          <button type="button" class="text-ink-subtle hover:text-ink" @click="showModal = false">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="panel max-w-md w-full p-4 sm:p-5 shadow-2xl relative">
+        <div class="flex items-center justify-between pb-2.5 border-b border-line mb-3">
+          <h3 class="font-bold text-base text-ink">{{ $t('payroll.generate_period') }}</h3>
+          <button type="button" class="text-ink-subtle hover:text-ink transition-colors p-1" @click="showModal = false">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <p class="text-xs text-ink-muted mb-4">{{ $t('payroll.generate_desc') }}</p>
+        <p class="text-xs text-ink-muted mb-3 leading-relaxed">{{ $t('payroll.generate_desc') }}</p>
 
-        <form class="flex flex-col gap-4" @submit.prevent="handleGenerate">
+        <form class="flex flex-col gap-3" @submit.prevent="handleGenerate">
           <div>
-            <label class="block text-xs font-semibold text-ink-muted uppercase mb-1.5">{{ $t('payroll.select_month') }}</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ $t('payroll.select_month') }}</label>
             <input
               v-model="newMonth"
               type="month"
@@ -192,24 +217,24 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-ink-muted uppercase mb-1.5">{{ $t('payroll.notes') }}</label>
-            <textarea
-              v-model="newNotes"
-              rows="3"
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ $t('payroll.notes') }}</label>
+            <input
+              v-model.trim="newNotes"
+              type="text"
               class="input-field w-full text-sm"
               :placeholder="$t('payroll.notes_placeholder')"
             />
           </div>
 
-          <div v-if="genError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-500">
+          <div v-if="genError" class="p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500">
             {{ genError }}
           </div>
 
-          <div class="flex items-center justify-end gap-3 pt-3 border-t border-line mt-2">
-            <button type="button" class="btn-secondary" @click="showModal = false">
+          <div class="flex items-center justify-end gap-2.5 pt-2.5 border-t border-line mt-1">
+            <button type="button" class="btn-secondary !py-1.5 !px-3.5 text-xs" @click="showModal = false">
               {{ $t('payroll.cancel') }}
             </button>
-            <button type="submit" class="btn-primary" :disabled="submitting">
+            <button type="submit" class="btn-primary !py-1.5 !px-3.5 text-xs" :disabled="submitting">
               <span v-if="submitting">{{ $t('common.processing') }}</span>
               <span v-else>{{ $t('payroll.generate_period') }}</span>
             </button>
@@ -222,12 +247,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { payrollRepository } from '../../../../infrastructure/api/PayrollRepository';
 import type { PayrollPeriod } from '../../../../domain/models/Payroll';
 import { useFormat } from '../../../../composables/useFormat';
-import PageHeader from '../../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../../components/LoadingSpinner.vue';
 
 definePageMeta({
@@ -244,6 +268,26 @@ const periods = ref<PayrollPeriod[]>([]);
 const totalPeriods = ref(0);
 const page = ref(1);
 const limit = ref(20);
+const searchInput = ref('');
+
+const filteredPeriods = computed(() => {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) return periods.value;
+  return periods.value.filter((p) => {
+    const monthRaw = (p.periodMonth || '').toLowerCase();
+    const monthDisplay = formatMonthDisplay(p.periodMonth).toLowerCase();
+    const notes = (p.notes || '').toLowerCase();
+    const status = (p.status || '').toLowerCase();
+    const statusLabel = t(`payroll.status_${p.status}`).toLowerCase();
+    return (
+      monthRaw.includes(query) ||
+      monthDisplay.includes(query) ||
+      notes.includes(query) ||
+      status.includes(query) ||
+      statusLabel.includes(query)
+    );
+  });
+});
 
 // Modal state
 const showModal = ref(false);

@@ -1,37 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
-      :title="$t('fees_admin.title')"
-      :subtitle="$t('fees_admin.subtitle')"
-    >
-      <div class="relative w-64">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('fees_admin.search')" @input="handleSearch">
-        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="clearSearch">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      <select
-        v-model="statusFilter"
-        class="input-field w-auto"
-        :aria-label="$t('common.status')"
-        @change="load(1)"
-      >
-        <option value="">{{ $t("fees_admin.all_status") }}</option>
-        <option value="unpaid">{{ $t("invoice_print.status_unpaid") }}</option>
-        <option value="partial">
-          {{ $t("invoice_print.status_partial") }}
-        </option>
-        <option value="paid">{{ $t("invoice_print.status_paid") }}</option>
-        <option value="overdue">{{ $t("fees_admin.overdue") }}</option>
-        <option value="void">{{ $t("invoice_print.status_void") }}</option>
-      </select>
-    </PageHeader>
-
     <!-- Stat cards -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <div class="panel px-4 py-3">
@@ -76,6 +44,36 @@
       </div>
     </div>
 
+    <!-- Filters (Under 4 cards) -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="relative flex-1 max-w-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('fees_admin.search')" @input="handleSearch">
+        <button v-if="searchInput" type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="clearSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <select
+        v-model="statusFilter"
+        class="input-field w-full sm:w-44"
+        :aria-label="$t('common.status')"
+        @change="load(1)"
+      >
+        <option value="">{{ $t("fees_admin.all_status") }}</option>
+        <option value="unpaid">{{ $t("invoice_print.status_unpaid") }}</option>
+        <option value="partial">
+          {{ $t("invoice_print.status_partial") }}
+        </option>
+        <option value="paid">{{ $t("invoice_print.status_paid") }}</option>
+        <option value="overdue">{{ $t("fees_admin.overdue") }}</option>
+        <option value="void">{{ $t("invoice_print.status_void") }}</option>
+      </select>
+    </div>
+
     <!-- Invoice table -->
     <section class="panel overflow-hidden">
       <LoadingSpinner
@@ -91,38 +89,38 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
-              <th class="w-12 text-center">#</th>
-              <th>{{ $t("fees_admin.col_invoice") }}</th>
-              <th>{{ $t("fees_admin.col_student") }}</th>
-              <th>{{ $t("fees_admin.col_class") }}</th>
-              <th>{{ $t("fees_admin.col_fee_type") }}</th>
-              <th class="text-right">{{ $t("fees_admin.col_amount") }}</th>
-              <th class="text-right">{{ $t("fees_admin.col_paid") }}</th>
-              <th class="text-right">{{ $t("fees_admin.col_outstanding") }}</th>
-              <th>{{ $t("fees_admin.col_due_date") }}</th>
-              <th>{{ $t("common.status") }}</th>
-              <th class="text-right">{{ $t("common.actions") }}</th>
+              <th class="w-12 text-center whitespace-nowrap">#</th>
+              <th class="whitespace-nowrap">{{ $t("fees_admin.col_invoice") }}</th>
+              <th class="whitespace-nowrap">{{ $t("fees_admin.col_student") }}</th>
+              <th class="whitespace-nowrap">{{ $t("fees_admin.col_class") }}</th>
+              <th class="whitespace-nowrap">{{ $t("fees_admin.col_fee_type") }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t("fees_admin.col_amount") }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t("fees_admin.col_paid") }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t("fees_admin.col_outstanding") }}</th>
+              <th class="whitespace-nowrap">{{ $t("fees_admin.col_due_date") }}</th>
+              <th class="whitespace-nowrap">{{ $t("common.status") }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t("common.actions") }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(inv, i) in financeStore.invoices" :key="inv.invoiceId">
-              <td class="text-center tnum text-ink-subtle">
+              <td class="text-center tnum text-ink-subtle text-xs">
                 {{ (financeStore.invoicesPage - 1) * INVOICES_PER_PAGE + i + 1 }}
               </td>
               <td class="font-mono text-xs whitespace-nowrap">
                 {{ inv.invoiceNo }}
               </td>
-              <td class="font-semibold">{{ studentName(inv) }}</td>
-              <td class="text-ink-muted">{{ className(inv) || "—" }}</td>
-              <td class="text-ink-muted">{{ feeTypeName(inv) }}</td>
-              <td class="text-right font-semibold tnum">
+              <td class="font-semibold text-xs whitespace-nowrap">{{ studentName(inv) }}</td>
+              <td class="text-ink-muted text-xs whitespace-nowrap">{{ className(inv) || "—" }}</td>
+              <td class="text-ink-muted text-xs whitespace-nowrap">{{ feeTypeName(inv) }}</td>
+              <td class="text-right font-semibold tnum text-xs whitespace-nowrap">
                 {{ f.kip(inv.amountDue) }}
               </td>
-              <td class="text-right tnum text-success">
+              <td class="text-right tnum text-success text-xs whitespace-nowrap">
                 {{ f.kip(inv.paidAmount) }}
               </td>
               <td
-                class="text-right tnum"
+                class="text-right tnum text-xs whitespace-nowrap"
                 :class="
                   inv.outstanding > 0
                     ? 'text-danger font-semibold'
@@ -132,7 +130,7 @@
                 {{ f.kip(inv.outstanding) }}
               </td>
               <td
-                class="whitespace-nowrap"
+                class="whitespace-nowrap text-xs"
                 :class="
                   inv.overdue ? 'text-danger font-semibold' : 'text-ink-muted'
                 "
@@ -144,21 +142,21 @@
                   >{{ $t("fees_admin.overdue") }}</span
                 >
               </td>
-              <td>
+              <td class="whitespace-nowrap">
                 <span :class="statusBadge[inv.status]">{{
                   $t(`invoice_print.status_${inv.status}`)
                 }}</span>
               </td>
-              <td class="text-right">
-                <div class="inline-flex gap-1">
+              <td class="text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1">
                   <NuxtLink
                     :to="`/admin/finance/invoice/${inv.invoiceId}`"
-                    class="btn-secondary min-h-8 px-2.5"
+                    class="btn-secondary h-7 px-2 flex items-center"
                     :title="$t('fees_admin.view_invoice')"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4"
+                      class="h-3.5 w-3.5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -180,13 +178,13 @@
                   <button
                     v-if="inv.status !== 'paid' && inv.status !== 'void'"
                     type="button"
-                    class="btn-primary min-h-8 px-2.5"
+                    class="btn-primary h-7 px-2 flex items-center"
                     :title="$t('fees_admin.record_payment')"
                     @click="openPayment(inv)"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4"
+                      class="h-3.5 w-3.5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -202,13 +200,13 @@
                   <button
                     v-if="inv.status !== 'void' && inv.paidAmount === 0"
                     type="button"
-                    class="btn-danger min-h-8 px-2.5"
+                    class="btn-danger h-7 px-2 flex items-center"
                     :title="$t('fees_admin.void')"
                     @click="openVoid(inv)"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4"
+                      class="h-3.5 w-3.5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -403,7 +401,6 @@ import type { Invoice } from "../../../domain/models/Finance";
 import { ref, reactive, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useFinanceStore, INVOICES_PER_PAGE } from "../../../application/stores/finance";
-import PageHeader from "../../../components/PageHeader.vue";
 import AppModal from "../../../components/AppModal.vue";
 import LoadingSpinner from "../../../components/LoadingSpinner.vue";
 import { useFormat } from "../../../composables/useFormat";

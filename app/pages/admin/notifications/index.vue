@@ -1,12 +1,55 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('notifications_admin.title')" :subtitle="$t('notifications_admin.subtitle')">
-      <select v-model="statusFilter" class="input-field w-auto" :aria-label="$t('common.status')" @change="load(1)">
-        <option value="">{{ $t('notifications_admin.all_status') }}</option>
-        <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
-      </select>
-      <button type="button" class="btn-primary" @click="openCreate">{{ $t('notifications_admin.send') }}</button>
-    </PageHeader>
+    <!-- Search & Filter Row with Action Button on the Right -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+        <div class="relative flex-1 max-w-md">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="search-bar"
+            :placeholder="$t('notifications_admin.search_placeholder')"
+            @input="onSearchInput"
+          >
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+            @click="clearSearch"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <select
+          v-model="statusFilter"
+          class="input-field w-full sm:w-44"
+          :aria-label="$t('common.status')"
+          @change="onStatusChange"
+        >
+          <option value="">{{ $t('notifications_admin.all_status') }}</option>
+          <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2 sm:ml-auto">
+        <button
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="openCreate"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          {{ $t('notifications_admin.send') }}
+        </button>
+      </div>
+    </div>
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="academicsStore.notificationsLoading" />
@@ -15,24 +58,28 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
-              <th class="w-12 text-center">#</th>
-              <th>{{ $t('notifications_admin.col_sent') }}</th>
-              <th>{{ $t('notifications_admin.col_type') }}</th>
-              <th>{{ $t('notifications_admin.channel') }}</th>
-              <th>{{ $t('notifications_admin.col_message') }}</th>
-              <th>{{ $t('notifications_admin.col_recipient') }}</th>
-              <th>{{ $t('common.status') }}</th>
+              <th class="w-12 text-center whitespace-nowrap">#</th>
+              <th class="whitespace-nowrap">{{ $t('notifications_admin.col_sent') }}</th>
+              <th class="whitespace-nowrap">{{ $t('notifications_admin.col_type') }}</th>
+              <th class="whitespace-nowrap">{{ $t('notifications_admin.channel') }}</th>
+              <th class="whitespace-nowrap">{{ $t('notifications_admin.col_message') }}</th>
+              <th class="whitespace-nowrap">{{ $t('notifications_admin.col_recipient') }}</th>
+              <th class="whitespace-nowrap">{{ $t('common.status') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(n, i) in academicsStore.notifications" :key="n.notificationId">
-              <td class="text-center tnum text-ink-subtle">{{ (academicsStore.notificationsPage - 1) * NOTIFICATIONS_PER_PAGE + i + 1 }}</td>
-              <td class="tnum whitespace-nowrap">{{ f.dateTime(n.sentAt) }}</td>
-              <td class="font-semibold">{{ $t(`notifications_admin.types.${n.type}`) }}</td>
-              <td class="text-ink-muted">{{ $t(`notifications_admin.channels.${n.channel}`) }}</td>
-              <td class="max-w-md whitespace-normal text-ink-muted">{{ locale === 'lo' ? n.messageLo : n.messageEn }}</td>
-              <td>{{ n.recipient ? (locale === 'lo' ? n.recipient.fullNameLo : n.recipient.fullNameEn) : '—' }}</td>
-              <td><span :class="statusBadge[n.status]">{{ $t(`status.${n.status}`) }}</span></td>
+              <td class="text-center tnum text-ink-subtle text-xs">{{ (academicsStore.notificationsPage - 1) * NOTIFICATIONS_PER_PAGE + i + 1 }}</td>
+              <td class="tnum whitespace-nowrap text-xs text-ink-muted">{{ f.dateTime(n.sentAt) }}</td>
+              <td class="font-semibold text-xs whitespace-nowrap">{{ $t(`notifications_admin.types.${n.type}`) }}</td>
+              <td class="text-ink-muted text-xs whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-medium">
+                  {{ $t(`notifications_admin.channels.${n.channel}`) }}
+                </span>
+              </td>
+              <td class="max-w-md whitespace-normal text-ink-muted text-xs line-clamp-2">{{ locale === 'lo' ? n.messageLo : n.messageEn }}</td>
+              <td class="text-xs whitespace-nowrap font-medium">{{ n.recipient ? (locale === 'lo' ? n.recipient.fullNameLo : n.recipient.fullNameEn) : '—' }}</td>
+              <td class="whitespace-nowrap"><span :class="statusBadge[n.status]">{{ $t(`status.${n.status}`) }}</span></td>
             </tr>
           </tbody>
         </table>
@@ -90,11 +137,11 @@ import type { AppNotification } from '../../../domain/models/Academics';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAcademicsStore, NOTIFICATIONS_PER_PAGE } from '../../../application/stores/academics';
-import PageHeader from '../../../components/PageHeader.vue';
 
 import AppModal from '../../../components/AppModal.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import UserPicker from '../../../components/UserPicker.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
 import { useFormat } from '../../../composables/useFormat';
 
 definePageMeta({ layout: 'admin' });
@@ -106,11 +153,36 @@ useHead({ title: () => t('notifications_admin.title') });
 const academicsStore = useAcademicsStore();
 const statuses = ['pending', 'sent', 'failed'] as const;
 const statusBadge: Record<AppNotification['status'], string> = { pending: 'badge-warning', sent: 'badge-success', failed: 'badge-danger' };
+
+const searchQuery = ref('');
 const statusFilter = ref('');
 const totalPages = computed(() => Math.ceil(academicsStore.notificationsTotal / NOTIFICATIONS_PER_PAGE));
 
-// The status filter is passed on every call, so paging keeps it.
-const load = (page: number) => academicsStore.fetchNotifications({ status: statusFilter.value || undefined, page });
+let searchTimer: ReturnType<typeof setTimeout>;
+const onSearchInput = () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    load(1);
+  }, 300);
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+  load(1);
+};
+
+const onStatusChange = () => {
+  load(1);
+};
+
+const load = (page: number) => {
+  academicsStore.fetchNotifications({
+    search: searchQuery.value,
+    status: statusFilter.value || undefined,
+    page,
+  });
+};
+
 onMounted(() => load(1));
 
 // Must match the API's enums.

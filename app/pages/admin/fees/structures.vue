@@ -1,42 +1,83 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('fee_structures.title')" :subtitle="$t('fee_structures.subtitle')" />
+    <!-- Tabs -->
+    <div role="tablist" class="flex max-w-full overflow-x-auto gap-6">
+      <button
+        v-for="tab in tabs"
+        :id="`tab-${tab.id}`"
+        :key="tab.id"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === tab.id"
+        :aria-controls="`panel-${tab.id}`"
+        :class="[
+          'flex items-center gap-2 pb-2 text-sm font-semibold whitespace-nowrap transition-colors border-b-2',
+          activeTab === tab.id ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white',
+        ]"
+        @click="selectTab(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
 
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <!-- Tabs -->
-      <div role="tablist" class="flex max-w-full overflow-x-auto gap-6">
-        <button
-          v-for="tab in tabs"
-          :id="`tab-${tab.id}`"
-          :key="tab.id"
-          type="button"
-          role="tab"
-          :aria-selected="activeTab === tab.id"
-          :aria-controls="`panel-${tab.id}`"
-          :class="[
-            'flex items-center gap-2 pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2',
-            activeTab === tab.id ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white',
-          ]"
-          @click="selectTab(tab.id)"
+    <!-- Search & Filter Row with Action Button on Right Hand Side -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+        <div class="relative flex-1 max-w-md">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="search-bar"
+            :placeholder="activeTab === 'structures' ? $t('fee_structures.search_placeholder') : $t('fee_structures.search_type_placeholder')"
+            @input="onSearchInput"
+          >
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
+            @click="clearSearch"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <select
+          v-if="activeTab === 'structures'"
+          v-model="yearFilter"
+          class="input-field w-full sm:w-44"
+          :aria-label="$t('fee_structures.col_year')"
+          @change="onYearChange"
         >
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <div v-if="activeTab === 'structures'" class="flex items-center gap-2 pb-2">
-        <select v-model="yearFilter" class="input-field w-auto" :aria-label="$t('fee_structures.col_year')" @change="financeStore.fetchFeeStructures(yearFilter)">
           <option value="">{{ $t('fee_structures.all_years') }}</option>
           <option v-for="y in academicYears" :key="y" :value="y">{{ y }}</option>
         </select>
-        <button type="button" class="btn-primary inline-flex items-center gap-1.5" @click="openStructureForm()">
+      </div>
+
+      <div class="flex items-center gap-2 sm:ml-auto">
+        <button
+          v-if="activeTab === 'structures'"
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="openStructureForm()"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
           {{ $t('fee_structures.add_structure') }}
         </button>
+        <button
+          v-else
+          type="button"
+          class="btn-primary inline-flex items-center gap-1.5"
+          @click="openTypeForm()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          {{ $t('fee_structures.add_type') }}
+        </button>
       </div>
-      <button v-else type="button" class="btn-primary inline-flex items-center gap-1.5 mb-2" @click="openTypeForm()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-        {{ $t('fee_structures.add_type') }}
-      </button>
     </div>
 
     <!-- ── Fee Types ── -->
@@ -48,22 +89,22 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
-              <th class="w-12 text-center">#</th>
-              <th>{{ $t('fee_structures.type_name_en') }}</th>
-              <th>{{ $t('fee_structures.type_name_lo') }}</th>
-              <th>{{ $t('common.status') }}</th>
-              <th>{{ $t('fee_structures.col_invoices') }}</th>
-              <th class="text-right">{{ $t('common.actions') }}</th>
+              <th class="w-12 text-center whitespace-nowrap">#</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.type_name_en') }}</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.type_name_lo') }}</th>
+              <th class="whitespace-nowrap">{{ $t('common.status') }}</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.col_invoices') }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(ft, i) in financeStore.feeTypes" :key="ft.feeTypeId">
-              <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
-              <td class="font-semibold">{{ ft.nameEn }}</td>
-              <td>{{ ft.nameLo }}</td>
-              <td><span :class="ft.isActive ? 'badge-success' : 'badge-muted'">{{ ft.isActive ? $t('status.active') : $t('status.inactive') }}</span></td>
-              <td class="text-ink-muted">{{ $t('fee_structures.type_used', { count: (ft._count && ft._count.structures) || 0 }) }}</td>
-              <td class="text-right">
+              <td class="text-center tnum text-ink-subtle text-xs">{{ (typePage - 1) * typePageSize + i + 1 }}</td>
+              <td class="font-semibold text-xs whitespace-nowrap">{{ ft.nameEn }}</td>
+              <td class="text-xs whitespace-nowrap">{{ ft.nameLo }}</td>
+              <td class="whitespace-nowrap"><span :class="ft.isActive ? 'badge-success' : 'badge-muted'">{{ ft.isActive ? $t('status.active') : $t('status.inactive') }}</span></td>
+              <td class="text-ink-muted text-xs whitespace-nowrap">{{ $t('fee_structures.type_used', { count: (ft._count && ft._count.structures) || 0 }) }}</td>
+              <td class="text-right whitespace-nowrap">
                 <div class="inline-flex gap-1">
                   <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openTypeForm(ft)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -77,6 +118,15 @@
           </tbody>
         </table>
       </div>
+      <PaginationBar
+        :loading="financeStore.feeTypesLoading"
+        :current-page="typePage"
+        :total-pages="typeTotalPages"
+        :total="financeStore.feeTypesTotal"
+        :page-size="typePageSize"
+        @update:page="onTypePageChange"
+        @update:page-size="onTypePageSizeChange"
+      />
     </section>
 
     <!-- ── Fee Structures ── -->
@@ -88,33 +138,33 @@
         <table class="data-table w-full min-w-max">
           <thead>
             <tr>
-              <th class="w-12 text-center">#</th>
-              <th>{{ $t('fee_structures.col_fee_type') }}</th>
-              <th>{{ $t('fee_structures.col_year') }}</th>
-              <th>{{ $t('fee_structures.col_term') }}</th>
-              <th>{{ $t('fee_structures.col_class') }}</th>
-              <th class="text-right">{{ $t('fee_structures.col_amount') }}</th>
-              <th>{{ $t('fee_structures.col_due') }}</th>
-              <th class="text-right">{{ $t('fee_structures.col_invoices') }}</th>
-              <th class="text-right">{{ $t('fee_structures.col_collected') }}</th>
-              <th class="text-right">{{ $t('common.actions') }}</th>
+              <th class="w-12 text-center whitespace-nowrap">#</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.col_fee_type') }}</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.col_year') }}</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.col_term') }}</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.col_class') }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t('fee_structures.col_amount') }}</th>
+              <th class="whitespace-nowrap">{{ $t('fee_structures.col_due') }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t('fee_structures.col_invoices') }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t('fee_structures.col_collected') }}</th>
+              <th class="text-right whitespace-nowrap">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(s, i) in financeStore.feeStructures" :key="s.feeStructureId">
-              <td class="text-center tnum text-ink-subtle">{{ i + 1 }}</td>
-              <td class="font-semibold">{{ pick(s.feeType && s.feeType.nameLo, s.feeType && s.feeType.nameEn) }}</td>
-              <td>{{ s.academicYear }}</td>
-              <td class="text-ink-muted">{{ s.term ? pick(s.term.termNameLo, s.term.termNameEn) : $t('fee_structures.all_terms') }}</td>
-              <td class="text-ink-muted">{{ s.class ? pick(s.class.classNameLo, s.class.classNameEn) : $t('fee_structures.all_classes') }}</td>
-              <td class="text-right font-semibold tnum">{{ f.kip(s.amount) }}</td>
-              <td class="whitespace-nowrap text-ink-muted">{{ f.date(s.dueDate) }}</td>
-              <td class="text-right tnum">{{ f.number(s.invoiceCount || 0) }}</td>
-              <td class="text-right tnum">
+              <td class="text-center tnum text-ink-subtle text-xs">{{ (structPage - 1) * structPageSize + i + 1 }}</td>
+              <td class="font-semibold text-xs whitespace-nowrap">{{ pick(s.feeType && s.feeType.nameLo, s.feeType && s.feeType.nameEn) }}</td>
+              <td class="text-xs whitespace-nowrap">{{ s.academicYear }}</td>
+              <td class="text-ink-muted text-xs whitespace-nowrap">{{ s.term ? pick(s.term.termNameLo, s.term.termNameEn) : $t('fee_structures.all_terms') }}</td>
+              <td class="text-ink-muted text-xs whitespace-nowrap">{{ s.class ? pick(s.class.classNameLo, s.class.classNameEn) : $t('fee_structures.all_classes') }}</td>
+              <td class="text-right font-semibold tnum text-xs whitespace-nowrap">{{ f.kip(s.amount) }}</td>
+              <td class="whitespace-nowrap text-ink-muted text-xs">{{ f.date(s.dueDate) }}</td>
+              <td class="text-right tnum text-xs whitespace-nowrap">{{ f.number(s.invoiceCount || 0) }}</td>
+              <td class="text-right tnum text-xs whitespace-nowrap">
                 <span v-if="(s.billed || 0) > 0">{{ f.kip(s.collected) }} / {{ f.kip(s.billed) }}</span>
                 <span v-else class="text-ink-subtle">—</span>
               </td>
-              <td class="text-right">
+              <td class="text-right whitespace-nowrap">
                 <div class="inline-flex gap-1">
                   <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('fee_structures.generate')" @click="openGenerate(s)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -131,6 +181,15 @@
           </tbody>
         </table>
       </div>
+      <PaginationBar
+        :loading="financeStore.feeStructuresLoading"
+        :current-page="structPage"
+        :total-pages="structTotalPages"
+        :total="financeStore.feeStructuresTotal"
+        :page-size="structPageSize"
+        @update:page="onStructPageChange"
+        @update:page-size="onStructPageSizeChange"
+      />
     </section>
 
     <!-- ── Fee Type Form Modal ── -->
@@ -263,15 +322,15 @@
 import type { FeeType, FeeStructure } from '../../../domain/models/Finance';
 import type { AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
 import type { SchoolClass } from '../../../domain/models/SchoolClass';
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceStore } from '../../../application/stores/finance';
 import { academicsRepository } from '../../../infrastructure/api/AcademicsRepository';
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
-import PageHeader from '../../../components/PageHeader.vue';
 import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
+import PaginationBar from '../../../components/PaginationBar.vue';
 import { useFormat } from '../../../composables/useFormat';
 
 definePageMeta({ layout: 'admin' });
@@ -283,12 +342,94 @@ useHead({ title: () => t('fee_structures.title') });
 const financeStore = useFinanceStore();
 const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) ?? '';
 
+const searchQuery = ref('');
 const yearFilter = ref('');
 const academicYears = ref<string[]>([]);
 const terms = ref<AcademicTerm[]>([]);
 const classes = ref<SchoolClass[]>([]);
 
-const activeFeeTypes = computed(() => financeStore.feeTypes.filter(ft => ft.isActive));
+const activeFeeTypes = computed(() => {
+  const pool = financeStore.allFeeTypes.length ? financeStore.allFeeTypes : financeStore.feeTypes;
+  return pool.filter(ft => ft.isActive);
+});
+
+// ── Backend Pagination ──
+const structPage = ref(1);
+const structPageSize = ref(10);
+const structTotalPages = computed(() => Math.max(1, Math.ceil(financeStore.feeStructuresTotal / structPageSize.value)));
+
+const typePage = ref(1);
+const typePageSize = ref(10);
+const typeTotalPages = computed(() => Math.max(1, Math.ceil(financeStore.feeTypesTotal / typePageSize.value)));
+
+let searchTimer: ReturnType<typeof setTimeout>;
+const onSearchInput = () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    if (activeTab.value === 'structures') {
+      structPage.value = 1;
+      loadStructures();
+    } else {
+      typePage.value = 1;
+      loadTypes();
+    }
+  }, 300);
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+  if (activeTab.value === 'structures') {
+    structPage.value = 1;
+    loadStructures();
+  } else {
+    typePage.value = 1;
+    loadTypes();
+  }
+};
+
+const onYearChange = () => {
+  structPage.value = 1;
+  loadStructures();
+};
+
+const onStructPageChange = (p: number) => {
+  structPage.value = p;
+  loadStructures();
+};
+
+const onStructPageSizeChange = (s: number) => {
+  structPageSize.value = s;
+  structPage.value = 1;
+  loadStructures();
+};
+
+const onTypePageChange = (p: number) => {
+  typePage.value = p;
+  loadTypes();
+};
+
+const onTypePageSizeChange = (s: number) => {
+  typePageSize.value = s;
+  typePage.value = 1;
+  loadTypes();
+};
+
+const loadStructures = () => {
+  financeStore.fetchFeeStructures({
+    academicYear: yearFilter.value,
+    search: searchQuery.value,
+    page: structPage.value,
+    limit: structPageSize.value,
+  });
+};
+
+const loadTypes = () => {
+  financeStore.fetchFeeTypes({
+    search: searchQuery.value,
+    page: typePage.value,
+    limit: typePageSize.value,
+  });
+};
 
 // ── Tabs (kept in the URL as ?tab=types so a refresh stays put) ──
 type TabId = 'structures' | 'types';
@@ -299,6 +440,14 @@ const activeTab = ref<TabId>(route.query.tab === 'types' ? 'types' : 'structures
 const selectTab = (id: TabId) => {
   activeTab.value = id;
   router.replace({ query: { ...route.query, tab: id === 'types' ? 'types' : undefined } });
+  searchQuery.value = '';
+  if (id === 'structures') {
+    structPage.value = 1;
+    loadStructures();
+  } else {
+    typePage.value = 1;
+    loadTypes();
+  }
 };
 const tabs = computed(() => [
   { id: 'structures' as const, label: t('fee_structures.structures_title') },
@@ -306,8 +455,9 @@ const tabs = computed(() => [
 ]);
 
 onMounted(async () => {
-  financeStore.fetchFeeTypes();
-  financeStore.fetchFeeStructures();
+  financeStore.fetchAllFeeTypes();
+  loadStructures();
+  loadTypes();
   academicYears.value = await adminRepository.getClassAcademicYears();
   terms.value = await academicsRepository.getTerms();
   const classRes = await adminRepository.getClasses({ limit: 200 });
