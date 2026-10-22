@@ -178,6 +178,7 @@ const navItems = computed(() => [
   { to: '/teacher/behavior',      label: t('teacher_behavior.title'), icon: resolveComponent('IconBehavior') },
   { to: '/teacher/leaves',        label: t('teacherPortal.leave_approvals'),icon: resolveComponent('IconAttendance') },
   { to: '/teacher/my-leave',      label: t('teacher_leave.my_title'), icon: resolveComponent('IconLeave') },
+  { to: '/teacher/payslips',      label: t('payroll.my_payslips'), icon: resolveComponent('IconWallet') },
   { to: '/teacher/students',      label: t('nav.students'),       icon: resolveComponent('IconStudents') },
   { to: '/teacher/announcements', label: t('nav.announcements'),  icon: resolveComponent('IconReports') },
 ]);

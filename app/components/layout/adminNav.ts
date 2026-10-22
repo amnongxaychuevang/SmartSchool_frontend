@@ -47,6 +47,8 @@ export const ADMIN_NAV: AdminNavSection[] = [
   ] },
   { key: 'finance', items: [
     { to: '/admin/finance/pos', key: 'nav.pos', icon: 'IconWallet', permission: 'finance.pos' },
+    { to: '/admin/finance/payroll', key: 'nav.payroll', icon: 'IconReports', permission: 'finance.view' },
+    { to: '/admin/finance/expenses', key: 'nav.expenses', icon: 'IconReports', permission: 'finance.view' },
     { to: '/admin/finance/top-ups', key: 'nav.topUps', icon: 'IconWallet', permission: 'finance.view' },
     { to: '/admin/finance', key: 'nav.wallets', icon: 'IconWallet', permission: 'finance.view' },
     { to: '/admin/finance/spending-limits', key: 'nav.spendingLimits', icon: 'IconSettings', permission: 'finance.view' },
@@ -90,6 +92,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/reports/debtors', key: 'nav.debtors', icon: 'IconWallet', permission: ['fees.view', 'reports.view'] },
     { to: '/admin/reports/daily-cash', key: 'nav.dailyCash', icon: 'IconWallet', permission: ['fees.view', 'finance.view', 'reports.view'] },
     { to: '/admin/reports/shop-sales', key: 'nav.shopSales', icon: 'IconDashboard', permission: ['finance.view', 'reports.view'] },
+    { to: '/admin/reports/cashflow', key: 'nav.cashflow', icon: 'IconReports', permission: ['finance.view', 'reports.view'] },
   ] },
 ];
 

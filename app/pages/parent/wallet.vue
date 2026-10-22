@@ -132,20 +132,34 @@
 
         <!-- Where to transfer -->
         <template v-if="topUp.method === 'mobile_banking'">
-          <div v-if="paymentInfo" class="rounded-lg border border-line bg-surface-2 p-4 flex gap-4">
-            <div class="flex-1 min-w-0 flex flex-col gap-1">
-              <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('parent_wallet.pay_to') }}</p>
-              <p class="font-semibold">{{ paymentInfo.bankName }}</p>
-              <p class="text-sm">{{ paymentInfo.accountName }}</p>
-              <div class="flex items-center gap-2">
-                <span class="text-lg font-bold tnum">{{ paymentInfo.accountNumber }}</span>
-                <button type="button" class="text-xs text-primary hover:underline" @click="copyAccount">
+          <div v-if="paymentInfo" class="rounded-xl border border-line bg-surface-sunken p-4 flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+            <div class="flex-1 min-w-0 flex flex-col gap-1.5 w-full">
+              <span class="text-xs font-bold text-primary uppercase tracking-wider">{{ $t('parent_wallet.pay_to') }}</span>
+              <p class="font-bold text-ink text-base">{{ paymentInfo.bankName }}</p>
+              <p class="text-sm text-ink-muted">{{ paymentInfo.accountName }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-xl font-black font-mono tracking-wider text-ink">{{ paymentInfo.accountNumber }}</span>
+                <button
+                  type="button"
+                  class="btn-secondary !py-1 !px-2.5 text-xs inline-flex items-center gap-1 shrink-0"
+                  :class="copied ? '!bg-success-soft !text-success !border-success-line' : ''"
+                  @click="copyAccount"
+                >
+                  <svg v-if="!copied" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
                   {{ copied ? $t('parent_wallet.copied') : $t('parent_wallet.copy') }}
                 </button>
               </div>
-              <p v-if="paymentInfo.note" class="text-xs text-ink-muted mt-1">{{ paymentInfo.note }}</p>
+              <p v-if="paymentInfo.note" class="text-xs text-ink-subtle mt-1">{{ paymentInfo.note }}</p>
             </div>
-            <img v-if="mediaUrl(paymentInfo.qrUrl)" :src="mediaUrl(paymentInfo.qrUrl)!" :alt="$t('payment_info.qr')" class="w-28 h-28 shrink-0 rounded border border-line bg-white object-contain">
+            <div v-if="mediaUrl(paymentInfo.qrUrl)" class="flex flex-col items-center shrink-0">
+              <img :src="mediaUrl(paymentInfo.qrUrl)!" :alt="$t('payment_info.qr')" class="w-28 h-28 rounded-lg border border-line bg-white object-contain shadow-sm p-1">
+              <span class="text-[10px] text-ink-subtle mt-1 font-medium">Scan to Pay</span>
+            </div>
           </div>
           <p v-else class="rounded-lg border border-warning-line bg-warning-soft text-warning px-4 py-3 text-sm">{{ $t('parent_wallet.no_payment_info') }}</p>
         </template>
@@ -153,13 +167,25 @@
 
         <div class="flex flex-col gap-1.5">
           <label for="topup-amount" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('parentPortal.amount') }}</label>
-          <input id="topup-amount" v-model.number="topUp.amount" type="number" required min="1000" step="1000" class="input-field tnum" :placeholder="$t('wallet_ui.ph_amount')">
+          <input id="topup-amount" v-model.number="topUp.amount" type="number" required min="1000" step="1000" class="input-field tnum font-semibold text-base" :placeholder="$t('wallet_ui.ph_amount')">
+          <div class="flex flex-wrap gap-1.5 mt-1">
+            <button
+              v-for="amt in [20000, 50000, 100000, 200000, 500000]"
+              :key="amt"
+              type="button"
+              class="px-2.5 py-1 text-xs rounded-lg border transition-all font-medium tnum"
+              :class="topUp.amount === amt ? 'bg-primary text-white border-primary shadow-sm' : 'bg-surface border-line hover:border-ink-subtle text-ink'"
+              @click="topUp.amount = amt"
+            >
+              {{ fmt.kip(amt) }}
+            </button>
+          </div>
         </div>
 
         <div v-if="topUp.method === 'mobile_banking'" class="flex flex-col gap-1.5">
           <label for="topup-slip" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('parentPortal.upload_slip') }}</label>
           <input id="topup-slip" type="file" required accept="image/jpeg,image/png,image/webp" class="input-field" @change="onSlipChange">
-          <img v-if="slipPreview" :src="slipPreview" :alt="$t('topups.slip_image')" class="mt-1 max-h-48 rounded border border-line object-contain self-start">
+          <img v-if="slipPreview" :src="slipPreview" :alt="$t('topups.slip_image')" class="mt-2 max-h-48 rounded-lg border border-line object-contain self-start shadow-sm">
         </div>
 
         <p v-if="topUp.error" role="alert" class="text-sm text-danger">{{ topUp.error }}</p>

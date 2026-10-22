@@ -1,12 +1,31 @@
 // Shapes returned by the academics endpoints (subjects, grades, cards, notifications).
 
-/** Minimal student reference the API embeds in other records. */
 export interface StudentRef {
   studentId: number;
   studentCode: string;
   fullNameEn: string;
   fullNameLo: string;
   photoUrl?: string | null;
+  bloodType?: string | null;
+  gender?: string | null;
+  dateOfBirth?: string | null;
+  classStudents?: Array<{
+    class?: {
+      classId?: number;
+      classNameEn?: string;
+      classNameLo?: string;
+    } | null;
+  }>;
+  parentStudents?: Array<{
+    parent?: {
+      phoneNumber?: string | null;
+      user?: {
+        fullNameEn?: string;
+        fullNameLo?: string;
+        phoneNumber?: string | null;
+      } | null;
+    } | null;
+  }>;
 }
 
 /** Minimal user reference (teacher, approver, author, ...). */

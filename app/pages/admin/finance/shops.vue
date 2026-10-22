@@ -38,8 +38,10 @@
           <tr>
             <th class="w-12 text-center">#</th>
             <th>{{ $t('shops_admin.col_name') }}</th>
+            <th>{{ $t('shops_admin.vendor_contact') }}</th>
+            <th>{{ $t('shops_admin.rental_scheme') }}</th>
+            <th class="text-right">{{ $t('shops_admin.outstanding_rent') }}</th>
             <th>{{ $t('shops_admin.col_location') }}</th>
-            <th>{{ $t('shops_admin.col_description') }}</th>
             <th>{{ $t('common.status') }}</th>
             <th class="text-right">{{ $t('common.actions') }}</th>
           </tr>
@@ -50,10 +52,33 @@
               {{ (financeStore.shopsPage - 1) * 15 + index + 1 }}
             </td>
             <td class="text-sm font-medium text-slate-900 dark:text-white">
-              {{ pick(shop.shopNameLo, shop.shopNameEn) }}
+              <div>{{ pick(shop.shopNameLo, shop.shopNameEn) }}</div>
+              <span v-if="shop.descriptionLo || shop.descriptionEn" class="text-xs text-slate-400 truncate max-w-xs block">
+                {{ pick(shop.descriptionLo, shop.descriptionEn) }}
+              </span>
+            </td>
+            <td class="text-sm text-slate-600 dark:text-slate-300">
+              <div v-if="shop.vendorName" class="font-medium text-slate-900 dark:text-white">{{ shop.vendorName }}</div>
+              <div v-if="shop.vendorPhone" class="text-xs text-slate-400">{{ shop.vendorPhone }}</div>
+              <div v-if="!shop.vendorName && !shop.vendorPhone" class="text-xs text-slate-400">—</div>
+            </td>
+            <td class="text-sm">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                {{ formatBillingType(shop.rentalBillingType) }}
+              </span>
+              <div v-if="shop.rentalAmount" class="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5">
+                {{ format.kip(shop.rentalAmount) }}
+              </div>
+            </td>
+            <td class="text-sm text-right font-medium">
+              <span v-if="(shop.outstandingRental ?? 0) > 0" class="text-amber-600 dark:text-amber-400 font-bold">
+                {{ format.kip(shop.outstandingRental) }}
+              </span>
+              <span v-else class="text-slate-400 text-xs">
+                {{ $t('status.paid') }}
+              </span>
             </td>
             <td class="text-sm text-slate-500 dark:text-slate-400">{{ pick(shop.locationLo, shop.locationEn) || '—' }}</td>
-            <td class="text-sm text-slate-500 dark:text-slate-400 max-w-xs truncate">{{ pick(shop.descriptionLo, shop.descriptionEn) || '—' }}</td>
             <td>
               <span
                 class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
@@ -64,6 +89,14 @@
             </td>
             <td>
               <div class="flex items-center justify-end gap-1">
+                <button
+                  class="p-1.5 rounded-lg text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:bg-teal-500/10 transition-all"
+                  :title="$t('shops_admin.manage_rentals')"
+                  @click="openRentals(shop)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </button>
                 <button
                   class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all"
                   :title="$t('common.edit')"
@@ -96,6 +129,7 @@
     />
 
     <ShopFormModal :open="modal.open" :shop="modal.shop" @update:open="modal.open = $event" />
+    <ShopRentalModal :open="rentalModal.open" :shop="rentalModal.shop" @update:open="rentalModal.open = $event" @updated="financeStore.fetchShops()" />
 
     <ConfirmDialog
       :open="del.open"
@@ -116,17 +150,30 @@ import type { Shop } from '../../../domain/models/Finance';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceStore, SHOPS_PER_PAGE } from '../../../application/stores/finance';
+import { useFormat } from '../../../composables/useFormat';
+import { getErrorMessage } from '../../../utils/errors';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import ShopFormModal from '../../../components/admin/ShopFormModal.vue';
+import ShopRentalModal from '../../../components/admin/ShopRentalModal.vue';
 
 definePageMeta({ layout: 'admin' });
 
 const { t, locale } = useI18n();
+const format = useFormat();
 useHead({ title: () => t('shops_admin.title') });
 
 // Lao first in Lao, English first in English, falling back to whichever exists.
 const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) ?? '';
+
+function formatBillingType(type?: string) {
+  switch (type) {
+    case 'annual': return t('shops_admin.rental_type_annual');
+    case 'monthly': return t('shops_admin.rental_type_monthly');
+    case 'installment': return t('shops_admin.rental_type_installment');
+    default: return t('shops_admin.rental_type_none');
+  }
+}
 
 const financeStore = useFinanceStore();
 const searchInput = ref('');
@@ -143,6 +190,9 @@ const changePage = (page: number) => financeStore.fetchShops({ search: searchInp
 const modal = reactive({ open: false, shop: null as Shop | null });
 const openCreate = () => Object.assign(modal, { open: true, shop: null });
 const openEdit = (s: Shop) => Object.assign(modal, { open: true, shop: s });
+
+const rentalModal = reactive({ open: false, shop: null as Shop | null });
+const openRentals = (s: Shop) => Object.assign(rentalModal, { open: true, shop: s });
 
 const del = reactive({ open: false, busy: false, error: '', shop: null as Shop | null });
 const openDelete = (shop: Shop) => Object.assign(del, { open: true, busy: false, error: '', shop });

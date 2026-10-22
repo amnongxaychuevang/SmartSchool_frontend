@@ -135,10 +135,11 @@ export const academicsRepository = {
   },
 
   // Cards
-  async getCards(params: { search?: string; status?: string; page?: number; limit?: number } = {}) {
+  async getCards(params: { search?: string; status?: string; classId?: number; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();
     if (params.search) query.set('search', params.search);
     if (params.status) query.set('status', params.status);
+    if (params.classId) query.set('classId', String(params.classId));
     if (params.page) query.set('page', String(params.page));
     if (params.limit) query.set('limit', String(params.limit));
 

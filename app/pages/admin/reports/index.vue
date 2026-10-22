@@ -65,6 +65,7 @@ const GROUPS = [
     { to: '/admin/reports/daily-cash', title: 'reports.cash_title', desc: 'reports.cash_desc', icon: ICONS.cash, isNew: true },
     { to: '/admin/reports/wallet', title: 'reports.wallet_title', desc: 'reports.wallet_desc', icon: ICONS.wallet },
     { to: '/admin/reports/shop-sales', title: 'reports.shop_title', desc: 'reports.shop_desc', icon: ICONS.shop },
+    { to: '/admin/reports/cashflow', title: 'reports.cashflow_title', desc: 'reports.cashflow_desc', icon: ICONS.cash, isNew: true },
   ] },
 ];
 

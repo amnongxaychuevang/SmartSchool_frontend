@@ -80,7 +80,19 @@
       <form id="topup-form" class="flex flex-col gap-4" @submit.prevent="handleTopUp">
         <div>
           <label for="t-amount" class="block mb-1.5 text-sm font-semibold">{{ $t('wallets_admin.amount') }}</label>
-          <input id="t-amount" v-model.number="topUp.amount" required type="number" min="1000" step="1000" class="input-field tnum">
+          <input id="t-amount" v-model.number="topUp.amount" required type="number" min="1000" step="1000" class="input-field tnum font-semibold text-base">
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <button
+              v-for="amt in [20000, 50000, 100000, 200000, 500000]"
+              :key="amt"
+              type="button"
+              class="px-2.5 py-1 text-xs rounded-lg border transition-all font-medium tnum"
+              :class="topUp.amount === amt ? 'bg-primary text-white border-primary shadow-sm' : 'bg-surface border-line hover:border-ink-subtle text-ink'"
+              @click="topUp.amount = amt"
+            >
+              {{ f.kip(amt) }}
+            </button>
+          </div>
         </div>
         <div>
           <label for="t-notes" class="block mb-1.5 text-sm font-semibold">{{ $t('wallets_admin.notes') }}</label>

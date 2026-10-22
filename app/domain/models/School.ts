@@ -69,12 +69,19 @@ export interface AttendanceLog {
   gateLocationLo: string | null;
 }
 
-/** Payload of the POST /attendance/scan response and the live-feed socket event. */
 export interface ScanResult {
   success: boolean;
   logType: 'check_in' | 'check_out';
   studentId: number;
   time: string;
+  cardUid?: string;
+  student?: {
+    fullNameLo: string;
+    fullNameEn: string;
+    studentCode: string;
+    photoUrl: string | null;
+    class?: { classNameLo?: string; classNameEn?: string } | null;
+  } | null;
 }
 
 export interface DashboardStats {

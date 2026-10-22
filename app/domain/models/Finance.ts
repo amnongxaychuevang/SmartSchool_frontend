@@ -63,6 +63,30 @@ export interface TopUpRequest {
   approver?: UserRef | null;
 }
 
+export interface ShopRentalPayment {
+  rentalPaymentId: number;
+  shopId: number;
+  academicYear: string;
+  periodLabel: string;
+  dueDate: string;
+  amount: number | string;
+  paidAmount: number | string;
+  status: 'unpaid' | 'partial' | 'paid';
+  paymentMethod: 'cash' | 'bank_transfer' | null;
+  receiptNo: string | null;
+  slipUrl: string | null;
+  paidAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  shop?: {
+    shopId: number;
+    shopNameEn: string;
+    shopNameLo: string;
+    vendorName?: string | null;
+    vendorPhone?: string | null;
+  };
+}
+
 export interface Shop {
   shopId: number;
   shopNameEn: string;
@@ -71,6 +95,15 @@ export interface Shop {
   locationLo: string | null;
   descriptionEn: string | null;
   descriptionLo: string | null;
+  vendorName?: string | null;
+  vendorPhone?: string | null;
+  rentalBillingType?: 'none' | 'annual' | 'monthly' | 'installment';
+  rentalAmount?: number | null;
+  rentalNotes?: string | null;
+  totalRentalBilled?: number;
+  totalRentalPaid?: number;
+  outstandingRental?: number;
+  rentalPayments?: ShopRentalPayment[];
   isActive: boolean;
   createdAt: string;
 }
@@ -157,3 +190,36 @@ export interface FeePayment {
   paidAt: string;
   receiver?: { userId: number; fullNameEn: string; fullNameLo: string };
 }
+
+export interface ExpenseCategory {
+  categoryId: number;
+  nameEn: string;
+  nameLo: string;
+  icon?: string | null;
+  description?: string | null;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string | null;
+  _count?: { expenses: number };
+}
+
+export interface Expense {
+  expenseId: number;
+  expenseNo: string;
+  categoryId: number;
+  academicYear: string;
+  title: string;
+  description?: string | null;
+  amount: number;
+  expenseDate: string;
+  paymentMethod: 'cash' | 'bank_transfer' | string;
+  paidTo?: string | null;
+  referenceNo?: string | null;
+  receiptUrl?: string | null;
+  recordedBy?: number | null;
+  createdAt: string;
+  updatedAt?: string | null;
+  category?: ExpenseCategory;
+  recorder?: { userId: number; fullNameEn: string; fullNameLo: string } | null;
+}
+

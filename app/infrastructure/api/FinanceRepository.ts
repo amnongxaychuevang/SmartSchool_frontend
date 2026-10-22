@@ -2,7 +2,7 @@ import { useApiClient } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
 import type { ApiResponse, Paged } from './types';
 import type { Payload } from '../../domain/models/Academics';
-import type { Wallet, WalletTransaction, TopUpRequest, Shop, SpendingLimit, FeeType, FeeStructure, Invoice, FeePayment } from '../../domain/models/Finance';
+import type { Wallet, WalletTransaction, TopUpRequest, Shop, ShopRentalPayment, SpendingLimit, FeeType, FeeStructure, Invoice, FeePayment, Expense, ExpenseCategory } from '../../domain/models/Finance';
 
 export interface PosCard {
   cardUid: string;
@@ -153,6 +153,66 @@ export const financeRepository = {
     return true;
   },
 
+  async getShop(shopId: number) {
+    const res = await useApiClient()<ApiResponse<{ shop: Shop }>>(`${API_ENDPOINTS.shops.list}/${shopId}`, {
+      method: 'GET'
+    });
+    return res.data.shop;
+  },
+
+  async getShopRentals(params: { shopId?: number; academicYear?: string; status?: string; page?: number; limit?: number } = {}) {
+    const query = new URLSearchParams();
+    if (params.shopId) query.set('shopId', String(params.shopId));
+    if (params.academicYear) query.set('academicYear', params.academicYear);
+    if (params.status) query.set('status', params.status);
+    if (params.page) query.set('page', String(params.page));
+    if (params.limit) query.set('limit', String(params.limit));
+
+    const url = query.toString() ? `${API_ENDPOINTS.shops.rentals}?${query}` : API_ENDPOINTS.shops.rentals;
+    const res = await useApiClient()<ApiResponse<{ rentalPayments: ShopRentalPayment[]; total: number; page: number; limit: number }>>(url, { method: 'GET' });
+    return res.data;
+  },
+
+  async createShopRental(shopId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ payment: ShopRentalPayment }>>(API_ENDPOINTS.shops.shopRentals(shopId), {
+      method: 'POST',
+      body: payload
+    });
+    return res.data.payment;
+  },
+
+  async recordShopRentalPayment(rentalId: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ payment: ShopRentalPayment }>>(API_ENDPOINTS.shops.rentalPay(rentalId), {
+      method: 'POST',
+      body: payload
+    });
+    return res.data.payment;
+  },
+
+  async uploadShopRentalSlip(rentalId: number, file: File) {
+    const fd = new FormData();
+    fd.append('slip', file);
+    const res = await useApiClient()<ApiResponse<{ payment: ShopRentalPayment }>>(API_ENDPOINTS.shops.rentalSlip(rentalId), {
+      method: 'POST',
+      body: fd
+    });
+    return res.data.payment;
+  },
+
+  async deleteShopRentalSlip(rentalId: number) {
+    const res = await useApiClient()<ApiResponse<{ payment: ShopRentalPayment }>>(API_ENDPOINTS.shops.rentalSlip(rentalId), {
+      method: 'DELETE'
+    });
+    return res.data.payment;
+  },
+
+  async deleteShopRental(rentalId: number) {
+    const res = await useApiClient()<{ success: boolean }>(`${API_ENDPOINTS.shops.rentals}/${rentalId}`, {
+      method: 'DELETE'
+    });
+    return res.success;
+  },
+
   // POS – exact card lookup, then a purchase charged to that card's student
   async lookupPosCard(cardUid: string) {
     const res = await useApiClient()<ApiResponse<PosCard>>(
@@ -260,6 +320,127 @@ export const financeRepository = {
     const res = await useApiClient()<ApiResponse<ShopSalesReport>>(url, { method: 'GET' });
     return res.data;
   },
+
+  // School Cashflow (Income vs Expense) report
+  async getCashflowSummary(params: { academicYear?: string; startDate?: string; endDate?: string } = {}) {
+    const query = new URLSearchParams();
+    if (params.academicYear) query.set('academicYear', params.academicYear);
+    if (params.startDate) query.set('startDate', params.startDate);
+    if (params.endDate) query.set('endDate', params.endDate);
+    const url = query.toString() ? `${API_ENDPOINTS.reports.cashflow}?${query}` : API_ENDPOINTS.reports.cashflow;
+    const res = await useApiClient()<ApiResponse<CashflowReport>>(url, { method: 'GET' });
+    return res.data;
+  },
+
+  // General Expenses & Categories
+  async getExpenseCategories(params: { includeInactive?: boolean } = {}) {
+    const query = new URLSearchParams();
+    if (params.includeInactive) query.set('includeInactive', 'true');
+    const url = query.toString() ? `${API_ENDPOINTS.expenses.categories}?${query}` : API_ENDPOINTS.expenses.categories;
+    const res = await useApiClient()<ApiResponse<{ categories: ExpenseCategory[] }>>(url, { method: 'GET' });
+    return res.data.categories;
+  },
+
+  async createExpenseCategory(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ category: ExpenseCategory }>>(API_ENDPOINTS.expenses.categories, {
+      method: 'POST',
+      body: payload,
+    });
+    if (!res.success) throw new Error('Failed to create expense category');
+    return res.data.category;
+  },
+
+  async updateExpenseCategory(id: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ category: ExpenseCategory }>>(API_ENDPOINTS.expenses.category(id), {
+      method: 'PUT',
+      body: payload,
+    });
+    if (!res.success) throw new Error('Failed to update expense category');
+    return res.data.category;
+  },
+
+  async deleteExpenseCategory(id: number) {
+    const res = await useApiClient()<{ success: boolean }>(API_ENDPOINTS.expenses.category(id), {
+      method: 'DELETE',
+    });
+    if (!res.success) throw new Error('Failed to delete expense category');
+    return true;
+  },
+
+  async getExpenses(params: {
+    search?: string;
+    categoryId?: number;
+    academicYear?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  } = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.set('search', params.search);
+    if (params.categoryId) query.set('categoryId', String(params.categoryId));
+    if (params.academicYear) query.set('academicYear', params.academicYear);
+    if (params.startDate) query.set('startDate', params.startDate);
+    if (params.endDate) query.set('endDate', params.endDate);
+    if (params.page) query.set('page', String(params.page));
+    if (params.limit) query.set('limit', String(params.limit));
+
+    const url = query.toString() ? `${API_ENDPOINTS.expenses.list}?${query}` : API_ENDPOINTS.expenses.list;
+    const res = await useApiClient()<ApiResponse<Paged<'expenses', Expense>>>(url, { method: 'GET' });
+    return res.data;
+  },
+
+  async getExpense(id: number) {
+    const res = await useApiClient()<ApiResponse<{ expense: Expense }>>(API_ENDPOINTS.expenses.detail(id), {
+      method: 'GET',
+    });
+    return res.data.expense;
+  },
+
+  async createExpense(payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ expense: Expense }>>(API_ENDPOINTS.expenses.list, {
+      method: 'POST',
+      body: payload,
+    });
+    if (!res.success) throw new Error('Failed to record expense');
+    return res.data.expense;
+  },
+
+  async updateExpense(id: number, payload: Payload) {
+    const res = await useApiClient()<ApiResponse<{ expense: Expense }>>(API_ENDPOINTS.expenses.detail(id), {
+      method: 'PUT',
+      body: payload,
+    });
+    if (!res.success) throw new Error('Failed to update expense');
+    return res.data.expense;
+  },
+
+  async deleteExpense(id: number) {
+    const res = await useApiClient()<{ success: boolean }>(API_ENDPOINTS.expenses.detail(id), {
+      method: 'DELETE',
+    });
+    if (!res.success) throw new Error('Failed to delete expense');
+    return true;
+  },
+
+  async uploadExpenseReceipt(id: number, file: File) {
+    const formData = new FormData();
+    formData.append('receipt', file);
+    const res = await useApiClient()<ApiResponse<{ expense: Expense }>>(API_ENDPOINTS.expenses.receipt(id), {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.success) throw new Error('Failed to upload receipt');
+    return res.data.expense;
+  },
+
+  async deleteExpenseReceipt(id: number) {
+    const res = await useApiClient()<ApiResponse<{ expense: Expense }>>(API_ENDPOINTS.expenses.receipt(id), {
+      method: 'DELETE',
+    });
+    if (!res.success) throw new Error('Failed to delete receipt');
+    return res.data.expense;
+  },
 };
 
 export interface ShopSalesSummary {
@@ -275,4 +456,31 @@ export interface ShopSalesReport {
   totalTransactions: number;
   from: string;
   to: string;
+}
+
+export interface CashflowReport {
+  academicYear: string | null;
+  dateRange: { startDate: string | null; endDate: string | null };
+  summary: {
+    totalIncome: number;
+    totalExpense: number;
+    netCashflow: number;
+    totalStudentFees: number;
+    totalShopRentals: number;
+    totalPayrollExpense: number;
+    totalGeneralExpense?: number;
+  };
+  breakdown: {
+    feesByType: { nameEn: string; nameLo: string; total: number; count: number }[];
+    rentalsByShop: { shopNameEn: string; shopNameLo: string; total: number; count: number }[];
+    expensesByCategory?: { categoryId: number; nameEn: string; nameLo: string; icon?: string | null; total: number; count: number }[];
+    payroll: {
+      totalBaseSalary: number;
+      totalAllowances: number;
+      totalDeductions: number;
+      totalNetSalary: number;
+      itemCount: number;
+      periodCount: number;
+    };
+  };
 }

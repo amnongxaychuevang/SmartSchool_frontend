@@ -71,7 +71,11 @@ export const API_ENDPOINTS = {
     student: '/spending-limits/:studentId'
   },
   shops: {
-    list: '/shops'
+    list: '/shops',
+    rentals: '/shops/rentals',
+    rentalPay: (rentalId: number | string) => `/shops/rentals/${rentalId}/pay`,
+    rentalSlip: (rentalId: number | string) => `/shops/rentals/${rentalId}/slip`,
+    shopRentals: (shopId: number | string) => `/shops/${shopId}/rentals`,
   },
   subjects: {
     list: '/subjects'
@@ -113,6 +117,7 @@ export const API_ENDPOINTS = {
     attendance: '/reports/attendance',
     notifyAbsence: '/reports/attendance/notify',
     shopSales: '/reports/shop-sales',
+    cashflow: '/reports/cashflow',
   },
   auditLogs: {
     list: '/audit-logs'
@@ -158,5 +163,23 @@ export const API_ENDPOINTS = {
     messages: (id: number | string) => `/chat/conversations/${id}/messages`,
     markRead: (id: number | string) => `/chat/conversations/${id}/read`,
     contacts: '/chat/contacts',
+  },
+  payroll: {
+    periods: '/payroll/periods',
+    period: (id: number | string) => `/payroll/periods/${id}`,
+    generate: '/payroll/periods/generate',
+    periodStatus: (id: number | string) => `/payroll/periods/${id}/status`,
+    export: (id: number | string) => `/payroll/periods/${id}/export`,
+    item: (id: number | string) => `/payroll/items/${id}`,
+    itemSlip: (id: number | string) => `/payroll/items/${id}/slip`,
+    myPayslips: '/payroll/my-payslips',
+    myPayslip: (id: number | string) => `/payroll/my-payslips/${id}`,
+  },
+  expenses: {
+    categories: '/expense-categories',
+    category: (id: number | string) => `/expense-categories/${id}`,
+    list: '/expenses',
+    detail: (id: number | string) => `/expenses/${id}`,
+    receipt: (id: number | string) => `/expenses/${id}/receipt`,
   },
 } as const;

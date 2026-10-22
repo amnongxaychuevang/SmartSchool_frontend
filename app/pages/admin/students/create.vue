@@ -66,6 +66,15 @@
                 <option v-for="c in currentClasses" :key="c.classId" :value="c.classId">{{ locale === 'lo' ? c.classNameLo : c.classNameEn }}</option>
               </select>
             </label>
+            <label v-if="!isEdit" class="field col-span-2">
+              <span class="field-label">{{ L('Registration / Admission Fee Structure', 'ຄ່າລົງທະບຽນ / ຄ່າຮຽນທຳອິດ') }}</span>
+              <select v-model.number="form.feeStructureId" class="input-field">
+                <option :value="0">{{ L('No fee invoice now', 'ບໍ່ສ້າງໃບບິນຄ່າລົງທະບຽນຕອນນີ້') }}</option>
+                <option v-for="f in feeStructures" :key="f.feeStructureId" :value="f.feeStructureId">
+                  {{ locale === 'lo' ? f.feeType?.nameLo : f.feeType?.nameEn }} — {{ format.kip(f.amount) }} ({{ f.academicYear }})
+                </option>
+              </select>
+            </label>
             <label class="field col-span-2">
               <span class="field-label">{{ L('Birthplace', 'ບ້ານເກີດ') }}</span>
               <input v-model="form.birthPlace" maxlength="150" class="input-field">
@@ -280,6 +289,9 @@ import type { ParentOption } from '../../../domain/models/Parent';
 import { useAdminStore } from '../../../application/stores/admin';
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
 import { academicsRepository } from '../../../infrastructure/api/AcademicsRepository';
+import { financeRepository } from '../../../infrastructure/api/FinanceRepository';
+import type { FeeStructure } from '../../../domain/models/Finance';
+import { useFormat } from '../../../composables/useFormat';
 import { usePhotoPicker } from '../../../composables/usePhotoPicker';
 
 definePageMeta({ layout: 'admin' });
@@ -289,6 +301,8 @@ const router = useRouter();
 const adminStore = useAdminStore();
 const { locale, t } = useI18n();
 const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
+const format = useFormat();
+const feeStructures = ref<FeeStructure[]>([]);
 
 const editId = computed(() => (route.query.id ? Number(route.query.id) : null));
 const isEdit = computed(() => editId.value !== null);
@@ -327,6 +341,7 @@ const form = reactive({
   previousSchool: '',
   medicalNotes: '',
   notes: '',
+  feeStructureId: 0,
   parents: [] as ParentLink[],
 });
 
@@ -360,18 +375,20 @@ const calendarAcademicYear = () => {
 
 onMounted(async () => {
   try {
-    const [c, terms, parents, blood, ethnicityList] = await Promise.all([
+    const [c, terms, parents, blood, ethnicityList, _prov, feeRes] = await Promise.all([
       adminRepository.getClasses({ limit: 500 }),
       academicsRepository.getTerms(),
       adminRepository.getParentOptions(),
       adminRepository.getBloodTypes(),
       adminRepository.getEthnicities(),
       loadProvinces(),
+      financeRepository.getFeeStructures().catch(() => [] as FeeStructure[]),
     ]);
     classes.value = c.classes;
     allParents.value = parents;
     bloodTypes.value = blood;
     ethnicities.value = ethnicityList;
+    feeStructures.value = feeRes ?? [];
     currentYear.value = terms.find((x) => x.status === 'active')?.academicYear ?? calendarAcademicYear();
     if (editId.value) await loadStudent(editId.value);
   } catch (err) {
@@ -497,7 +514,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
   try {
     // The server owns the code; status is changed from the students list, not this form.
-    const { parents, classId, ethnicityId, provinceId, districtId, studentCode: _code, status: _status, ...fields } = form;
+    const { parents, classId, ethnicityId, provinceId, districtId, feeStructureId, studentCode: _code, status: _status, ...fields } = form;
     // Empty inputs mean "not set" (an empty date or blood type would fail validation); 0 = nothing picked.
     const optional = new Set<string>(OPTIONAL_TEXT);
     const payload: Record<string, unknown> = Object.fromEntries(
@@ -507,6 +524,7 @@ const handleSubmit = async () => {
         ethnicityId: ethnicityId || null,
         provinceId: provinceId || null,
         districtId: districtId || null,
+        ...((!editId.value && feeStructureId) ? { feeStructureId: Number(feeStructureId) } : {}),
       })
         .filter(([k, v]) => !(optional.has(k) && v === '')),
     );
