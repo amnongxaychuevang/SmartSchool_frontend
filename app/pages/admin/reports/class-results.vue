@@ -134,7 +134,7 @@ const error = ref('');
 
 const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) || '';
 const pct = (v: number | null) => (v === null ? '—' : f.percent(v));
-const scoreTone = (v: number | null) => (v === null ? 'text-ink-subtle' : v < 50 ? 'text-danger font-semibold' : '');
+const scoreTone = (v: number | null | undefined) => (v == null ? 'text-ink-subtle' : v < 50 ? 'text-danger font-semibold' : '');
 
 const currentTerm = computed(() => terms.value.find((x) => x.termId === termId.value) ?? null);
 const termClasses = computed(() => classes.value.filter((c) => !currentTerm.value || c.academicYear === currentTerm.value.academicYear));

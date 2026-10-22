@@ -128,6 +128,9 @@ class="h-16 flex items-center gap-3 sm:gap-4 px-3 sm:px-4 md:px-6 sticky top-0 z
         <!-- Spacer -->
         <div class="flex-1"/>
 
+        <!-- Notification Bell -->
+        <NotificationBell />
+
         <!-- Lang Switch -->
         <LangSwitch />
 
@@ -206,10 +209,16 @@ import IconStudents from '../components/IconStudents.vue';
 import IconTeachers from '../components/IconTeachers.vue';
 import IconUsers from '../components/IconUsers.vue';
 import IconWallet from '../components/IconWallet.vue';
+import IconLeave from '../components/IconLeave.vue';
+import IconBehavior from '../components/IconBehavior.vue';
+import IconBus from '../components/IconBus.vue';
+import IconBook from '../components/IconBook.vue';
+import IconChat from '../components/IconChat.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../application/stores/auth';
 import LangSwitch from '../components/LangSwitch.vue';
 import ThemeSwitch from '../components/ThemeSwitch.vue';
+import NotificationBell from '../components/NotificationBell.vue';
 import ChangePasswordModal from '../components/ChangePasswordModal.vue';
 import { ADMIN_NAV, hasPermission } from '../components/layout/adminNav';
 
@@ -272,6 +281,7 @@ const SECTION_GROUP: Record<string, { key: string; icon: string }> = {
 const ICONS: Record<string, Component> = {
   IconAttendance, IconClasses, IconDashboard, IconNotifications, IconParents, IconReports,
   IconSchedule, IconSettings, IconStudents, IconTeachers, IconUsers, IconWallet,
+  IconLeave, IconBehavior, IconBus, IconBook, IconChat,
 };
 
 const navItems = computed<NavItem[]>(() =>

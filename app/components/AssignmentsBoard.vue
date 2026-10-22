@@ -57,6 +57,10 @@
               <td>{{ a.subject ? pick(a.subject.subjectNameLo, a.subject.subjectNameEn) : '—' }}</td>
               <td class="text-ink-muted">{{ a.creator ? pick(a.creator.fullNameLo, a.creator.fullNameEn) : '—' }}</td>
               <td class="text-right whitespace-nowrap">
+                <button type="button" class="btn-primary text-xs px-2.5 py-1 mr-2 inline-flex items-center gap-1" @click="openSubmissions(a)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  {{ $t('assignments.view_submissions') }}
+                </button>
                 <button type="button" class="btn-secondary text-xs px-2.5 py-1 mr-2" @click="openForm(a)">{{ $t('common.edit') }}</button>
                 <button type="button" class="btn-danger text-xs px-2.5 py-1" @click="remove(a)">{{ $t('common.delete') }}</button>
               </td>
@@ -112,6 +116,111 @@
         </div>
       </form>
     </AppModal>
+
+    <!-- Submissions & Grading Modal -->
+    <AppModal
+      :open="submissionsOpen"
+      :title="currentAssignment ? `${currentAssignment.title} — ${$t('assignments.submissions_title')}` : $t('assignments.submissions_title')"
+      @update:open="submissionsOpen = $event"
+    >
+      <div v-if="loadingSubmissions" class="py-8">
+        <LoadingSpinner />
+      </div>
+      <div v-else-if="submissionsData" class="flex flex-col gap-4 max-w-2xl">
+        <!-- Overview summary banner -->
+        <div class="grid grid-cols-3 gap-3 p-3 rounded-lg bg-surface-subtle border border-line text-center">
+          <div>
+            <p class="text-xs text-ink-muted">{{ $t('assignments.col_class') }}</p>
+            <p class="text-base font-bold">{{ submissionsData.totalStudents }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-ink-muted">{{ $t('assignments.submitted') }}</p>
+            <p class="text-base font-bold text-teal-600">{{ submissionsData.submittedCount }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-ink-muted">{{ $t('assignments.graded') }}</p>
+            <p class="text-base font-bold text-primary">{{ submissionsData.gradedCount }}</p>
+          </div>
+        </div>
+
+        <!-- Student submissions list -->
+        <div class="max-h-[60vh] overflow-y-auto divide-y divide-line pr-1">
+          <div v-for="item in submissionsData.students" :key="item.student.studentId" class="py-3 flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <PersonAvatar :name="studentName(item.student)" :photo-url="item.student.photoUrl ?? undefined" size="sm" />
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold truncate">{{ studentName(item.student) }}</p>
+                  <p class="text-xs text-ink-muted font-mono">{{ item.student.studentCode }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="badge text-xs px-2 py-0.5"
+                  :class="{
+                    'badge-success': item.status === 'graded',
+                    'badge-info': item.status === 'submitted',
+                    'badge-warning': item.status === 'late',
+                    'badge-danger': item.status === 'missing'
+                  }"
+                >
+                  {{ $t(`assignments.${item.status}`) }}
+                  <template v-if="item.submission?.score !== null && item.submission?.score !== undefined">
+                    : {{ item.submission.score }}/{{ item.submission.maxScore || 100 }}
+                  </template>
+                </span>
+                <a
+                  v-if="item.submission"
+                  :href="mediaUrl(item.submission.fileUrl) ?? undefined"
+                  target="_blank"
+                  class="btn-secondary text-xs px-2 py-1 inline-flex items-center gap-1"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  {{ $t('assignments.view_file') }}
+                </a>
+              </div>
+            </div>
+
+            <!-- Grade Form / Feedback for submitted students -->
+            <div v-if="item.submission" class="ml-9 p-3 rounded-lg bg-surface-subtle border border-line flex flex-col gap-2">
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="w-28">
+                  <label class="block text-xs font-semibold mb-1">{{ $t('assignments.score') }}</label>
+                  <input
+                    v-model.number="gradeForms[item.submission.submissionId]!.score"
+                    type="number"
+                    min="0"
+                    :max="item.submission.maxScore || 100"
+                    step="0.5"
+                    class="input-field text-sm py-1"
+                    placeholder="0-100"
+                  >
+                </div>
+                <div class="flex-1 min-w-[160px]">
+                  <label class="block text-xs font-semibold mb-1">{{ $t('assignments.feedback') }}</label>
+                  <input
+                    v-model.trim="gradeForms[item.submission.submissionId]!.feedback"
+                    type="text"
+                    class="input-field text-sm py-1"
+                    :placeholder="$t('assignments.feedback_ph')"
+                  >
+                </div>
+                <div class="self-end">
+                  <button
+                    type="button"
+                    class="btn-primary text-xs px-3 py-1.5"
+                    :disabled="gradingId === item.submission.submissionId"
+                    @click="saveGrade(item.submission.submissionId)"
+                  >
+                    {{ gradingId === item.submission.submissionId ? $t('common.loading') : $t('assignments.save_grade') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AppModal>
   </div>
 </template>
 
@@ -120,6 +229,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import PageHeader from './PageHeader.vue';
 import AppModal from './AppModal.vue';
 import LoadingSpinner from './LoadingSpinner.vue';
+import PersonAvatar from './PersonAvatar.vue';
 import { useApiClient } from '../infrastructure/api/apiClient';
 import type { ApiResponse } from '../infrastructure/api/types';
 
@@ -130,10 +240,50 @@ interface AssignmentRow {
   class: ClassOption; subject: SubjectOption | null; creator: { fullNameEn: string; fullNameLo: string } | null;
 }
 
+interface StudentInfo {
+  studentId: number;
+  studentCode: string;
+  fullNameEn: string;
+  fullNameLo: string;
+  photoUrl: string | null;
+  gender?: string | null;
+}
+
+interface SubmissionItem {
+  submissionId: number;
+  fileUrl: string;
+  fileName: string | null;
+  fileSize: number | null;
+  submittedAt: string;
+  status: string;
+  score: number | null;
+  maxScore: number | null;
+  feedback: string | null;
+  gradedBy: number | null;
+  gradedAt: string | null;
+  student: StudentInfo;
+}
+
+interface StudentSubmissionStatus {
+  student: StudentInfo;
+  submission: SubmissionItem | null;
+  isSubmitted: boolean;
+  status: 'submitted' | 'graded' | 'late' | 'missing';
+}
+
+interface SubmissionsResponse {
+  assignment: { assignmentId: number; title: string; dueDate: string; classId: number };
+  totalStudents: number;
+  submittedCount: number;
+  gradedCount: number;
+  students: StudentSubmissionStatus[];
+}
+
 const { t, locale } = useI18n();
 const f = useFormat();
 const api = useApiClient();
 const dialog = useDialog();
+const mediaUrl = useMediaUrl();
 
 const rows = ref<AssignmentRow[]>([]);
 const classes = ref<ClassOption[]>([]);
@@ -145,6 +295,66 @@ const page = ref(1);
 const pageSize = ref(15);
 const total = ref(0);
 const totalPages = ref(1);
+
+// Submissions state
+const submissionsOpen = ref(false);
+const loadingSubmissions = ref(false);
+const currentAssignment = ref<AssignmentRow | null>(null);
+const submissionsData = ref<SubmissionsResponse | null>(null);
+const gradeForms = reactive<Record<number, { score: number | null; feedback: string }>>({});
+const gradingId = ref<number | null>(null);
+
+const studentName = (s: { fullNameEn: string; fullNameLo: string }) => (locale.value === 'lo' ? s.fullNameLo : s.fullNameEn) || s.fullNameEn;
+
+const openSubmissions = async (a: AssignmentRow) => {
+  currentAssignment.value = a;
+  submissionsOpen.value = true;
+  loadingSubmissions.value = true;
+  try {
+    const res = await api<ApiResponse<SubmissionsResponse>>(`/assignments/${a.assignmentId}/submissions`);
+    submissionsData.value = res.data;
+    for (const item of res.data.students) {
+      if (item.submission) {
+        gradeForms[item.submission.submissionId] = {
+          score: item.submission.score !== null ? Number(item.submission.score) : null,
+          feedback: item.submission.feedback || '',
+        };
+      }
+    }
+  } catch (err) {
+    dialog.error(getErrorMessage(err));
+  } finally {
+    loadingSubmissions.value = false;
+  }
+};
+
+const saveGrade = async (submissionId: number) => {
+  const form = gradeForms[submissionId];
+  if (!form || form.score === null || isNaN(form.score)) {
+    dialog.error(t('assignments.score') + ' required');
+    return;
+  }
+  gradingId.value = submissionId;
+  try {
+    await api(`/assignments/submissions/${submissionId}/grade`, {
+      method: 'PUT',
+      body: {
+        score: form.score,
+        feedback: form.feedback || null,
+      },
+    });
+    // Refresh submissions
+    if (currentAssignment.value) {
+      const res = await api<ApiResponse<SubmissionsResponse>>(`/assignments/${currentAssignment.value.assignmentId}/submissions`);
+      submissionsData.value = res.data;
+    }
+    dialog.success(t('common.saved'));
+  } catch (err) {
+    dialog.error(getErrorMessage(err));
+  } finally {
+    gradingId.value = null;
+  }
+};
 
 const tabs = computed(() => [
   { id: 'upcoming' as const, label: t('assignments.tab_upcoming') },

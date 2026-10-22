@@ -221,7 +221,7 @@ const schoolName = computed(() =>
 
 const studentClassName = computed(() => {
   if (!student.value?.classStudents?.length) return '—';
-  const cls = student.value.classStudents[0].class;
+  const cls = student.value.classStudents[0]!.class;
   return (locale.value === 'lo' ? cls.classNameLo : cls.classNameEn) || cls.classNameEn;
 });
 

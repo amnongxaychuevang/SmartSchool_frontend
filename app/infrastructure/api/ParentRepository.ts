@@ -22,7 +22,7 @@ export interface ChildTransport {
   assignment: {
     pickupStop: string | null; dropoffStop: string | null; isActive: boolean;
     vehicle: BusVehicleInfo | null;
-    route: { routeNameEn: string; routeNameLo: string; description: string | null; stops: BusStop[] | null; vehicle: BusVehicleInfo | null };
+    route: { routeId?: number; routeNameEn: string; routeNameLo: string; description: string | null; stops: BusStop[] | null; vehicle: BusVehicleInfo | null };
   } | null;
   logs: {
     logId: number; logType: 'board' | 'alight'; direction: 'to_school' | 'to_home'; logTime: string; location: string | null;
@@ -35,10 +35,30 @@ export interface ChildLoan {
   book: { titleEn: string; titleLo: string; author: string };
 }
 
+export interface ChildAssignmentSubmission {
+  submissionId: number;
+  assignmentId: number;
+  studentId: number;
+  fileUrl: string;
+  fileName: string | null;
+  fileSize: number | null;
+  submittedAt: string;
+  status: 'submitted' | 'graded' | 'late';
+  score: number | null;
+  maxScore: number | null;
+  feedback: string | null;
+  gradedAt: string | null;
+  grader?: { fullNameEn: string; fullNameLo: string } | null;
+}
+
 export interface ChildAssignment {
-  assignmentId: number; title: string; description: string | null; dueDate: string;
+  assignmentId: number;
+  title: string;
+  description: string | null;
+  dueDate: string;
   subject: { subjectNameEn: string; subjectNameLo: string } | null;
   creator: { fullNameEn: string; fullNameLo: string } | null;
+  mySubmission?: ChildAssignmentSubmission | null;
 }
 
 export class ParentRepository {
@@ -73,10 +93,7 @@ export class ParentRepository {
     return res.data.loans;
   }
 
-  async getChildAssignments(studentId: number) {
-    const res = await useApiClient()<ApiResponse<{ assignments: ChildAssignment[] }>>(`/parents/me/children/${studentId}/assignments`, { method: 'GET' });
-    return res.data.assignments;
-  }
+
 
   async getAnnouncements() {
     return useApiClient()<ApiResponse<Announcement[]>>('/parents/me/announcements', { method: 'GET' });
@@ -141,6 +158,22 @@ export class ParentRepository {
   async getPaymentInfo() {
     const res = await useApiClient()<ApiResponse<PaymentInfo | null>>('/parents/me/payment-info', { method: 'GET' });
     return res.data;
+  }
+
+  async getChildAssignments(studentId: number): Promise<ChildAssignment[]> {
+    const res = await useApiClient()<ApiResponse<{ assignments: ChildAssignment[] }>>(`/assignments/student/${studentId}`, { method: 'GET' });
+    return res.data.assignments;
+  }
+
+  async submitAssignment(assignmentId: number, studentId: number, file: File) {
+    const formData = new FormData();
+    formData.append('studentId', String(studentId));
+    formData.append('file', file);
+    const res = await useApiClient()<ApiResponse<{ submission: ChildAssignmentSubmission }>>(`/assignments/${assignmentId}/submit`, {
+      method: 'POST',
+      body: formData,
+    });
+    return res.data.submission;
   }
 }
 

@@ -153,4 +153,10 @@ export const API_ENDPOINTS = {
     atRiskRun: '/analytics/at-risk/run',
     interventions: '/analytics/at-risk/interventions',
   },
+  chat: {
+    conversations: '/chat/conversations',
+    messages: (id: number | string) => `/chat/conversations/${id}/messages`,
+    markRead: (id: number | string) => `/chat/conversations/${id}/read`,
+    contacts: '/chat/contacts',
+  },
 } as const;

@@ -61,13 +61,13 @@ export const ADMIN_NAV: AdminNavSection[] = [
     { to: '/admin/notifications', key: 'nav.notifications', icon: 'IconNotifications', permission: 'notifications.manage' },
   ] },
   { key: 'behavior', items: [
-    { to: '/admin/behavior', key: 'nav.behavior', icon: 'IconAttendance', permission: 'behavior.view' },
+    { to: '/admin/behavior', key: 'nav.behavior', icon: 'IconBehavior', permission: 'behavior.view' },
   ] },
   { key: 'transport', items: [
-    { to: '/admin/transport', key: 'nav.transport', icon: 'IconSchedule', permission: 'transport.view' },
+    { to: '/admin/transport', key: 'nav.transport', icon: 'IconBus', permission: 'transport.view' },
   ] },
   { key: 'library', items: [
-    { to: '/admin/library', key: 'nav.library', icon: 'IconReports', permission: 'library.view' },
+    { to: '/admin/library', key: 'nav.library', icon: 'IconBook', permission: 'library.view' },
   ] },
   { key: 'analytics', items: [
     { to: '/admin/analytics/at-risk', key: 'nav.atRisk', icon: 'IconStudents', permission: 'analytics.at_risk_view' },

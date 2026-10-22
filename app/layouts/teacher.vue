@@ -40,7 +40,13 @@ class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
             </transition>
             <transition name="fade">
               <span
-v-if="sidebarOpen && isActive(item.to)"
+                v-if="sidebarOpen && item.badge && item.badge > 0"
+                class="ml-auto px-1.5 py-0.2 text-[10px] font-bold text-white bg-teal-500 rounded-full"
+              >
+                {{ item.badge }}
+              </span>
+              <span
+                v-else-if="sidebarOpen && isActive(item.to)"
                 class="ml-auto w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"
                 style="box-shadow: 0 0 6px #f59e0b;"
               />
@@ -75,6 +81,9 @@ class="h-16 flex items-center gap-4 px-6 sticky top-0 z-40 shrink-0 bg-white/90 
 
         <!-- Spacer -->
         <div class="flex-1"/>
+
+        <!-- Notification Bell -->
+        <NotificationBell />
 
         <!-- Theme Switch -->
         <ThemeSwitch />
@@ -138,6 +147,7 @@ import { ref, computed, resolveComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../application/stores/auth';
+import { useChatStore } from '../application/stores/chat';
 import LangSwitch from '../components/LangSwitch.vue';
 import ThemeSwitch from '../components/ThemeSwitch.vue';
 import ChangePasswordModal from '../components/ChangePasswordModal.vue';
@@ -145,14 +155,20 @@ import ChangePasswordModal from '../components/ChangePasswordModal.vue';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const chatStore = useChatStore();
 const { t } = useI18n();
 const sidebarOpen = ref(true);
 const profileOpen = ref(false);
+
+onMounted(() => {
+  chatStore.fetchConversations();
+});
 
 const userInitial = computed(() => authStore.user?.fullNameEn?.[0]?.toUpperCase() ?? 'T');
 
 const navItems = computed(() => [
   { to: '/teacher',               label: t('nav.dashboard'),      icon: resolveComponent('IconDashboard') },
+  { to: '/teacher/chat',          label: t('chat.title'),          icon: resolveComponent('IconChat'), badge: chatStore.totalUnreadCount },
   { to: '/teacher/schedule',      label: t('teacherPortal.my_schedule'),    icon: resolveComponent('IconClasses') },
   { to: '/teacher/calendar',      label: t('calendar.title'),     icon: resolveComponent('IconSchedule') },
   { to: '/teacher/classes',       label: t('nav.classes'),     icon: resolveComponent('IconClasses') },

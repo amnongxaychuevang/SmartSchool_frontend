@@ -78,6 +78,14 @@
       <button
         type="button"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
+        :class="activeTab === 'map' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
+        @click="activeTab = 'map'"
+      >
+        {{ $t('transport.tab_map') }}
+      </button>
+      <button
+        type="button"
+        class="pb-3 text-sm font-semibold transition-colors border-b-2"
         :class="activeTab === 'vehicles' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
         @click="activeTab = 'vehicles'"
       >
@@ -149,6 +157,11 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- TAB: LIVE FLEET GPS MAP -->
+    <section v-if="activeTab === 'map'">
+      <AdminFleetMap />
     </section>
 
     <!-- TAB 2: VEHICLES & ROUTES -->
@@ -513,6 +526,7 @@ import { ref, reactive, onMounted } from 'vue';
 import PageHeader from '../../../components/PageHeader.vue';
 import AppModal from '../../../components/AppModal.vue';
 import StudentPicker from '../../../components/StudentPicker.vue';
+import AdminFleetMap from '../../../components/transport/AdminFleetMap.vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 
@@ -522,7 +536,7 @@ const { locale, t } = useI18n();
 const dialog = useDialog();
 const apiClient = useApiClient();
 
-const activeTab = ref<'manifest' | 'vehicles' | 'students' | 'logs'>('manifest');
+const activeTab = ref<'manifest' | 'map' | 'vehicles' | 'students' | 'logs'>('manifest');
 
 const vehicles = ref<any[]>([]);
 const routes = ref<any[]>([]);

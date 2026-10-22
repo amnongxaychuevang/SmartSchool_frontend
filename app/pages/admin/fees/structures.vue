@@ -184,35 +184,35 @@
       <form id="struct-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4" @submit.prevent="handleStructSave">
         <div>
           <label for="sf-type" class="block mb-1.5 text-sm font-semibold">{{ $t('fee_structures.field_type') }}</label>
-          <select id="sf-type" v-model.number="structForm.feeTypeId" required class="input-field" :disabled="structForm.editing && structForm.hasInvoices">
+          <select id="sf-type" v-model.number="structForm.feeTypeId" required class="input-field" :disabled="!!(structForm.editing && structForm.hasInvoices)">
             <option value="" disabled>—</option>
             <option v-for="ft in activeFeeTypes" :key="ft.feeTypeId" :value="ft.feeTypeId">{{ pick(ft.nameLo, ft.nameEn) }}</option>
           </select>
         </div>
         <div>
           <label for="sf-year" class="block mb-1.5 text-sm font-semibold">{{ $t('fee_structures.field_year') }}</label>
-          <select id="sf-year" v-model="structForm.academicYear" required class="input-field" :disabled="structForm.editing && structForm.hasInvoices">
+          <select id="sf-year" v-model="structForm.academicYear" required class="input-field" :disabled="!!(structForm.editing && structForm.hasInvoices)">
             <option value="" disabled>—</option>
             <option v-for="y in academicYears" :key="y" :value="y">{{ y }}</option>
           </select>
         </div>
         <div>
           <label for="sf-term" class="block mb-1.5 text-sm font-semibold">{{ $t('fee_structures.field_term') }}</label>
-          <select id="sf-term" v-model="structForm.termId" class="input-field" :disabled="structForm.editing && structForm.hasInvoices">
+          <select id="sf-term" v-model="structForm.termId" class="input-field" :disabled="!!(structForm.editing && structForm.hasInvoices)">
             <option :value="null">{{ $t('fee_structures.all_terms') }}</option>
             <option v-for="tm in terms" :key="tm.termId" :value="tm.termId">{{ pick(tm.termNameLo, tm.termNameEn) }}</option>
           </select>
         </div>
         <div>
           <label for="sf-class" class="block mb-1.5 text-sm font-semibold">{{ $t('fee_structures.field_class') }}</label>
-          <select id="sf-class" v-model="structForm.classId" class="input-field" :disabled="structForm.editing && structForm.hasInvoices">
+          <select id="sf-class" v-model="structForm.classId" class="input-field" :disabled="!!(structForm.editing && structForm.hasInvoices)">
             <option :value="null">{{ $t('fee_structures.all_classes') }}</option>
             <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ pick(c.classNameLo, c.classNameEn) }}</option>
           </select>
         </div>
         <div>
           <label for="sf-amount" class="block mb-1.5 text-sm font-semibold">{{ $t('fee_structures.field_amount') }}</label>
-          <input id="sf-amount" v-model.number="structForm.amount" required type="number" min="1000" step="1000" class="input-field tnum" :disabled="structForm.editing && structForm.hasInvoices">
+          <input id="sf-amount" v-model.number="structForm.amount" required type="number" min="1000" step="1000" class="input-field tnum" :disabled="!!(structForm.editing && structForm.hasInvoices)">
         </div>
         <div>
           <label for="sf-due" class="block mb-1.5 text-sm font-semibold">{{ $t('fee_structures.field_due') }}</label>

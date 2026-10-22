@@ -354,7 +354,7 @@ const months = computed(() => {
       isPeak: false,
     };
   });
-  const peak = rows.reduce((best, r) => (r.amount > best.amount ? r : best), rows[0]);
+  const peak = rows.reduce<typeof rows[0]>((best, r) => (r.amount > best.amount ? r : best), rows[0]!);
   if (peak.amount > 0) peak.isPeak = true;
   return rows;
 });
@@ -392,33 +392,33 @@ const trendPaths = computed(() => {
   const pts = trendPoints.value.map((p) => ({ x: (p.x / 100) * CHART_W, y: CHART_H - (p.y / 100) * CHART_H }));
   const n = pts.length;
   if (n < 2) return { area: '', done: '', current: '' };
-  const d = pts.slice(0, -1).map((p, i) => (pts[i + 1].y - p.y) / (pts[i + 1].x - p.x));
+  const d = pts.slice(0, -1).map((p, i) => (pts[i + 1]!.y - p.y) / (pts[i + 1]!.x - p.x));
   const m = pts.map((_, i) => {
-    if (i === 0) return d[0];
-    if (i === n - 1) return d[n - 2];
-    return d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+    if (i === 0) return d[0]!;
+    if (i === n - 1) return d[n - 2]!;
+    return d[i - 1]! * d[i]! <= 0 ? 0 : (d[i - 1]! + d[i]!) / 2;
   });
   // Clamp tangents so each segment stays monotone.
   for (let i = 0; i < n - 1; i++) {
     if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
-    const a = m[i] / d[i];
-    const b = m[i + 1] / d[i];
+    const a = m[i]! / d[i]!;
+    const b = m[i + 1]! / d[i]!;
     const h = a * a + b * b;
-    if (h > 9) { const t = 3 / Math.sqrt(h); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+    if (h > 9) { const t = 3 / Math.sqrt(h); m[i] = t * a * d[i]!; m[i + 1] = t * b * d[i]!; }
   }
   const seg = (i: number) => {
-    const p0 = pts[i];
-    const p1 = pts[i + 1];
+    const p0 = pts[i]!;
+    const p1 = pts[i + 1]!;
     const dx = (p1.x - p0.x) / 3;
-    return `C ${p0.x + dx} ${p0.y + m[i] * dx} ${p1.x - dx} ${p1.y - m[i + 1] * dx} ${p1.x} ${p1.y}`;
+    return `C ${p0.x + dx} ${p0.y + m[i]! * dx} ${p1.x - dx} ${p1.y - m[i + 1]! * dx} ${p1.x} ${p1.y}`;
   };
-  const move = (i: number) => `M ${pts[i].x} ${pts[i].y}`;
+  const move = (i: number) => `M ${pts[i]!.x} ${pts[i]!.y}`;
   const segments = Array.from({ length: n - 1 }, (_, i) => seg(i));
   const full = `${move(0)} ${segments.join(' ')}`;
   return {
-    area: `${full} L ${pts[n - 1].x} ${CHART_H} L ${pts[0].x} ${CHART_H} Z`,
+    area: `${full} L ${pts[n - 1]!.x} ${CHART_H} L ${pts[0]!.x} ${CHART_H} Z`,
     done: `${move(0)} ${segments.slice(0, -1).join(' ')}`,
-    current: `${move(n - 2)} ${segments[n - 2]}`,
+    current: `${move(n - 2)} ${segments[n - 2]!}`,
   };
 });
 

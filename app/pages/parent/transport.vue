@@ -23,6 +23,15 @@
           <span :class="todayStatus.badge">{{ todayStatus.badgeText }}</span>
         </section>
 
+        <!-- Live GPS Map -->
+        <section class="panel p-5">
+          <BusLiveMap
+            :route-id="data.assignment.route.routeId"
+            :vehicle="vehicle"
+            :stops="data.assignment.route.stops || []"
+          />
+        </section>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <section class="panel p-5 flex flex-col gap-3">
             <h2 class="text-sm font-semibold">{{ $t('parent_transport.route') }}</h2>
@@ -94,6 +103,7 @@
 import { ref, computed, onMounted } from 'vue';
 import PageHeader from '../../components/PageHeader.vue';
 import LoadingSpinner from '../../components/LoadingSpinner.vue';
+import BusLiveMap from '../../components/transport/BusLiveMap.vue';
 import { useParentStore } from '../../application/stores/parent';
 import { parentRepository, type ChildTransport } from '../../infrastructure/api/ParentRepository';
 
