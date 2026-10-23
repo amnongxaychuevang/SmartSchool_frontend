@@ -56,6 +56,7 @@
             <th>{{ $t('teacherPortal.student_name') }}</th>
             <th>{{ $t('teacherPortal.student_code') }}</th>
             <th class="w-48">{{ $t('teacherPortal.score') }}</th>
+            <th class="w-28 text-right">{{ $t('common.actions') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -68,6 +69,18 @@
             </td>
             <td class="">
               <input v-model.number="gradesMap[student.studentId]" type="number" step="0.01" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-amber-500" placeholder="0 - 100" >
+            </td>
+            <td class="text-right">
+              <NuxtLink
+                :to="`/teacher/students/${student.studentId}/report-card`"
+                class="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-lg text-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-white transition-colors"
+                :title="$t('report_card.document_title')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {{ $t('report_card.title') }}
+              </NuxtLink>
             </td>
           </tr>
         </tbody>

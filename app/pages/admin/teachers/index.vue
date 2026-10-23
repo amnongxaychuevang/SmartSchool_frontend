@@ -165,6 +165,12 @@
         <button v-if="canExport" type="button" class="btn-secondary ml-auto" :disabled="exporting || !adminStore.teachersTotal" @click="exportList">
           {{ exporting ? $t("common.loading") : $t("common.export_excel") }}
         </button>
+        <button v-if="canManage" type="button" class="btn-secondary flex items-center gap-1.5" @click="importModalOpen = true">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          {{ $t('common.import_excel') }}
+        </button>
         <NuxtLink
           to="/admin/teachers/create"
           class="h-9 px-3.5 bg-teal-500 hover:bg-teal-400 !text-white text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(20,184,166,0.25)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)]"
@@ -407,6 +413,12 @@
       @update:page="changePage"
       @update:page-size="changePageSize"
     />
+
+    <ImportModal
+      v-model:open="importModalOpen"
+      type="teachers"
+      @imported="adminStore.fetchTeachers({ limit: pageSize })"
+    />
   </div>
 </template>
 
@@ -470,6 +482,8 @@ const formatDate = (dateStr?: string | null) =>
 // Standard export: the server builds the file from the same filters (and audit-logs it).
 const authStore = useAuthStore();
 const canExport = computed(() => hasPermission(authStore.permissions, "teachers.export"));
+const canManage = computed(() => hasPermission(authStore.permissions, "teachers.manage"));
+const importModalOpen = ref(false);
 const { exporting, download } = useServerExport();
 const exportList = () => download("/teachers/export", filters(), "teachers");
 

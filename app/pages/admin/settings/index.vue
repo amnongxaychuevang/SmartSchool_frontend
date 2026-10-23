@@ -261,6 +261,85 @@
           </NuxtLink>
         </div>
       </section>
+
+      <!-- Database Backup & Safety -->
+      <section v-show="activeTab === 'backup'" id="panel-backup" role="tabpanel" aria-labelledby="tab-backup" class="panel p-6 max-w-4xl flex flex-col gap-5">
+        <div>
+          <h2 class="text-base font-bold text-ink">{{ $t('database_backup.title') }}</h2>
+          <p class="text-sm text-ink-muted">{{ $t('database_backup.subtitle') }}</p>
+        </div>
+
+        <!-- Schedule & Retention Info Banner -->
+        <div class="rounded-xl border border-line bg-surface-2 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="text-2xl shrink-0">🛡️</span>
+            <div>
+              <p class="text-xs font-bold text-ink">{{ $t('database_backup.retention_policy') }}</p>
+              <p class="text-xs text-ink-muted mt-0.5 leading-relaxed">{{ $t('database_backup.schedule_info') }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn-primary shrink-0"
+            :disabled="runningBackup"
+            @click="handleRunBackup"
+          >
+            <span v-if="runningBackup">{{ $t('database_backup.backing_up') }}</span>
+            <span v-else>⚡ {{ $t('database_backup.backup_now_btn') }}</span>
+          </button>
+        </div>
+
+        <p v-if="backupError" role="alert" class="text-sm text-danger">{{ backupError }}</p>
+        <p v-if="backupSuccess" role="status" class="text-sm text-success">{{ backupSuccess }}</p>
+
+        <!-- Stored Archives Table -->
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('database_backup.file_list_title') }}</h3>
+            <span class="text-xs text-ink-subtle tnum">{{ backups.length }} {{ $t('database_backup.total_archives') }}</span>
+          </div>
+
+          <div v-if="loadingBackups" class="py-8 text-center text-xs text-ink-subtle">
+            {{ $t('common.loading') }}
+          </div>
+
+          <div v-else-if="!backups.length" class="rounded-xl border border-line p-8 text-center text-xs text-ink-muted">
+            {{ $t('database_backup.no_backups') }}
+          </div>
+
+          <div v-else class="overflow-x-auto border border-line rounded-xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-surface-2 border-b border-line text-ink-muted font-semibold">
+                <tr>
+                  <th class="py-2.5 px-4">{{ $t('database_backup.col_file') }}</th>
+                  <th class="py-2.5 px-4">{{ $t('database_backup.col_size') }}</th>
+                  <th class="py-2.5 px-4">{{ $t('database_backup.col_date') }}</th>
+                  <th class="py-2.5 px-4 text-right">{{ $t('database_backup.col_actions') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line">
+                <tr v-for="b in backups" :key="b.fileName" class="hover:bg-surface-2/60 transition-colors">
+                  <td class="py-2.5 px-4 font-mono font-medium text-ink flex items-center gap-2">
+                    <span>📦</span>
+                    <span>{{ b.fileName }}</span>
+                  </td>
+                  <td class="py-2.5 px-4 text-ink-muted tnum">{{ b.sizeKb }} KB</td>
+                  <td class="py-2.5 px-4 text-ink-muted">{{ formatBackupDate(b.createdAt) }}</td>
+                  <td class="py-2.5 px-4 text-right">
+                    <button
+                      type="button"
+                      class="text-primary hover:underline font-semibold"
+                      @click="downloadBackup(b.fileName)"
+                    >
+                      📥 {{ $t('database_backup.download_btn') }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -272,9 +351,10 @@ import { useAuthStore } from '../../../application/stores/auth';
 import { hasPermission } from '../../../components/layout/adminNav';
 import { settingsRepository } from '../../../infrastructure/api/SettingsRepository';
 import { academicsRepository, type AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
+import { useApiClient } from '../../../infrastructure/api/apiClient';
 
-type TabId = 'school' | 'payment' | 'attendance' | 'fees' | 'term';
-const TAB_IDS: TabId[] = ['school', 'payment', 'attendance', 'fees', 'term'];
+type TabId = 'school' | 'payment' | 'attendance' | 'fees' | 'term' | 'backup';
+const TAB_IDS: TabId[] = ['school', 'payment', 'attendance', 'fees', 'term', 'backup'];
 
 definePageMeta({ layout: 'admin' });
 const { t, locale } = useI18n();
@@ -283,6 +363,8 @@ useHead({ title: () => t('page_titles.settings') });
 const route = useRoute();
 const router = useRouter();
 const settingsStore = useSettingsStore();
+const authStore = useAuthStore();
+const config = useRuntimeConfig();
 const f = useFormat();
 
 // The open tab lives in the URL (?tab=payment) so a refresh or a shared link keeps it.
@@ -290,6 +372,7 @@ const activeTab = ref<TabId>(TAB_IDS.includes(route.query.tab as TabId) ? (route
 const selectTab = (id: TabId) => {
   activeTab.value = id;
   router.replace({ query: { ...route.query, tab: id === 'school' ? undefined : id } });
+  if (id === 'backup') loadBackups();
 };
 
 const schoolForm = reactive({ schoolNameEn: '', schoolNameLo: '', contactEmail: '', contactPhone: '' });
@@ -323,6 +406,10 @@ const tabs = computed(() => [
   {
     id: 'term' as const,
     label: t('settings.academic_settings'),
+  },
+  {
+    id: 'backup' as const,
+    label: t('database_backup.tab_title'),
   },
 ]);
 
@@ -486,7 +573,6 @@ const handleLowBalanceSave = async () => {
 // ── Automatic absence ──
 // Monday first, as on a school timetable; 0 = Sunday.
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 0];
-const authStore = useAuthStore();
 const canRunAutoAbsence = computed(() => hasPermission(authStore.permissions, 'attendance.manage'));
 const autoAbsenceForm = reactive<AutoAbsenceSettings>({ enabled: false, cutoffTime: '09:00', schoolDays: [1, 2, 3, 4, 5], notifyParents: true });
 const savingAutoAbsence = ref(false);
@@ -525,4 +611,85 @@ const handleRunAutoAbsence = async () => {
     runningAutoAbsence.value = false;
   }
 };
+
+// ── Database Backup State & Handlers ──
+interface BackupItem {
+  fileName: string;
+  sizeKb: number;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+const backups = ref<BackupItem[]>([]);
+const loadingBackups = ref(false);
+const runningBackup = ref(false);
+const backupError = ref('');
+const backupSuccess = ref('');
+
+const formatBackupDate = (iso: string) => {
+  if (!iso) return '';
+  return new Date(iso).toLocaleString([], {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const loadBackups = async () => {
+  loadingBackups.value = true;
+  backupError.value = '';
+  try {
+    const res = await useApiClient()<any>('/settings/backups');
+    backups.value = res.data?.backups || [];
+  } catch (err: any) {
+    backupError.value = err.message || 'Failed to load backup archives';
+  } finally {
+    loadingBackups.value = false;
+  }
+};
+
+const handleRunBackup = async () => {
+  runningBackup.value = true;
+  backupError.value = '';
+  backupSuccess.value = '';
+  try {
+    const res = await useApiClient()<any>('/settings/backups/run', { method: 'POST' });
+    backupSuccess.value = `${t('database_backup.backup_success')}: ${res.data?.fileName} (${res.data?.sizeKb} KB)`;
+    await loadBackups();
+  } catch (err: any) {
+    backupError.value = err.message || 'Failed to create backup archive';
+  } finally {
+    runningBackup.value = false;
+  }
+};
+
+const downloadBackup = async (fileName: string) => {
+  backupError.value = '';
+  try {
+    const token = authStore.token || useCookie('auth_token').value;
+    const res = await fetch(`${config.public.apiBaseUrl}/settings/backups/${fileName}/download`, {
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    });
+    if (!res.ok) throw new Error('Download failed');
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err: any) {
+    backupError.value = err.message || 'Download error';
+  }
+};
+
+onMounted(() => {
+  if (activeTab.value === 'backup') {
+    loadBackups();
+  }
+});
 </script>

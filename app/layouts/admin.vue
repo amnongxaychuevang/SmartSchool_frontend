@@ -20,13 +20,7 @@
     >
       <!-- Logo -->
       <div class="h-16 flex items-center gap-3 px-4 shrink-0 border-b border-slate-200 dark:border-slate-800">
-        <div
-class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
-          style="background: linear-gradient(135deg, #2dd4bf, #0d9488); box-shadow: 0 4px 12px rgba(45,212,191,0.35);">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
-        </div>
+        <AppLogo size="sm" class="bg-white dark:bg-slate-900 p-0.5 border border-teal-500/20 shadow-sm" />
         <transition name="fade-slide">
           <div v-if="sidebarOpen" class="overflow-hidden">
             <p class="text-slate-800 dark:text-white font-bold text-sm leading-tight">Smart School</p>
@@ -387,8 +381,8 @@ const handleLogout = () => {
 
 /* Submenu expand transition */
 .expand-enter-active, .expand-leave-active {
-  transition: all 0.25s ease-out;
-  max-height: 120px;
+  transition: all 0.3s ease-out;
+  max-height: 600px;
 }
 .expand-enter-from, .expand-leave-to {
   max-height: 0;

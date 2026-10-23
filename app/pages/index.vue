@@ -3,11 +3,7 @@
     <!-- ══ Brand panel (desktop) ══ -->
     <aside class="hidden lg:flex lg:w-[44%] xl:w-1/2 flex-col justify-between bg-primary-hover text-white p-12 xl:p-16">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded bg-white/15 border border-white/25 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-          </svg>
-        </div>
+        <img src="/logo.png" alt="Smart School Logo" class="w-12 h-12 rounded-xl object-contain bg-white/95 p-1 shadow-md shadow-black/10" />
         <div>
           <p class="text-lg font-bold leading-tight">{{ t('auth.title') }}</p>
           <p class="text-sm text-white/75">{{ t('auth.subtitle') }}</p>
@@ -47,11 +43,7 @@
         <div class="w-full max-w-sm">
           <!-- Compact brand (mobile) -->
           <div class="lg:hidden flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 rounded bg-primary text-white flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="Smart School Logo" class="w-12 h-12 rounded-xl object-contain bg-white shadow-md p-1 border border-line" />
             <div>
               <p class="font-bold leading-tight text-primary-ink">{{ t('auth.title') }}</p>
               <p class="text-xs text-ink-muted">{{ t('auth.subtitle') }}</p>

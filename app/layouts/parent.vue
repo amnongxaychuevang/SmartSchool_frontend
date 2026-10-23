@@ -1,22 +1,25 @@
 <template>
   <div class="min-h-screen flex">
     <!-- ── Sidebar ─────────────────────────────────────── -->
+    <!-- Mobile Overlay -->
+    <transition name="fade">
+      <div
+        v-if="sidebarOpen && isMobile"
+        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        @click="sidebarOpen = false"
+      />
+    </transition>
+
     <aside
       :class="[
         'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out',
-        sidebarOpen ? 'w-64' : 'w-[68px]'
+        sidebarOpen ? 'w-64 translate-x-0' : 'w-[68px] -translate-x-full lg:translate-x-0'
       ]"
       class="bg-white dark:bg-[#080e1a] border-r border-slate-200 dark:border-slate-800"
     >
       <!-- Logo -->
       <div class="h-16 flex items-center gap-3 px-4 shrink-0 border-b border-slate-200 dark:border-slate-800">
-        <div
-class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
-          style="background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 4px 12px rgba(236,72,153,0.35);">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-        </div>
+        <AppLogo size="sm" class="bg-white dark:bg-slate-900 p-0.5 border border-pink-500/20 shadow-sm" />
         <transition name="fade-slide">
           <div v-if="sidebarOpen" class="overflow-hidden">
             <p class="text-slate-800 dark:text-white font-bold text-sm leading-tight">Smart School</p>
@@ -32,6 +35,7 @@ class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
             :to="item.to"
             :class="['nav-item', isActive(item.to) ? 'active' : '']"
             :title="!sidebarOpen ? item.label : ''"
+            @click="closeSidebarOnMobile"
           >
             <component :is="item.icon" class="h-[18px] w-[18px] shrink-0" />
             <transition name="fade-slide">
@@ -66,10 +70,10 @@ class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
     </aside>
 
     <!-- ── Main Content ─────────────────────────────────── -->
-    <div :class="['flex flex-col flex-1 min-h-screen transition-all duration-300', sidebarOpen ? 'ml-64' : 'ml-[68px]']">
+    <div :class="['flex flex-col flex-1 min-w-0 min-h-screen transition-all duration-300', sidebarOpen ? 'lg:ml-64' : 'lg:ml-[68px]']">
       <!-- Topbar -->
       <header
-class="h-16 flex items-center gap-4 px-6 sticky top-0 z-40 shrink-0 bg-white/90 dark:bg-[#080e1a]/85 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md">
+        class="h-16 flex items-center gap-4 px-4 sm:px-6 sticky top-0 z-40 shrink-0 bg-white/90 dark:bg-[#080e1a]/85 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md">
         <!-- Toggle -->
         <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-all shrink-0" @click="sidebarOpen = !sidebarOpen">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -142,7 +146,7 @@ v-if="profileOpen"
 </template>
 
 <script setup lang="ts">
-import { ref, computed, resolveComponent, onMounted } from 'vue';
+import { ref, computed, resolveComponent, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../application/stores/auth';
 import { useChatStore } from '../application/stores/chat';
@@ -159,9 +163,28 @@ const authStore = useAuthStore();
 const chatStore = useChatStore();
 const sidebarOpen = ref(true);
 const profileOpen = ref(false);
+const isMobile = ref(false);
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 1024;
+  if (!isMobile.value) sidebarOpen.value = true;
+};
+
+const closeSidebarOnMobile = () => {
+  if (isMobile.value) {
+    sidebarOpen.value = false;
+  }
+};
 
 onMounted(() => {
+  isMobile.value = window.innerWidth < 1024;
+  sidebarOpen.value = !isMobile.value;
+  window.addEventListener('resize', handleResize);
   chatStore.fetchConversations();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
 });
 
 const userInitial = computed(() => authStore.user?.fullNameEn?.[0]?.toUpperCase() ?? 'P');

@@ -388,7 +388,7 @@ onMounted(async () => {
     allParents.value = parents;
     bloodTypes.value = blood;
     ethnicities.value = ethnicityList;
-    feeStructures.value = feeRes ?? [];
+    feeStructures.value = Array.isArray(feeRes) ? feeRes : (feeRes?.structures ?? []);
     currentYear.value = terms.find((x) => x.status === 'active')?.academicYear ?? calendarAcademicYear();
     if (editId.value) await loadStudent(editId.value);
   } catch (err) {

@@ -363,4 +363,17 @@ export const adminRepository = {
     const res = await useApiClient()<ApiResponse<Paged<'logs', AuditLog>>>(url, { method: 'GET' });
     return res.data;
   },
+
+  async importRecords(type: 'students' | 'teachers' | 'parents', file: File) {
+    const body = new FormData();
+    body.append('file', file);
+    const endpoint = API_ENDPOINTS.import[type];
+    const res = await useApiClient()<ApiResponse<{ imported: number; errors: { row: number; field: string; message: string }[] }>>(endpoint, {
+      method: 'POST',
+      body,
+    });
+    return res.data;
+  },
 };
+
+export default adminRepository;

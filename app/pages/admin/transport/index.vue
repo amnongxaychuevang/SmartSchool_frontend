@@ -97,6 +97,15 @@
       </div>
 
       <div class="pb-2.5 sm:pb-2 sm:ml-auto shrink-0 flex items-center gap-2">
+        <!-- Driver Console Link -->
+        <NuxtLink
+          to="/driver/bus"
+          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm"
+        >
+          <span>🚌</span>
+          <span>{{ $t('driver_console.launch_btn') }}</span>
+        </NuxtLink>
+
         <!-- Vehicles Tab Action -->
         <button
           v-if="activeTab === 'vehicles'"

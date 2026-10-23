@@ -59,11 +59,33 @@ export const usePushNotifications = () => {
     }
   };
 
-  const showNotification = (title: string, options?: NotificationOptions) => {
+  const registerServiceWorker = async () => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        await navigator.serviceWorker.register('/sw.js');
+      } catch (err) {
+        // Service worker optional in non-https local dev
+      }
+    }
+  };
+
+  const showNotification = async (title: string, options?: NotificationOptions) => {
     if (!isSupported.value || permission.value !== 'granted') return;
 
     try {
       playChime();
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.ready.catch(() => null);
+        if (reg && reg.showNotification) {
+          await reg.showNotification(title, {
+            badge: '/favicon.ico',
+            icon: '/favicon.ico',
+            ...options,
+          });
+          return;
+        }
+      }
+
       const notif = new Notification(title, {
         badge: '/favicon.ico',
         icon: '/favicon.ico',
@@ -80,38 +102,44 @@ export const usePushNotifications = () => {
   };
 
   const initSocketListeners = () => {
-    if (socketInstance) return;
+    const auth = useAuthStore();
 
-    const backendUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-      ? 'http://localhost:5000'
-      : (typeof window !== 'undefined' ? window.location.origin : '');
+    if (!socketInstance) {
+      const backendUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:5000'
+        : (typeof window !== 'undefined' ? window.location.origin : '');
 
-    socketInstance = io(backendUrl);
+      socketInstance = io(backendUrl);
 
-    socketInstance.on('connect', () => {
-      const auth = useAuthStore();
-      if (auth.user?.userId) {
-        socketInstance?.emit('join:user', auth.user.userId);
-      }
-    });
+      socketInstance.on('connect', () => {
+        if (auth.user?.userId) {
+          socketInstance?.emit('join:user', auth.user.userId);
+        }
+      });
 
-    // 1. General in-app push (attendance, bus board/alight, homework)
-    socketInstance.on('new-notification', (notif: any) => {
-      lastNotification.value = notif;
-      const title = notif.titleLo || notif.titleEn || 'Smart School Notice';
-      const body = notif.messageLo || notif.messageEn || '';
-      showNotification(title, { body });
-    });
+      // 1. General in-app push (attendance, bus board/alight, homework)
+      socketInstance.on('new-notification', (notif: any) => {
+        lastNotification.value = notif;
+        const title = notif.titleLo || notif.titleEn || 'Smart School Notice';
+        const body = notif.messageLo || notif.messageEn || '';
+        showNotification(title, { body });
+      });
 
-    // 2. Chat messages notification
-    socketInstance.on('chat:notification', (data: any) => {
-      const sender = data.senderName || 'New Message';
-      const body = data.message?.content || 'Sent you a message';
-      showNotification(`💬 ${sender}`, { body });
-    });
+      // 2. Chat messages notification
+      socketInstance.on('chat:notification', (data: any) => {
+        const sender = data.senderName || 'New Message';
+        const body = data.message?.content || 'Sent you a message';
+        showNotification(`💬 ${sender}`, { body });
+      });
+    }
+
+    if (socketInstance.connected && auth.user?.userId) {
+      socketInstance.emit('join:user', auth.user.userId);
+    }
   };
 
   onMounted(() => {
+    registerServiceWorker();
     initSocketListeners();
   });
 

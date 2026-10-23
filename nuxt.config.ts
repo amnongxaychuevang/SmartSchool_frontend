@@ -6,6 +6,9 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   app: {
     head: {
+      link: [
+        { rel: "icon", type: "image/png", href: "/logo.png" },
+      ],
       script: [
         {
           // Apply the saved theme before first paint so there is no flash.

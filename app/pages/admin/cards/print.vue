@@ -77,12 +77,7 @@
           <!-- Top Header Strip -->
           <div class="card-header">
             <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-teal-700 shadow-sm shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                  <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                </svg>
-              </div>
+              <img src="/logo.png" alt="Logo" class="w-7 h-7 rounded-full bg-white object-contain p-0.5 shadow-sm shrink-0" />
               <div class="min-w-0">
                 <p class="text-[10px] font-extrabold uppercase tracking-wider text-white leading-tight truncate">
                   {{ schoolNameLo }}

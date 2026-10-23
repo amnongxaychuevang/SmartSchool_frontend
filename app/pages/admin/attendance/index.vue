@@ -26,6 +26,16 @@
       >
         {{ $t('attendance_simulator.tab_simulator') }}
       </button>
+
+      <NuxtLink
+        to="/admin/attendance/kiosk"
+        class="ml-auto btn-primary !py-1.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-md"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+        {{ $t('attendance_simulator.tab_kiosk') }} ({{ $t('attendance_simulator.fullscreen') }})
+      </NuxtLink>
     </div>
 
     <!-- TAB 1: KIOSK MODE -->

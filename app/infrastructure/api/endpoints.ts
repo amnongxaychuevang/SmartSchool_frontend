@@ -41,6 +41,11 @@ export const API_ENDPOINTS = {
     list: '/classes',
     academicYears: '/classes/academic-years',
   },
+  import: {
+    students: '/import/students',
+    teachers: '/import/teachers',
+    parents: '/import/parents',
+  },
   calendar: '/calendar',
   receipts: '/receipts',
   promotion: {
@@ -144,6 +149,9 @@ export const API_ENDPOINTS = {
     scan: '/bus/scan',
     logs: '/bus/logs',
     manifest: '/bus/manifest',
+    location: '/bus/location',
+    fleetLocations: '/bus/fleet-locations',
+    routeLocation: (routeId: number | string) => `/bus/routes/${routeId}/live`,
   },
   library: {
     overview: '/library/overview',
@@ -183,3 +191,6 @@ export const API_ENDPOINTS = {
     receipt: (id: number | string) => `/expenses/${id}/receipt`,
   },
 } as const;
+
+export const endpoints = API_ENDPOINTS;
+export default API_ENDPOINTS;
