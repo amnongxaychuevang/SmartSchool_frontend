@@ -337,7 +337,7 @@ const overview = ref({
 });
 
 const assessments = ref<any[]>([]);
-const riskFilter = ref('');
+const riskFilter = ref<string>(queryFilter('level', ['high', 'medium', 'low'] as const, ''));
 const loadingAssessments = ref(false);
 const runningAssessment = ref(false);
 

@@ -72,6 +72,18 @@ export function useDialog() {
   };
 }
 
+// When the server is down every request on a page fails at once; show one popup, not a stack.
+let lastNetworkPopup = 0;
+
+/** The "cannot reach the server" popup. Called by the API client for any request with no response. */
+export function notifyNetworkError(message: string, title: string) {
+  if (!import.meta.client) return;
+  const now = Date.now();
+  if (now - lastNetworkPopup < 5000 || (state.open && state.message === message)) return;
+  lastNetworkPopup = now;
+  void show('error', { message, title });
+}
+
 /** Internal: only <AppDialog> should use this. */
 export function useDialogState() {
   return { state, accept, cancel: () => close(false) };

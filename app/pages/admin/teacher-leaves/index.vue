@@ -99,7 +99,7 @@ useHead({ title: () => t('teacher_leave.admin_title') });
 
 const rows = ref<LeaveRow[]>([]);
 const loading = ref(false);
-const status = ref<'all' | 'pending' | 'approved' | 'rejected'>('all');
+const status = ref<'all' | 'pending' | 'approved' | 'rejected'>(queryFilter('status', ['pending', 'approved', 'rejected', 'all'] as const, 'all'));
 const search = ref('');
 const page = ref(1);
 const pageSize = ref(15);

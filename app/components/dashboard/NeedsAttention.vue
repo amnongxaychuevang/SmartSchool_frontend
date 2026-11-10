@@ -59,11 +59,12 @@ const f = useFormat();
 type Tone = 'warning' | 'danger';
 // Money owed and students at risk are the costliest to leave waiting.
 const META: Record<AttentionKey, { to: string; tone: Tone }> = {
-  studentLeaves: { to: '/admin/leaves', tone: 'warning' },
-  teacherLeaves: { to: '/admin/teacher-leaves', tone: 'warning' },
-  topUps: { to: '/admin/finance/top-ups', tone: 'warning' },
-  overdueInvoices: { to: '/admin/fees', tone: 'danger' },
-  highRisk: { to: '/admin/analytics/at-risk', tone: 'danger' },
+  // Each link opens its list already filtered to what the count is about.
+  studentLeaves: { to: '/admin/leaves?status=pending', tone: 'warning' },
+  teacherLeaves: { to: '/admin/teacher-leaves?status=pending', tone: 'warning' },
+  topUps: { to: '/admin/finance/top-ups?status=pending', tone: 'warning' },
+  overdueInvoices: { to: '/admin/fees?status=overdue', tone: 'danger' },
+  highRisk: { to: '/admin/analytics/at-risk?level=high', tone: 'danger' },
 };
 const TONE: Record<Tone, string> = {
   warning: 'border-warning-line bg-warning-soft hover:border-warning',

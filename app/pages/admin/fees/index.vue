@@ -403,7 +403,7 @@ useHead({ title: () => t("fees_admin.title") });
 
 const financeStore = useFinanceStore();
 const searchInput = ref("");
-const statusFilter = ref("");
+const statusFilter = ref(queryFilter('status', ['unpaid', 'partial', 'paid', 'overdue', 'void'] as const, ''));
 const totalPages = computed(() =>
   Math.ceil(financeStore.invoicesTotal / INVOICES_PER_PAGE),
 );

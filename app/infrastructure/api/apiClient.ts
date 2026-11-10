@@ -4,6 +4,8 @@
 
 import { API_ENDPOINTS } from './endpoints';
 import type { ApiResponse } from './types';
+import { isNetworkError } from '../../utils/errors';
+import { notifyNetworkError } from '../../composables/useDialog';
 
 // Access tokens are short-lived (15 min) by design — see backend LoginUseCase.
 // Deduped so concurrent 401s from several in-flight requests trigger only one
@@ -90,12 +92,26 @@ export const useApiClient = () => {
     },
   });
 
+  // Translations are captured now: inside the async catch below there may be no
+  // active Nuxt context any more.
+  const i18n = tryUseNuxtApp()?.$i18n;
+  const networkPopup = () => notifyNetworkError(
+    i18n ? i18n.t('dialog.network_error') : 'Could not connect to the server. Check your internet connection and try again.',
+    i18n ? i18n.t('dialog.network_title') : 'Cannot reach the server',
+  );
+
   // Access tokens live 15 min. When one expires mid-session, refresh it and
   // replay the failed request once, so the user never sees the 401.
   const client = (async (request: Parameters<typeof base>[0], options?: Parameters<typeof base>[1]) => {
     try {
       return await base(request, options);
     } catch (err) {
+      // No response at all (server down, offline): one popup for the whole app,
+      // whichever page made the call. The caller still gets the error.
+      if (import.meta.client && isNetworkError(err)) {
+        networkPopup();
+        throw err;
+      }
       const status = (err as { response?: { status?: number } })?.response?.status;
       const url = String(request);
       if (!import.meta.client || status !== 401 || AUTH_ENDPOINTS.some((p) => url.includes(p))) throw err;

@@ -194,10 +194,9 @@ const showPassword = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 const year = new Date().getFullYear();
-const dialog = useDialog();
 
-// Server down / unreachable: a popup the user can't miss, instead of a raw fetch error.
-const showNetworkError = () => dialog.error(t('dialog.network_error'), t('dialog.network_title'));
+// Server down / unreachable: the API client already shows the popup (useDialog's
+// notifyNetworkError), so these handlers only skip the inline error text.
 
 const features = ['attendance', 'wallet', 'academics'] as const;
 const featureIcons: Record<(typeof features)[number], string> = {
@@ -226,7 +225,7 @@ const sendCode = async () => {
     reset.code = '';
     mode.value = 'reset';
   } catch (err) {
-    if (isNetworkError(err)) return void showNetworkError();
+    if (isNetworkError(err)) return;
     reset.error = passwordErrorMessage(err, t);
   } finally {
     reset.busy = false;
@@ -245,7 +244,7 @@ const submitReset = async () => {
     resetDone.value = true;
     mode.value = 'login';
   } catch (err) {
-    if (isNetworkError(err)) return void showNetworkError();
+    if (isNetworkError(err)) return;
     reset.error = passwordErrorMessage(err, t);
   } finally {
     reset.busy = false;
@@ -260,9 +259,9 @@ const handleLogin = async () => {
       ? firstAllowedAdminPath(user.permissions ?? [])
       : user?.portal ? `/${user.portal}` : null;
     if (home) await router.push(home);
-  } catch (err) {
-    // Wrong password etc. is shown inline from authStore.error; no-response goes to a popup.
-    if (isNetworkError(err)) showNetworkError();
+  } catch {
+    // Wrong password etc. is shown inline from authStore.error; no response is a popup
+    // from the API client.
   }
 };
 </script>

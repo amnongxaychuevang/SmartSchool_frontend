@@ -115,7 +115,7 @@ useHead({ title: () => t('leave_admin.title') });
 
 const requests = ref<LeaveRow[]>([]);
 const loading = ref(false);
-const status = ref<StatusTab>('all');
+const status = ref<StatusTab>(queryFilter('status', ['pending', 'approved', 'rejected', 'all'] as const, 'all'));
 const search = ref('');
 const page = ref(1);
 const pageSize = ref(15);

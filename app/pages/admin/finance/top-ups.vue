@@ -211,10 +211,10 @@ useHead({ title: () => t('topups.title') });
 
 const financeStore = useFinanceStore();
 const statuses = ['pending', 'approved', 'rejected'] as const;
-const statusFilter = ref('');
+const statusFilter = ref<string>(queryFilter('status', statuses, ''));
 const totalPages = computed(() => Math.ceil(financeStore.topUpRequestsTotal / TOPUPS_PER_PAGE));
 
-onMounted(() => financeStore.fetchTopUpRequests({ search: '', page: 1 }));
+onMounted(() => financeStore.fetchTopUpRequests({ search: '', status: statusFilter.value, page: 1 }));
 const handleFilter = () => financeStore.fetchTopUpRequests({ status: statusFilter.value, page: 1 });
 const changePage = (page: number) => financeStore.fetchTopUpRequests({ status: statusFilter.value, page });
 
