@@ -1,6 +1,15 @@
 <template>
   <div class="flex flex-col gap-6">
-    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
+    <!-- One row: view tabs on the left, period + actions on the right -->
+    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 print:hidden">
+      <TabBar
+        v-model="activeTab"
+        :tabs="[
+          { value: 'overview', label: $t('attendance_report.tab_overview') },
+          { value: 'absentees', label: $t('attendance_report.tab_absentees') },
+        ]"
+      />
+      <div class="flex flex-wrap items-center gap-2">
       <div class="flex gap-6 mr-4" role="group">
         <button
           v-for="r in ranges"
@@ -17,23 +26,13 @@
       <button type="button" class="btn-secondary" :disabled="loading" @click="load">
         {{ $t('common.refresh') }}
       </button>
-      <ExportButton path="/reports/attendance/export" permission="reports.export" :filters="{ range: range }" :file-base="`attendance-${range}`" :disabled="!report" />
+        <ExportButton path="/reports/attendance/export" permission="reports.export" :filters="{ range: range }" :file-base="`attendance-${range}`" :disabled="!report" />
+      </div>
     </div>
 
     <div v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm flex items-center justify-between gap-4">
       <span>{{ $t('attendance_report.load_error') }}: {{ error }}</span>
       <button type="button" class="btn-secondary" @click="load">{{ $t('common.refresh') }}</button>
-    </div>
-
-    <!-- ══ TABS NAVIGATION ══ -->
-    <div class="flex gap-6">
-      <TabBar
-        v-model="activeTab"
-        :tabs="[
-          { value: 'overview', label: $t('attendance_report.tab_overview') },
-          { value: 'absentees', label: $t('attendance_report.tab_absentees') },
-        ]"
-      />
     </div>
 
     <LoadingSpinner v-if="loading && !report" />
