@@ -1,126 +1,121 @@
 <template>
-  <div class="viz-root flex flex-col gap-4">
-    <div v-if="series.length > 1" class="flex items-center gap-5 flex-wrap px-2">
-      <div v-for="s in series" :key="s.label" class="flex items-center gap-2">
-        <span class="inline-block w-3 h-1 rounded-full shrink-0" :style="{ backgroundColor: s.color }" />
-        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ s.label }}</span>
+  <!--
+    Column chart: one column per category; several series stack inside it.
+    Marks follow the dataviz spec: <=24px columns, 4px rounded data-end and square at
+    the baseline, a 2px surface gap between stacked segments, solid hairline grid.
+    Colors come from --viz-* tokens below, validated for both themes.
+  -->
+  <div class="viz-root flex flex-col gap-3">
+    <div v-if="series.length > 1" class="flex items-center gap-4 flex-wrap">
+      <div v-for="s in series" :key="s.label" class="flex items-center gap-1.5">
+        <span class="inline-block w-2.5 h-2.5 rounded-sm shrink-0" :style="{ backgroundColor: s.color }" />
+        <span class="text-xs text-ink-muted">{{ s.label }}</span>
       </div>
     </div>
 
-    <div class="relative" @mouseleave="hoveredCi = null">
-      <svg
-        :viewBox="`0 0 ${vbWidth} ${vbHeight}`"
-        preserveAspectRatio="none"
-        class="w-full overflow-visible"
-        :style="{ height: `${height}px` }"
-        role="img"
-        :aria-label="ariaSummary"
-      >
-        <defs>
-          <linearGradient v-for="(s, si) in series" :key="'grad-'+si" :id="'gradient-' + uid + '-' + si" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" :stop-color="s.color" stop-opacity="0.45" />
-            <stop offset="80%" :stop-color="s.color" stop-opacity="0.05" />
-            <stop offset="100%" :stop-color="s.color" stop-opacity="0.0" />
-          </linearGradient>
-        </defs>
+    <div class="relative select-none" :style="{ height: `${height}px` }" @mouseleave="hovered = null">
+      <!-- Grid + y ticks -->
+      <div class="absolute inset-0 pb-6 pointer-events-none" aria-hidden="true">
+        <div class="relative h-full">
+          <div
+            v-for="tick in yTicks"
+            :key="tick.value"
+            class="absolute left-0 right-0 flex items-center gap-2"
+            :style="{ bottom: `${tick.frac * 100}%`, transform: 'translateY(50%)' }"
+          >
+            <span class="w-9 shrink-0 text-right text-[10px] text-ink-subtle tnum">{{ tick.label }}</span>
+            <span class="flex-1 h-px" :class="tick.value === 0 ? 'bg-line-strong' : 'bg-line'" />
+          </div>
+        </div>
+      </div>
 
-        <!-- Gridlines + Y ticks (Subtle dashed) -->
-        <g v-for="tick in yTicks" :key="tick.value">
-          <line
-            :x1="padLeft" :x2="vbWidth - padRight"
-            :y1="tick.y" :y2="tick.y"
-            stroke="currentColor" stroke-width="1"
-            stroke-dasharray="4 4"
-            class="text-slate-200 dark:text-slate-800/60"
-          />
-          <text :x="padLeft - 12" :y="tick.y + 3" text-anchor="end" class="axis-label">{{ tick.label }}</text>
-        </g>
-
-        <!-- Series Areas -->
-        <g v-for="(s, si) in series" :key="'area-'+s.label">
-          <path :d="seriesAreaPath(si)" :fill="`url(#gradient-${uid}-${si})`" class="transition-all duration-500 ease-out pointer-events-none" />
-        </g>
-
-        <!-- Series Lines -->
-        <g v-for="(s, si) in series" :key="'line-'+s.label">
-          <path 
-            :d="seriesPath(si)" 
-            fill="none" 
-            :stroke="s.color" 
-            stroke-width="3" 
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="transition-all duration-500 ease-out pointer-events-none" 
-            style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));"
-          />
-        </g>
-
-        <!-- Data points & hit areas -->
-        <g v-for="(cat, ci) in categories" :key="cat">
-          <g v-for="(s, si) in series" :key="'pt-'+si+'-'+ci">
-            <!-- Data point marker (larger on hover, always visible) -->
-            <circle
-              :cx="categoryCenterX(ci)"
-              :cy="getY(s.data[ci] || 0)"
-              :r="hoveredCi === ci ? 6 : 4"
-              fill="#ffffff"
-              :stroke="s.color"
-              :stroke-width="hoveredCi === ci ? 3.5 : 2.5"
-              class="transition-all duration-200 pointer-events-none"
-              style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));"
+      <!-- Columns -->
+      <div class="absolute inset-0 pl-11 flex">
+        <div
+          v-for="(cat, ci) in categories"
+          :key="ci"
+          class="relative flex-1 flex flex-col outline-none group"
+          tabindex="0"
+          :aria-label="columnLabel(ci)"
+          @mouseenter="hovered = ci"
+          @focus="hovered = ci"
+          @blur="hovered = null"
+        >
+          <div class="relative flex-1 flex items-end justify-center">
+            <!-- Hover band: bigger than the mark so thin columns are easy to hit -->
+            <div
+              class="absolute inset-x-1 inset-y-0 rounded transition-colors"
+              :class="hovered === ci ? 'bg-surface-2' : 'bg-transparent'"
             />
-          </g>
-          
-          <!-- Category X-axis label -->
-          <text :x="categoryCenterX(ci)" :y="vbHeight - 2" text-anchor="middle" class="axis-label">{{ cat }}</text>
-          
-          <!-- Hit strip for the entire column -->
-          <rect
-            :x="categoryCenterX(ci) - groupWidth / 2"
-            :y="padTop"
-            :width="groupWidth"
-            :height="baselineY - padTop"
-            fill="transparent"
-            class="cursor-pointer outline-none"
-            tabindex="0"
-            :aria-label="categories[ci] + ': ' + series.map(s => s.label + ' ' + formatValue(s.data[ci] || 0)).join(', ')"
-            @mouseenter="hoveredCi = ci"
-            @focus="hoveredCi = ci"
-          />
-        </g>
-      </svg>
-
-      <!-- Hover tooltip -->
-      <div
-        v-if="hoveredCi !== null"
-        class="pointer-events-none absolute top-0 -translate-x-1/2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 px-3.5 py-2.5 text-xs shadow-2xl whitespace-nowrap z-10 transition-all duration-150 backdrop-blur-md"
-        :style="{ left: `${categoryCenterXPercent(hoveredCi)}%` }"
-      >
-        <p class="text-slate-400 dark:text-slate-500 font-semibold mb-2 uppercase tracking-wide text-[10px]">{{ categories[hoveredCi] }}</p>
-        <div class="flex flex-col gap-1.5">
-          <div v-for="s in series" :key="s.label" class="flex items-center gap-5 justify-between">
-            <div class="flex items-center gap-2">
-              <span class="inline-block w-2.5 h-2.5 rounded-full shadow-sm" :style="{ backgroundColor: s.color }" />
-              <span class="text-slate-600 dark:text-slate-300 font-medium">{{ s.label }}</span>
+            <!-- End label (e.g. today's rate), only where the page asks for it -->
+            <span
+              v-if="ci === categories.length - 1 && endLabel && total(ci) > 0"
+              class="absolute z-10 text-[11px] font-semibold text-ink tnum whitespace-nowrap"
+              :style="{ bottom: `calc(${barPct(ci)}% + 4px)` }"
+            >{{ endLabel }}</span>
+            <div
+              class="relative z-[1] w-full max-w-[24px] flex flex-col-reverse gap-[2px] bar-grow"
+              :style="{ height: mounted ? `${barPct(ci)}%` : '0%' }"
+            >
+              <div
+                v-for="seg in segments(ci)"
+                :key="seg.label"
+                class="w-full shrink-0"
+                :class="seg.top ? 'rounded-t-[4px]' : ''"
+                :style="{ flexGrow: seg.value, flexBasis: 0, backgroundColor: seg.color, minHeight: '2px' }"
+              />
             </div>
-            <span class="font-bold text-slate-800 dark:text-white text-sm">{{ valuePrefix }}{{ formatValue(s.data[hoveredCi] || 0) }}</span>
+          </div>
+          <span
+            class="h-6 flex items-end justify-center text-[10px] tnum transition-colors"
+            :class="hovered === ci ? 'text-ink font-semibold' : 'text-ink-subtle'"
+          >{{ cat }}</span>
+
+          <!-- Tooltip -->
+          <div
+            v-if="hovered === ci"
+            class="pointer-events-none absolute z-20 bottom-full mb-1 rounded-lg border border-line bg-surface px-3 py-2 text-xs shadow-lg whitespace-nowrap"
+            :class="ci < categories.length / 2 ? 'left-0' : 'right-0'"
+            role="tooltip"
+          >
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-ink-subtle mb-1.5">{{ titleOf(ci) }}</p>
+            <div class="flex flex-col gap-1">
+              <div v-for="s in series" :key="s.label" class="flex items-center justify-between gap-5">
+                <span class="flex items-center gap-1.5 text-ink-muted">
+                  <span class="inline-block w-2 h-2 rounded-sm" :style="{ backgroundColor: s.color }" />
+                  {{ s.label }}
+                </span>
+                <span class="font-semibold text-ink tnum">
+                  {{ valuePrefix }}{{ formatValue(valueOf(s, ci)) }}<span v-if="series.length > 1 && total(ci) > 0" class="ml-1 font-normal text-ink-subtle">{{ share(valueOf(s, ci), ci) }}</span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Table view for screen readers (relief for the light-mode aqua under 3:1) -->
+    <table class="sr-only">
+      <thead>
+        <tr><th scope="col" /><th v-for="s in series" :key="s.label" scope="col">{{ s.label }}</th></tr>
+      </thead>
+      <tbody>
+        <tr v-for="(cat, ci) in categories" :key="ci">
+          <th scope="row">{{ titleOf(ci) }}</th>
+          <td v-for="s in series" :key="s.label">{{ valuePrefix }}{{ formatValue(valueOf(s, ci)) }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 
-const uid = ref('default-uid');
-onMounted(() => {
-  uid.value = Math.random().toString(36).substring(2, 9);
-});
-
 interface Series {
   label: string;
+  /** A CSS color; use the --viz-* tokens so both themes stay validated. */
   color: string;
   data: number[];
 }
@@ -130,117 +125,96 @@ const props = withDefaults(defineProps<{
   series: Series[];
   height?: number;
   valuePrefix?: string;
+  /** Optional full labels for the tooltip/table (e.g. a full date for a "Mon" tick). */
+  tooltipTitles?: string[];
+  /** Optional value printed above the last column, e.g. today's rate. */
+  endLabel?: string;
 }>(), {
-  height: 220,
+  height: 200,
   valuePrefix: '',
+  tooltipTitles: undefined,
+  endLabel: '',
 });
 
-const hoveredCi = ref<number | null>(null);
+const hovered = ref<number | null>(null);
+// Columns grow from the baseline once on mount.
+const mounted = ref(false);
+onMounted(() => requestAnimationFrame(() => { mounted.value = true; }));
 
-const vbWidth = 600;
-const vbHeight = computed(() => props.height + 32);
-const padLeft = 60;
-const padRight = 16;
-const padTop = 20;
-const padBottom = 24;
-const baselineY = computed(() => vbHeight.value - padBottom);
+const totals = computed(() =>
+  props.categories.map((_, ci) => props.series.reduce((sum, s) => sum + (Number(s.data[ci]) || 0), 0)),
+);
 
+// Round the top of the scale up to the nearest clean value whose half is also clean
+// (35 -> 40, 1.6M -> 2M), so columns fill the plot instead of sitting low.
 const maxValue = computed(() => {
-  const all = props.series.flatMap((s) => s.data);
-  const max = Math.max(1, ...all);
-  const magnitude = 10 ** Math.floor(Math.log10(max));
-  return Math.ceil(max / (magnitude / 2)) * (magnitude / 2);
+  const max = Math.max(1, ...totals.value);
+  const mag = 10 ** Math.floor(Math.log10(max));
+  const step = [1, 1.2, 1.6, 2, 3, 4, 5, 6, 8, 10].find((m) => m * mag >= max)!;
+  return step * mag;
 });
 
-const yTicks = computed(() => {
-  const steps = [0, 0.5, 1];
-  const ticks = steps.map((f) => ({
-    value: Math.round(maxValue.value * f),
-    y: baselineY.value - f * (baselineY.value - padTop),
-  }));
-  const deduped = ticks.filter((t, i) => i === 0 || t.value !== ticks[i - 1]?.value);
-  return deduped.map((t) => ({ ...t, label: formatAxisValue(t.value) }));
-});
+const yTicks = computed(() =>
+  [0, 0.5, 1].map((frac) => {
+    const value = maxValue.value * frac;
+    return { frac, value, label: formatAxis(value) };
+  }),
+);
 
-function formatAxisValue(v: number) {
-  return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1 }).format(Number(v || 0));
+const valueOf = (s: Series, ci: number) => Number(s.data[ci]) || 0;
+const total = (ci: number) => totals.value[ci] ?? 0;
+const barPct = (ci: number) => (total(ci) / maxValue.value) * 100;
+const titleOf = (ci: number) => props.tooltipTitles?.[ci] ?? props.categories[ci] ?? '';
+
+function segments(ci: number) {
+  const segs = props.series
+    .map((s) => ({ label: s.label, color: s.color, value: Number(s.data[ci]) || 0, top: false }))
+    .filter((s) => s.value > 0);
+  // flex-col-reverse: the last segment in the list is drawn on top.
+  if (segs.length) segs[segs.length - 1]!.top = true;
+  return segs;
+}
+
+function formatAxis(v: number) {
+  return v < 10_000
+    ? new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(v)
+    : new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(v);
 }
 
 function formatValue(v: number) {
   return new Intl.NumberFormat('en-US').format(Number(v || 0));
 }
 
-const groupWidth = computed(() => (vbWidth - padLeft - padRight) / Math.max(1, props.categories.length - 1));
-
-function categoryCenterX(ci: number) {
-  return padLeft + groupWidth.value * ci;
+function share(v: number, ci: number) {
+  const total = totals.value[ci] || 0;
+  return total ? `${Math.round((v / total) * 100)}%` : '';
 }
 
-function categoryCenterXPercent(ci: number) {
-  return (categoryCenterX(ci) / vbWidth) * 100;
+function columnLabel(ci: number) {
+  const title = props.tooltipTitles?.[ci] ?? props.categories[ci];
+  return `${title}: ${props.series.map((s) => `${s.label} ${props.valuePrefix}${formatValue(s.data[ci] ?? 0)}`).join(', ')}`;
 }
-
-function getY(val: number) {
-  const frac = val / maxValue.value;
-  const h = Math.max(0, frac * (baselineY.value - padTop));
-  return baselineY.value - h;
-}
-
-// Generate a smooth cubic bezier path through the data points using Catmull-Rom spline to Bezier conversion
-function seriesPath(si: number) {
-  const data = props.series[si]?.data;
-  if (!data || !data.length) return '';
-  
-  const pts = data.map((val, ci) => ({ x: categoryCenterX(ci), y: getY(val || 0) }));
-  
-  let d = `M${pts[0]!.x},${pts[0]!.y}`;
-  const tension = 0.2; // Smoothness factor
-  
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = i === 0 ? pts[0]! : pts[i - 1]!;
-    const p1 = pts[i]!;
-    const p2 = pts[i + 1]!;
-    const p3 = i + 2 < pts.length ? pts[i + 2]! : p2;
-    
-    // Catmull-Rom to Cubic Bezier conversion
-    const cp1x = p1.x + (p2.x - p0.x) * tension;
-    const cp1y = p1.y + (p2.y - p0.y) * tension;
-    
-    const cp2x = p2.x - (p3.x - p1.x) * tension;
-    const cp2y = p2.y - (p3.y - p1.y) * tension;
-    
-    d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
-  }
-  return d;
-}
-
-function seriesAreaPath(si: number) {
-  const data = props.series[si]?.data;
-  if (!data || !data.length) return '';
-  
-  const dLine = seriesPath(si);
-  const firstX = categoryCenterX(0);
-  const lastX = categoryCenterX(data.length - 1);
-  const base = baselineY.value;
-  
-  return `${dLine} L${lastX},${base} L${firstX},${base} Z`;
-}
-
-const ariaSummary = computed(() => {
-  const parts = props.categories.map((cat, ci) =>
-    `${cat}: ${props.series.map((s) => `${s.label} ${formatValue(s.data[ci] ?? 0)}`).join(', ')}`
-  );
-  return parts.join('; ');
-});
 </script>
 
 <style scoped>
-.viz-root :deep(.axis-label) {
-  font-size: 11px;
-  font-weight: 500;
-  fill: #94a3b8;
+/* Validated with the dataviz palette validator against this app's surfaces:
+   light #FFFFFF, dark #111A2E (categorical slots aqua / blue / orange). */
+.viz-root {
+  --viz-present: #1baf7a;
+  --viz-excused: #2a78d6;
+  --viz-absent: #eb6834;
+  --viz-money: #2a78d6;
 }
-:global(.dark) .viz-root :deep(.axis-label) {
-  fill: #64748b;
+:global(html.dark) .viz-root {
+  --viz-present: #199e70;
+  --viz-excused: #3987e5;
+  --viz-absent: #d95926;
+  --viz-money: #3987e5;
+}
+.bar-grow {
+  transition: height 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar-grow { transition: none; }
 }
 </style>

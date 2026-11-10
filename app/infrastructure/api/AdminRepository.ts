@@ -350,8 +350,9 @@ export const adminRepository = {
     return res.data;
   },
 
-  async getAuditLogs(params: { search?: string; userId?: number | string; entityType?: string; action?: string; page?: number; limit?: number } = {}) {
+  async getAuditLogs(params: { search?: string; userId?: number | string; entityType?: string; action?: string; excludeAuth?: boolean; page?: number; limit?: number } = {}) {
     const query = new URLSearchParams();
+    if (params.excludeAuth) query.set('excludeAuth', '1');
     if (params.search) query.set('search', params.search);
     if (params.userId) query.set('userId', String(params.userId));
     if (params.entityType) query.set('entityType', params.entityType);

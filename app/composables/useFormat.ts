@@ -41,6 +41,8 @@ export function useFormat() {
     date: (value: DateInput) => fmt(value, { dateStyle: 'medium' }),
     /** 24 ກ.ຍ. 2026, 14:15 */
     dateTime: (value: DateInput) => fmt(value, { dateStyle: 'medium', timeStyle: 'short' }),
+    /** 24 ກ.ຍ., 14:15 — compact, for narrow lists */
+    dateTimeShort: (value: DateInput) => fmt(value, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
     /** 14:15 */
     time: (value: DateInput) => fmt(value, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
     /** 14:15:08 */

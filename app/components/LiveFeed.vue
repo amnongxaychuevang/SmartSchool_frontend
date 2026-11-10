@@ -1,7 +1,10 @@
 <template>
-  <div class="glass-panel p-6 flex flex-col h-full">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-teal-400">{{ $t('admin.live_checkin_feed') }}</h3>
+  <div class="glass-panel p-3 flex flex-col h-full">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+        <span class="w-1.5 h-5 bg-teal-500 rounded-full" />
+        {{ $t('admin.live_checkin_feed') }}
+      </h3>
       <div class="flex items-center gap-2">
         <span class="relative flex h-3 w-3">
           <span :class="['animate-ping absolute inline-flex h-full w-full rounded-full opacity-75', isConnected ? 'bg-green-400' : 'bg-red-400']"/>
@@ -11,7 +14,7 @@
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto space-y-3">
+    <div class="flex-1 min-h-0 overflow-y-auto space-y-3">
       <transition-group name="list" tag="div">
         <div
           v-for="log in logs"
@@ -43,7 +46,7 @@
         </div>
       </transition-group>
       
-      <div v-if="logs.length === 0" class="text-center text-slate-500 py-8">
+      <div v-if="logs.length === 0" class="text-center text-slate-500 py-8 text-sm">
         {{ $t('admin.waiting_for_scans') }}
       </div>
     </div>

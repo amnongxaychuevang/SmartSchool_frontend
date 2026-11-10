@@ -16,7 +16,7 @@
           </div>
         </div>
         <h3 class="text-xl font-bold text-white tnum">{{ f.kip(incomeToday) }}</h3>
-        <p class="text-xs text-slate-500 mt-0.5">{{ incomeTodayDelta }}</p>
+        <p class="text-xs text-slate-500 mt-0.5">{{ $t('admin.income_hint') }}</p>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
           </div>
         </div>
         <h3 class="text-xl font-bold text-white tnum">{{ f.kip(expensesToday) }}</h3>
-        <p class="text-xs text-slate-500 mt-0.5">{{ expensesTodayDelta }}</p>
+        <p class="text-xs text-slate-500 mt-0.5">{{ $t('admin.expenses_hint') }}</p>
       </div>
     </div>
 
@@ -56,41 +56,24 @@
           </div>
         </div>
         <h3 class="text-xl font-bold text-white tnum">{{ f.kip(currentBalance) }}</h3>
-        <p class="text-xs text-slate-500 mt-0.5">{{ balanceInfo }}</p>
+        <p class="text-xs text-slate-500 mt-0.5">{{ $t('admin.balance_hint') }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useFormat } from '../../composables/useFormat';
 import { useSocket } from '../../composables/useSocket';
 import { adminRepository } from '../../infrastructure/api/AdminRepository';
 
 const f = useFormat();
-const { t } = useI18n();
 const { financeData } = useSocket();
 
 const incomeToday = ref(0);
 const expensesToday = ref(0);
 const currentBalance = ref(0);
-
-const incomeTodayDelta = computed(() => {
-  if (incomeToday.value > 0) return t('admin.increase_from_yesterday');
-  return t('admin.no_income');
-});
-
-const expensesTodayDelta = computed(() => {
-  if (expensesToday.value > 0) return t('admin.expenses_this_session');
-  return t('admin.no_expenses');
-});
-
-const balanceInfo = computed(() => {
-  if (currentBalance.value > 1000000) return t('admin.healthy_balance');
-  if (currentBalance.value > 500000) return t('admin.moderate_balance');
-  return t('admin.low_balance');
-});
 
 async function fetchFinanceOverview() {
   try {

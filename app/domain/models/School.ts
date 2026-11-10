@@ -84,11 +84,18 @@ export interface ScanResult {
   } | null;
 }
 
+export type AttentionKey = 'studentLeaves' | 'teacherLeaves' | 'topUps' | 'overdueInvoices' | 'highRisk';
+/** Work waiting on an admin; the API only returns items the viewer may act on. */
+export interface AttentionItem { key: AttentionKey; count: number; amount?: number }
+
 export interface DashboardStats {
   totalStudents: number;
+  isSchoolDay?: boolean;
   presentToday: number;
+  excusedToday?: number;
   absentToday: number;
   transactionsToday: { count: number; totalAmount: Money };
-  attendanceTrend: { date: string; present: number; absent: number }[];
+  attendanceTrend: { date: string; present: number; excused?: number; absent: number }[];
   walletTrend: { date: string; totalAmount: number }[];
+  needsAttention?: AttentionItem[];
 }

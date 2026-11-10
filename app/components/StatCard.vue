@@ -3,6 +3,7 @@
     <div class="min-w-0">
       <p class="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{{ title }}</p>
       <h3 class="mt-2 text-3xl font-bold tracking-tight text-ink tnum">{{ value }}</h3>
+      <p v-if="hint" class="mt-1 text-xs text-ink-muted truncate">{{ hint }}</p>
     </div>
     <div data-stat-icon class="w-9 h-9 rounded flex items-center justify-center shrink-0 text-white" :class="colorClass">
       <slot name="icon">
@@ -27,6 +28,11 @@ defineProps({
   colorClass: {
     type: String,
     default: 'bg-primary'
+  },
+  /** Optional context line under the value, e.g. "92% of students". */
+  hint: {
+    type: String,
+    default: ''
   }
 });
 </script>

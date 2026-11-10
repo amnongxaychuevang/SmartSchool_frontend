@@ -229,23 +229,46 @@
     "publish_announcement": "ເຜີຍແຜ່ແຈ້ງການ",
     "income_today": "ລາຍຮັບມື້ນີ້",
     "expenses_today": "ລາຍຈ່າຍມື້ນີ້",
-    "current_balance": "ຍອດເງິນຄົງເຫຼືອ",
+    "current_balance": "ເງິນໃນກະເປົານັກຮຽນ (ລວມ)",
     "increase_from_yesterday": "📈 ເພີ່ມຂຶ້ນ ທຽບກັບວານນີ້",
     "no_income": "ບໍ່ມີລາຍຮັບໃນມື້ນີ້",
     "expenses_this_session": "💳 ໃນເຊሊັນນີ້",
     "no_expenses": "ບໍ່ມີລາຍຈ່າຍໃນມື້ນີ້",
-    "healthy_balance": "✅ ຍອດເງິນສົມບູນ",
-    "moderate_balance": "⚠️ ໃກ້ຈະຂາດ",
-    "low_balance": "🔴 ໝົດເງິນ",
-    "top_performers": "🏆 ນັກຮຽນດີທີ່ສຸດ",
+    "healthy_balance": "ຍອດເງິນສົມບູນ",
+    "moderate_balance": "ໃກ້ຈະຂາດ",
+    "low_balance": "ໝົດເງິນ",
+    "top_performers": "ນັກຮຽນດີທີ່ສຸດ",
     "no_data": "ບໍ່ມີຂໍ້ມູນ",
-    "upcoming_events": "📅 ເວລາສຳຄັນໃກ້ຂ້າງ",
+    "upcoming_events": "ເຫດການທີ່ໃກ້ຈະມາເຖິງ",
     "no_upcoming_events": "ບໍ່ມີເວລາສຳຄັນໃກ້ຂ້າງ",
-    "announcements": "📢 ປະກາດຂ່າວສານ",
+    "announcements": "ປະກາດຂ່າວສານ",
     "no_announcements": "ບໍ່ມີປະກາດໃໝ່",
     "priority_high": "ສຳຄັນ",
     "priority_medium": "ປະເມາະ",
-    "priority_low": "ບໍ່ສຳຄັນ"
+    "priority_low": "ບໍ່ສຳຄັນ",
+    "balance_hint": "ລວມທຸກກະເປົາເງິນຂອງນັກຮຽນ",
+    "income_hint": "ການເຕີມເງິນທີ່ອະນຸມັດມື້ນີ້",
+    "expenses_hint": "ການຊື້ຂອງນັກຮຽນມື້ນີ້",
+    "needs_attention": "ວຽກທີ່ຕ້ອງຈັດການ",
+    "all_clear": "ບໍ່ມີວຽກຄ້າງ, ທຸກຢ່າງຮຽບຮ້ອຍ.",
+    "attendance_rate": "{rate}% ຂອງນັກຮຽນ",
+    "not_school_day": "ມື້ນີ້ບໍ່ມີຮຽນ",
+    "no_attendance_data": "ບໍ່ມີຂໍ້ມູນການມາຮຽນໃນ 7 ວັນຮຽນຜ່ານມາ",
+    "no_wallet_activity": "ບໍ່ມີທຸລະກຳກະເປົາເງິນໃນ 7 ວັນຜ່ານມາ",
+    "attention": {
+      "studentLeaves": "ໃບລາພັກນັກຮຽນ",
+      "teacherLeaves": "ໃບລາພັກຄູ",
+      "topUps": "ການເຕີມເງິນລໍຖ້າອະນຸມັດ",
+      "overdueInvoices": "ຄ່າຮຽນກາຍກຳນົດ",
+      "highRisk": "ນັກຮຽນກຸ່ມສ່ຽງສູງ"
+    },
+    "attention_hint": {
+      "studentLeaves": "ລໍຖ້າອະນຸມັດ",
+      "teacherLeaves": "ລໍຖ້າອະນຸມັດ",
+      "topUps": "ລວມ {amount}",
+      "overdueInvoices": "ຍັງຄ້າງ {amount}",
+      "highRisk": "ຕ້ອງຕິດຕາມ"
+    }
   },
   "students": {
     "title": "ນັກຮຽນ",
@@ -653,7 +676,9 @@
     "error": "ເກີດຂໍ້ຜິດພາດ",
     "warning": "ແຈ້ງເຕືອນ",
     "info": "ແຈ້ງການ",
-    "confirm": "ຢືນຢັນ"
+    "confirm": "ຢືນຢັນ",
+    "network_title": "ເຊື່ອມຕໍ່ເຊີບເວີບໍ່ໄດ້",
+    "network_error": "ບໍ່ສາມາດເຊື່ອມຕໍ່ເຊີບເວີໄດ້. ກະລຸນາກວດອິນເຕີເນັດ ຫຼື ເຊີບເວີອາດຈະປິດຢູ່. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ."
   },
   "gender": {
     "all": "ທຸກເພດ",
@@ -1231,7 +1256,19 @@
       "parent": "ຜູ້ປົກຄອງ",
       "card": "ບັດນັກຮຽນ",
       "report": "ລາຍງານ",
-      "teacher_leave": "ການລາພັກຂອງຄູ"
+      "teacher_leave": "ການລາພັກຂອງຄູ",
+      "auto_absence": "ຂາດຮຽນອັດຕະໂນມັດ",
+      "fee_payment": "ການຈ່າຍຄ່າຮຽນ",
+      "fee_type": "ປະເພດຄ່າຮຽນ",
+      "invoice": "ໃບແຈ້ງໜີ້",
+      "role": "ບົດບາດ",
+      "teacher_document": "ເອກະສານຄູ",
+      "user_password": "ລະຫັດຜ່ານ",
+      "wallet_refund": "ການຄືນເງິນກະເປົາ",
+      "payroll_item": "ລາຍການເງິນເດືອນ",
+      "payroll_period": "ງວດເງິນເດືອນ",
+      "promotion": "ການເລື່ອນຊັ້ນ",
+      "school_event": "ເຫດການໂຮງຮຽນ"
     }
   },
   "forms": {

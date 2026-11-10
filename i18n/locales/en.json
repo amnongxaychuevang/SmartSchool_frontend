@@ -229,23 +229,46 @@
     "publish_announcement": "Publish Announcement",
     "income_today": "Income Today",
     "expenses_today": "Expenses Today",
-    "current_balance": "Current Balance",
+    "current_balance": "Student wallets (total)",
     "increase_from_yesterday": "📈 Up from yesterday",
     "no_income": "No income today",
     "expenses_this_session": "💳 This session",
     "no_expenses": "No expenses today",
-    "healthy_balance": "✅ Healthy balance",
-    "moderate_balance": "⚠️ Running low",
-    "low_balance": "🔴 Low balance",
-    "top_performers": "🏆 Top Performers",
+    "healthy_balance": "Healthy balance",
+    "moderate_balance": "Running low",
+    "low_balance": "Low balance",
+    "top_performers": "Top Performers",
     "no_data": "No data available",
-    "upcoming_events": "📅 Upcoming Events",
+    "upcoming_events": "Upcoming Events",
     "no_upcoming_events": "No upcoming events",
-    "announcements": "📢 Announcements",
+    "announcements": "Announcements",
     "no_announcements": "No announcements yet",
     "priority_high": "High",
     "priority_medium": "Medium",
-    "priority_low": "Low"
+    "priority_low": "Low",
+    "balance_hint": "Held across all student wallets",
+    "income_hint": "Approved top-ups today",
+    "expenses_hint": "Student purchases today",
+    "needs_attention": "Needs attention",
+    "all_clear": "All clear. Nothing is waiting on you.",
+    "attendance_rate": "{rate}% of students",
+    "not_school_day": "No school today",
+    "no_attendance_data": "No attendance recorded in the last 7 school days",
+    "no_wallet_activity": "No wallet transactions in the last 7 days",
+    "attention": {
+      "studentLeaves": "Student leave requests",
+      "teacherLeaves": "Teacher leave requests",
+      "topUps": "Top-ups to approve",
+      "overdueInvoices": "Overdue fees",
+      "highRisk": "High-risk students"
+    },
+    "attention_hint": {
+      "studentLeaves": "Awaiting approval",
+      "teacherLeaves": "Awaiting approval",
+      "topUps": "{amount} in total",
+      "overdueInvoices": "{amount} outstanding",
+      "highRisk": "Need follow-up"
+    }
   },
   "students": {
     "title": "Students",
@@ -653,7 +676,9 @@
     "error": "Something went wrong",
     "warning": "Warning",
     "info": "Notice",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "network_title": "Cannot reach the server",
+    "network_error": "Could not connect to the server. Check your internet connection, or the server may be down. Please try again."
   },
   "gender": {
     "all": "All genders",
@@ -1178,7 +1203,19 @@
       "parent": "Parent",
       "card": "Student card",
       "report": "Report",
-      "teacher_leave": "Teacher leave"
+      "teacher_leave": "Teacher leave",
+      "auto_absence": "Auto absence",
+      "fee_payment": "Fee payment",
+      "fee_type": "Fee type",
+      "invoice": "Invoice",
+      "role": "Role",
+      "teacher_document": "Teacher document",
+      "user_password": "Password",
+      "wallet_refund": "Wallet refund",
+      "payroll_item": "Payroll item",
+      "payroll_period": "Payroll period",
+      "promotion": "Promotion",
+      "school_event": "School event"
     }
   },
   "forms": {
