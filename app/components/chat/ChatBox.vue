@@ -39,7 +39,7 @@
             type="text"
             class="input-field text-xs pl-8 py-1.5 w-full bg-white dark:bg-slate-800"
             :placeholder="$t('chat.search_placeholder')"
-          />
+          >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -80,7 +80,7 @@
                 :src="getPartner(conv).avatarUrl!"
                 class="w-full h-full object-cover"
                 alt="Avatar"
-              />
+              >
               <span v-else>{{ (getPartnerName(conv)[0] || 'U').toUpperCase() }}</span>
             </div>
             <!-- Online indicator -->
@@ -150,7 +150,7 @@
                   :src="activePartner.avatarUrl"
                   class="w-full h-full object-cover"
                   alt="Avatar"
-                />
+                >
                 <span v-else>{{ (activePartnerName[0] || 'U').toUpperCase() }}</span>
               </div>
               <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
@@ -361,7 +361,7 @@
             type="text"
             class="input-field text-xs pl-8 py-2 w-full"
             :placeholder="$t('chat.search_contacts')"
-          />
+          >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -380,7 +380,7 @@
           >
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-teal-500 text-white font-bold flex items-center justify-center text-sm shadow-xs overflow-hidden">
-                <img v-if="contact.avatarUrl" :src="contact.avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
+                <img v-if="contact.avatarUrl" :src="contact.avatarUrl" class="w-full h-full object-cover" alt="Avatar" >
                 <span v-else>{{ (pick(contact.fullNameLo, contact.fullNameEn)[0] || 'U').toUpperCase() }}</span>
               </div>
               <div>

@@ -192,8 +192,8 @@
           >
             <div class="relative w-44 h-44 flex items-center justify-center mb-6">
               <!-- Pulsing Waves -->
-              <div class="absolute inset-0 rounded-full bg-teal-500/10 animate-ping opacity-75"></div>
-              <div class="absolute inset-4 rounded-full bg-teal-500/15 animate-pulse"></div>
+              <div class="absolute inset-0 rounded-full bg-teal-500/10 animate-ping opacity-75" />
+              <div class="absolute inset-4 rounded-full bg-teal-500/15 animate-pulse" />
               <div class="w-28 h-28 rounded-full bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-2xl shadow-teal-500/40">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -302,7 +302,7 @@ const soundEnabled = ref(true);
 
 const lastScan = ref<ScanResult | null>(null);
 const scanError = ref('');
-let clearTimer: any = null;
+let clearTimer: ReturnType<typeof setTimeout> | null = null;
 
 interface HistoryItem {
   name: string;
@@ -322,7 +322,7 @@ const schoolName = computed(() => {
 
 // Clock
 const now = ref(new Date());
-let clockTimer: any = null;
+let clockTimer: ReturnType<typeof setTimeout> | null = null;
 
 const currentTimeStr = computed(() =>
   now.value.toLocaleTimeString('en-GB', {
@@ -362,7 +362,9 @@ function playTone(freq: number, type: OscillatorType, duration: number, delayMs 
       osc.start();
       osc.stop(ctx.currentTime + duration);
       setTimeout(() => ctx.close().catch(() => {}), duration * 1000 + 100);
-    } catch {}
+    } catch {
+      // No audio (autoplay blocked or no AudioContext): the scan still counts.
+    }
   }, delayMs);
 }
 
@@ -437,7 +439,7 @@ async function handleScan() {
     clearTimer = setTimeout(() => {
       lastScan.value = null;
     }, 4500);
-  } catch (err: any) {
+  } catch (err) {
     const msg = getErrorMessage(err);
     scanError.value = msg;
     playErrorBuzzer();

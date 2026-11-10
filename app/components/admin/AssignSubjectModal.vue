@@ -41,9 +41,9 @@
               <Transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-out" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
                 <div v-if="classDropdownOpen" class="absolute left-0 top-full mt-2 w-full max-h-60 overflow-y-auto glass-panel !p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] z-50">
                   <button
-                    type="button"
                     v-for="c in termClasses"
                     :key="c.classId"
+                    type="button"
                     class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
                     :class="form.classId === c.classId ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:text-white'"
                     @click="form.classId = c.classId; classDropdownOpen = false"
@@ -75,9 +75,9 @@
               <Transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-out" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
                 <div v-if="subjectDropdownOpen" class="absolute left-0 top-full mt-2 w-full max-h-60 overflow-y-auto glass-panel !p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] z-50">
                   <button
-                    type="button"
                     v-for="s in subjects"
                     :key="s.subjectId"
+                    type="button"
                     class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
                     :class="form.subjectId === s.subjectId ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:text-white'"
                     @click="form.subjectId = s.subjectId; subjectDropdownOpen = false"
@@ -118,9 +118,9 @@
                     <span class="truncate">{{ $t('classes.assign_later') }}</span>
                   </button>
                   <button
-                    type="button"
                     v-for="t in teachers"
                     :key="t.userId"
+                    type="button"
                     class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg"
                     :class="form.teacherId === t.userId ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:text-white'"
                     @click="form.teacherId = t.userId; teacherDropdownOpen = false"

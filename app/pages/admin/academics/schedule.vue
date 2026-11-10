@@ -20,13 +20,13 @@
           <Transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-out" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
             <div v-if="termDropdownOpen" class="absolute left-0 top-full mt-2 w-max min-w-full glass-panel !p-1 border border-slate-700 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] overflow-hidden z-50">
               <button
-                v-for="t in terms"
-                :key="t.termId"
+                v-for="term in terms"
+                :key="term.termId"
                 class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 rounded-lg whitespace-nowrap"
-                :class="termId === t.termId ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
-                @click="termId = t.termId; onTermChange(); termDropdownOpen = false">
-                <div class="w-1.5 h-1.5 rounded-full shrink-0" :class="termId === t.termId ? 'bg-teal-500' : 'bg-transparent'"/>
-                {{ t.academicYear }} · {{ locale === 'lo' ? t.termNameLo : t.termNameEn }}{{ t.status === 'active' ? ' ●' : '' }}
+                :class="termId === term.termId ? 'bg-teal-500/10 text-teal-400 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'"
+                @click="termId = term.termId; onTermChange(); termDropdownOpen = false">
+                <div class="w-1.5 h-1.5 rounded-full shrink-0" :class="termId === term.termId ? 'bg-teal-500' : 'bg-transparent'"/>
+                {{ term.academicYear }} · {{ locale === 'lo' ? term.termNameLo : term.termNameEn }}{{ term.status === 'active' ? ' ●' : '' }}
               </button>
             </div>
           </Transition>
@@ -112,10 +112,8 @@ import { academicsRepository, type AcademicTerm, type ClassSubject, type Schedul
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Timetable — EduSmart Admin' });
-
 const { locale, t } = useI18n();
-const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
+useHead({ title: () => t('nav.schedule') });
 
 // Monday–Friday (dayOfWeek: 0 = Sunday).
 const WEEK_DAYS = [1, 2, 3, 4, 5];
@@ -130,8 +128,6 @@ const nameOf = (obj: object, base: string) => {
 };
 // A TIME value arrives as "1970-01-01THH:MM:00.000Z".
 const hhmm = (iso: string) => iso.slice(11, 16);
-const errorMessage = (err: unknown, fallback: string) =>
-  (err as { data?: { message?: string } })?.data?.message || (err instanceof Error && err.message) || fallback;
 
 type ClassOption = { classId: number; classNameEn: string; classNameLo: string; academicYear: string };
 const terms = ref<AcademicTerm[]>([]);

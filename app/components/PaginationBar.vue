@@ -117,8 +117,8 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  (e: 'update:page', page: number): void;
-  (e: 'update:pageSize', size: number): void;
+  'update:page': [page: number];
+  'update:pageSize': [size: number];
 }>();
 
 const MAX_VISIBLE = 5;

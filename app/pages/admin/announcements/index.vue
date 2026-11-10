@@ -80,9 +80,9 @@
     <!-- Create Modal -->
     <AdminAnnouncementModal
       v-model="showModal"
+      v-model:form="form"
       :is-edit-mode="isEditMode"
       :saving="saving"
-      :form="form"
       :class-options="classOptions"
       @save="saveAnnouncement"
     />
@@ -286,9 +286,9 @@ const handleDelete = async () => {
     await apiClient(`${API_ENDPOINTS.announcements.base}/${del.item.announcementId}`, { method: 'DELETE' });
     del.open = false;
     await fetchAnnouncements();
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to delete announcement:', error);
-    del.error = error.message || t('common.error');
+    del.error = getErrorMessage(error, t('common.error'));
   } finally {
     del.busy = false;
   }

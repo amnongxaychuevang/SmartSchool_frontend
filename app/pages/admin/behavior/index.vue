@@ -326,7 +326,7 @@
           </div>
           <div>
             <label for="behavior-date" class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_date') }} *</label>
-            <input id="behavior-date" v-model="form.incidentDate" type="date" class="input-field" required :max="todayStr" />
+            <input id="behavior-date" v-model="form.incidentDate" type="date" class="input-field" required :max="todayStr" >
           </div>
         </div>
 
@@ -353,32 +353,32 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.title_lo') }} *</label>
-            <input v-model.trim="form.titleLo" type="text" class="input-field" required />
+            <input v-model.trim="form.titleLo" type="text" class="input-field" required >
           </div>
           <div>
             <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.title_en') }} *</label>
-            <input v-model.trim="form.titleEn" type="text" class="input-field" required />
+            <input v-model.trim="form.titleEn" type="text" class="input-field" required >
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_points') }} *</label>
-            <input v-model.number="form.points" type="number" min="1" max="50" class="input-field" required />
+            <input v-model.number="form.points" type="number" min="1" max="50" class="input-field" required >
           </div>
           <div>
             <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_action') }}</label>
-            <input v-model.trim="form.actionTaken" type="text" class="input-field" />
+            <input v-model.trim="form.actionTaken" type="text" class="input-field" >
           </div>
         </div>
 
         <div>
           <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('common.description') }}</label>
-          <textarea v-model.trim="form.description" class="input-field py-1.5" rows="2"></textarea>
+          <textarea v-model.trim="form.description" class="input-field py-1.5" rows="2" />
         </div>
 
         <div v-if="!editingRecord" class="flex items-center gap-2 pt-1">
-          <input id="notify-parent" v-model="form.notifyParent" type="checkbox" class="rounded text-teal-500 focus:ring-teal-400" />
+          <input id="notify-parent" v-model="form.notifyParent" type="checkbox" class="rounded text-teal-500 focus:ring-teal-400" >
           <label for="notify-parent" class="text-xs font-medium text-slate-700 dark:text-slate-300">
             {{ $t('behavior.notify_parent_checkbox') }}
           </label>
@@ -397,11 +397,11 @@
       <form class="flex flex-col gap-4" @submit.prevent="submitCategory">
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.name_lo') }} *</label>
-          <input v-model.trim="categoryForm.nameLo" type="text" class="input-field" required />
+          <input v-model.trim="categoryForm.nameLo" type="text" class="input-field" required >
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.name_en') }} *</label>
-          <input v-model.trim="categoryForm.nameEn" type="text" class="input-field" required />
+          <input v-model.trim="categoryForm.nameEn" type="text" class="input-field" required >
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -413,7 +413,7 @@
           </div>
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_points') }} *</label>
-            <input v-model.number="categoryForm.defaultPoints" type="number" min="1" max="50" class="input-field" required />
+            <input v-model.number="categoryForm.defaultPoints" type="number" min="1" max="50" class="input-field" required >
           </div>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
@@ -568,9 +568,9 @@ const clearSearch = () => {
   fetchRecords(1);
 };
 
-let debounceTimer: any = null;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 const debouncedFetch = () => {
-  clearTimeout(debounceTimer);
+  if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => fetchRecords(1), 300);
 };
 

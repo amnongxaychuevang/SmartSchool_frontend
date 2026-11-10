@@ -51,13 +51,13 @@
     <!-- Report card document -->
     <div v-else id="report-card" class="report-card-page bg-white text-slate-900 mx-auto print:mx-0 print:shadow-none shadow-lg">
       <!-- Decorative top border -->
-      <div class="h-2 bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 print:from-slate-700 print:via-slate-600 print:to-slate-500"></div>
+      <div class="h-2 bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 print:from-slate-700 print:via-slate-600 print:to-slate-500" />
 
       <div class="px-10 py-8 print:px-8 print:py-6">
         <!-- School Header -->
         <header class="text-center mb-8 border-b-2 border-slate-200 pb-6">
           <div class="flex items-center justify-center gap-4 mb-3">
-            <img src="/logo.png" alt="School Logo" class="w-16 h-16 object-contain" />
+            <img src="/logo.png" alt="School Logo" class="w-16 h-16 object-contain" >
           </div>
           <h1 class="text-2xl font-bold text-slate-800 tracking-wide">
             {{ schoolName }}
@@ -162,17 +162,17 @@
         <!-- Signatures -->
         <section class="grid grid-cols-3 gap-8 mt-12 pt-2">
           <div class="text-center">
-            <div class="border-b border-slate-400 mb-2 h-16"></div>
+            <div class="border-b border-slate-400 mb-2 h-16" />
             <p class="text-sm font-semibold text-slate-700">{{ $t('report_card.class_teacher') }}</p>
             <p class="text-xs text-slate-400 mt-0.5">{{ $t('report_card.signature_date') }}</p>
           </div>
           <div class="text-center">
-            <div class="border-b border-slate-400 mb-2 h-16"></div>
+            <div class="border-b border-slate-400 mb-2 h-16" />
             <p class="text-sm font-semibold text-slate-700">{{ $t('report_card.parent_guardian') }}</p>
             <p class="text-xs text-slate-400 mt-0.5">{{ $t('report_card.signature_date') }}</p>
           </div>
           <div class="text-center">
-            <div class="border-b border-slate-400 mb-2 h-16"></div>
+            <div class="border-b border-slate-400 mb-2 h-16" />
             <p class="text-sm font-semibold text-slate-700">{{ $t('report_card.school_director') }}</p>
             <p class="text-xs text-slate-400 mt-0.5">{{ $t('report_card.signature_date') }}</p>
           </div>

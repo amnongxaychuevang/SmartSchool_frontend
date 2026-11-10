@@ -274,12 +274,12 @@
           <!-- Signatures -->
           <div class="grid grid-cols-2 gap-8 pt-8 mt-4 border-t border-slate-200 dark:border-slate-700 text-center text-xs">
             <div>
-              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2"></div>
+              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2" />
               <p class="font-semibold text-ink">{{ $t('payroll.received_by') }}</p>
               <p class="text-[10px] text-ink-muted">{{ selectedPayslip.teacher?.fullNameLo }}</p>
             </div>
             <div>
-              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2"></div>
+              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2" />
               <p class="font-semibold text-ink">{{ $t('payroll.approved_by') }}</p>
               <p class="text-[10px] text-ink-muted">EduSmart</p>
             </div>
@@ -315,7 +315,7 @@
             :src="mediaUrl(viewingSlip.slipUrl)!"
             :alt="$t('payroll.transfer_slip')"
             class="max-h-[60vh] object-contain rounded-lg shadow-md"
-          />
+          >
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-xs p-3 rounded-xl bg-surface-sunken border border-line">
@@ -362,7 +362,7 @@ definePageMeta({
   layout: 'teacher',
 });
 
-const { t, locale } = useI18n();
+const { locale } = useI18n();
 const f = useFormat();
 const mediaUrl = useMediaUrl();
 

@@ -293,7 +293,7 @@
 import type { FeeType, FeeStructure } from '../../../domain/models/Finance';
 import type { AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
 import type { SchoolClass } from '../../../domain/models/SchoolClass';
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceStore } from '../../../application/stores/finance';
 import { academicsRepository } from '../../../infrastructure/api/AcademicsRepository';

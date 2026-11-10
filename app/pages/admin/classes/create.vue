@@ -78,7 +78,7 @@
                 maxlength="50"
                 class="input-field"
                 :placeholder="$t('classes.ph_name_lo')"
-              />
+              >
             </label>
             <label class="field">
               <span class="field-label"
@@ -91,7 +91,7 @@
                 maxlength="50"
                 class="input-field"
                 :placeholder="$t('classes.ph_name_en')"
-              />
+              >
             </label>
             <label class="field">
               <span class="field-label"
@@ -117,7 +117,7 @@
                 maxlength="20"
                 class="input-field"
                 :placeholder="$t('classes.ph_level_lo')"
-              />
+              >
             </label>
             <label class="field">
               <span class="field-label">{{
@@ -128,7 +128,7 @@
                 maxlength="20"
                 class="input-field"
                 :placeholder="$t('classes.ph_level_en')"
-              />
+              >
             </label>
             <label class="field">
               <span class="field-label">{{

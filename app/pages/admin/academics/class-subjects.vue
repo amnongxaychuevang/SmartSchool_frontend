@@ -387,9 +387,9 @@
                       }}</span>
                     </button>
                     <button
-                      type="button"
                       v-for="t in teachers"
                       :key="t.userId"
+                      type="button"
                       class="w-full text-left text-xs transition-colors flex items-center gap-2 rounded-md"
                       :class="
                         row.teacherId === t.userId

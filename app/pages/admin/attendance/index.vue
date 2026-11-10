@@ -95,7 +95,7 @@
         <div class="lg:col-span-7 flex flex-col gap-4">
           <!-- Hidden / Continuous RFID input -->
           <div class="panel p-3.5 bg-surface border-2 border-dashed border-line">
-            <form @submit.prevent="handleKioskSubmit" class="flex gap-2">
+            <form class="flex gap-2" @submit.prevent="handleKioskSubmit">
               <input
                 ref="kioskInputRef"
                 v-model.trim="kioskUid"
@@ -215,7 +215,7 @@
             class="panel p-6 sm:p-8 rounded-xl border-2 border-dashed border-line text-center flex flex-col items-center justify-center gap-3 text-ink-subtle"
           >
             <div class="relative w-14 h-14 rounded-full bg-surface-sunken flex items-center justify-center text-ink-subtle">
-              <span class="absolute inset-0 rounded-full animate-ping opacity-25 bg-brand-500"></span>
+              <span class="absolute inset-0 rounded-full animate-ping opacity-25 bg-brand-500" />
               <svg class="w-7 h-7 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
@@ -471,7 +471,7 @@ function playErrorBuzzer() {
 
 // Live Digital Clock
 const now = ref(new Date());
-let timerId: any = null;
+let timerId: ReturnType<typeof setTimeout> | null = null;
 
 const currentTimeStr = computed(() => {
   return now.value.toLocaleTimeString('en-GB', {
@@ -504,7 +504,7 @@ const kioskUid = ref("");
 const kioskInputRef = ref<HTMLInputElement | null>(null);
 const kioskLastScan = ref<ScanResult | null>(null);
 const kioskError = ref("");
-let kioskClearTimer: any = null;
+let kioskClearTimer: ReturnType<typeof setTimeout> | null = null;
 
 interface HistoryEntry {
   cardUid: string;

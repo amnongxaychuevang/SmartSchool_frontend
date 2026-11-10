@@ -137,7 +137,7 @@
             type="text"
             class="search-bar w-full !py-1.5 !text-xs"
             :placeholder="$t('common.search')"
-          />
+          >
         </div>
         <p class="text-xs text-ink-muted">
           {{ filteredItems.length }} / {{ period?.items?.length || 0 }} {{ $t('payroll.teachers_count') }}
@@ -239,7 +239,7 @@
                       accept="image/jpeg,image/png,image/webp"
                       class="hidden"
                       @change="handleFileUpload($event, item)"
-                    />
+                    >
                   </label>
                 </div>
               </td>
@@ -305,7 +305,7 @@
               min="0"
               required
               class="input-field w-full font-mono text-sm"
-            />
+            >
           </div>
 
           <!-- Allowances Section -->
@@ -321,7 +321,7 @@
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
-                />
+                >
               </div>
               <div>
                 <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.attendance_bonus') }}</label>
@@ -330,7 +330,7 @@
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
-                />
+                >
               </div>
               <div>
                 <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.other_allowance') }}</label>
@@ -339,7 +339,7 @@
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
-                />
+                >
               </div>
             </div>
           </div>
@@ -357,7 +357,7 @@
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
-                />
+                >
               </div>
               <div>
                 <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.tax_deduction') }}</label>
@@ -366,7 +366,7 @@
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
-                />
+                >
               </div>
               <div>
                 <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.other_deduction') }}</label>
@@ -375,7 +375,7 @@
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
-                />
+                >
               </div>
             </div>
           </div>
@@ -396,7 +396,7 @@
                 v-model="editForm.bankName"
                 type="text"
                 class="input-field w-full text-xs"
-              />
+              >
             </div>
             <div>
               <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.bank_account_name') }}</label>
@@ -404,7 +404,7 @@
                 v-model="editForm.bankAccountName"
                 type="text"
                 class="input-field w-full text-xs"
-              />
+              >
             </div>
             <div>
               <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.bank_account_number') }}</label>
@@ -412,7 +412,7 @@
                 v-model="editForm.bankAccountNumber"
                 type="text"
                 class="input-field w-full text-xs font-mono"
-              />
+              >
             </div>
           </div>
 
@@ -592,12 +592,12 @@
           <!-- Signature Blocks for Official Slip -->
           <div class="grid grid-cols-2 gap-8 pt-8 mt-4 border-t border-slate-200 dark:border-slate-700 text-center text-xs">
             <div>
-              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2"></div>
+              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2" />
               <p class="font-semibold text-ink">{{ $t('payroll.received_by') }}</p>
               <p class="text-[10px] text-ink-muted">{{ payslipItem.teacher?.fullNameLo }}</p>
             </div>
             <div>
-              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2"></div>
+              <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2" />
               <p class="font-semibold text-ink">{{ $t('payroll.approved_by') }}</p>
               <p class="text-[10px] text-ink-muted">EduSmart</p>
             </div>
@@ -634,7 +634,7 @@
             :src="mediaUrl(viewingSlipItem.slipUrl)!"
             :alt="$t('payroll.transfer_slip')"
             class="max-h-[60vh] object-contain rounded-lg shadow-md"
-          />
+          >
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-xs p-3 rounded-xl bg-surface-sunken border border-line">

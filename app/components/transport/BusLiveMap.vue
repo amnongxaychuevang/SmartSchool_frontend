@@ -86,8 +86,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { io, Socket } from 'socket.io-client';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import LoadingSpinner from '../LoadingSpinner.vue';
 import { useApiClient } from '../../infrastructure/api/apiClient';
 
@@ -112,10 +113,9 @@ const currentGps = ref<{
 
 let mapInstance: any = null;
 let busMarker: any = null;
-let stopMarkers: any[] = [];
-let routeLine: any = null;
+const stopMarkers: any[] = [];
 let socketInstance: Socket | null = null;
-let simInterval: any = null;
+let simInterval: ReturnType<typeof setTimeout> | null = null;
 
 // Default Vientiane, Laos Coordinates (centered around That Luang & school district)
 const DEFAULT_CENTER = { lat: 17.9757, lng: 102.6331 };
@@ -255,7 +255,7 @@ function renderRouteStops(L: any) {
 
   // Polyline path
   if (pathCoords.length > 1) {
-    routeLine = L.polyline(pathCoords, {
+    L.polyline(pathCoords, {
       color: '#0d9488',
       weight: 4,
       opacity: 0.7,
@@ -309,7 +309,7 @@ function setupSocket() {
 let simStep = 0;
 function toggleSimulation() {
   if (isSimulating.value) {
-    clearInterval(simInterval);
+    if (simInterval) clearInterval(simInterval);
     isSimulating.value = false;
     return;
   }

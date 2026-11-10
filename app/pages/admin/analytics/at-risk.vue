@@ -155,7 +155,7 @@
                       class="h-full rounded-full transition-all"
                       :class="riskBarColor(item.riskScore)"
                       :style="{ width: `${item.riskScore}%` }"
-                    ></div>
+                    />
                   </div>
                   <span class="font-bold text-xs font-mono">{{ item.riskScore }}/100</span>
                 </div>
@@ -167,7 +167,7 @@
                     :key="idx"
                     class="text-[11px] inline-flex items-center gap-1 text-slate-700 dark:text-slate-300"
                   >
-                    <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="factorDotClass(factor.severity)"></span>
+                    <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="factorDotClass(factor.severity)" />
                     {{ locale === 'lo' ? factor.messageLo : (factor.messageEn || factor.messageLo) }}
                   </span>
                   <span v-if="!item.factors || !item.factors.length" class="text-xs text-ink-muted">
@@ -281,7 +281,7 @@
             class="input-field"
             required
             :placeholder="$t('at_risk.intervention_title_ph')"
-          />
+          >
         </div>
 
         <div>
@@ -301,7 +301,7 @@
             class="input-field"
             rows="3"
             :placeholder="$t('at_risk.description_ph')"
-          ></textarea>
+          />
         </div>
 
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
@@ -417,7 +417,7 @@ const runAssessment = async () => {
     dialog.success(t('at_risk.assessment_done', { count }));
     await fetchOverview();
     await fetchAssessments();
-  } catch (err: any) {
+  } catch (err) {
     dialog.error(getErrorMessage(err));
   } finally {
     runningAssessment.value = false;
@@ -455,7 +455,7 @@ const submitIntervention = async () => {
     if (detailModalOpen.value && selectedStudentDetail.value) {
       await openDetail(selectedStudentDetail.value.student.studentId);
     }
-  } catch (err: any) {
+  } catch (err) {
     dialog.error(getErrorMessage(err));
   } finally {
     submittingIntervention.value = false;

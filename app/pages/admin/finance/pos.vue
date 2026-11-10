@@ -49,7 +49,7 @@
                 </span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input v-model="fixedPriceMode" type="checkbox" class="sr-only peer">
-                  <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-500"></div>
+                  <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-500" />
                 </label>
               </div>
               <div v-if="fixedPriceMode" class="flex items-center gap-2">
@@ -393,7 +393,9 @@ function playTone(freq: number, type: OscillatorType, duration: number, delay = 
       osc.start();
       osc.stop(ctx.currentTime + duration);
     }, delay);
-  } catch {}
+  } catch {
+    // No audio available: the sale still goes through.
+  }
 }
 
 function playSuccessChime() {
@@ -575,7 +577,7 @@ async function handleRefundConfirm() {
     entry.refunded = true;
     playSuccessChime();
     refundModal.value.open = false;
-  } catch (err: any) {
+  } catch (err) {
     refundModal.value.error = getErrorMessage(err, t('common.error_occurred'));
     playErrorBuzzer();
   } finally {

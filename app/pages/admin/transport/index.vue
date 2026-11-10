@@ -271,7 +271,7 @@
             <div v-if="r.stops && r.stops.length" class="mt-3 text-xs space-y-1">
               <p class="font-semibold text-slate-700 dark:text-slate-300">{{ $t('transport.stops_label') }}:</p>
               <div v-for="(stop, idx) in r.stops" :key="idx" class="flex items-center gap-2 text-ink-muted">
-                <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-teal-400" />
                 <span>{{ locale === 'lo' ? stop.nameLo : (stop.nameEn || stop.nameLo) }} ({{ stop.time }})</span>
               </div>
             </div>
@@ -414,7 +414,7 @@
             class="input-field"
             required
             :placeholder="$t('transport.card_uid_ph')"
-          />
+          >
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -436,7 +436,7 @@
 
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.location') }}</label>
-          <input v-model.trim="scanForm.location" type="text" class="input-field" :placeholder="$t('transport.location_ph')" />
+          <input v-model.trim="scanForm.location" type="text" class="input-field" :placeholder="$t('transport.location_ph')" >
         </div>
 
         <div v-if="scanFeedback" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-semibold">
@@ -457,16 +457,16 @@
       <form class="flex flex-col gap-4" @submit.prevent="submitVehicle">
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.plate_number') }} *</label>
-          <input v-model.trim="vehicleForm.plateNumber" type="text" class="input-field" required :placeholder="$t('transport.plate_ph')" />
+          <input v-model.trim="vehicleForm.plateNumber" type="text" class="input-field" required :placeholder="$t('transport.plate_ph')" >
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.model') }}</label>
-          <input v-model.trim="vehicleForm.model" type="text" class="input-field" :placeholder="$t('transport.model_ph')" />
+          <input v-model.trim="vehicleForm.model" type="text" class="input-field" :placeholder="$t('transport.model_ph')" >
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.capacity') }} *</label>
-            <input v-model.number="vehicleForm.capacity" type="number" min="5" max="60" class="input-field" required />
+            <input v-model.number="vehicleForm.capacity" type="number" min="5" max="60" class="input-field" required >
           </div>
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.col_status') }} *</label>
@@ -478,11 +478,11 @@
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.driver_name') }} *</label>
-          <input v-model.trim="vehicleForm.driverName" type="text" class="input-field" required :placeholder="$t('transport.driver_name_ph')" />
+          <input v-model.trim="vehicleForm.driverName" type="text" class="input-field" required :placeholder="$t('transport.driver_name_ph')" >
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.driver_phone') }} *</label>
-          <input v-model.trim="vehicleForm.driverPhone" type="text" class="input-field" required :placeholder="$t('transport.driver_phone_ph')" />
+          <input v-model.trim="vehicleForm.driverPhone" type="text" class="input-field" required :placeholder="$t('transport.driver_phone_ph')" >
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <button type="button" class="btn-secondary" @click="vehicleModalOpen = false">{{ $t('common.cancel') }}</button>
@@ -496,11 +496,11 @@
       <form class="flex flex-col gap-4" @submit.prevent="submitRoute">
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.route_name_lo') }} *</label>
-          <input v-model.trim="routeForm.routeNameLo" type="text" class="input-field" required :placeholder="$t('transport.route_name_lo_ph')" />
+          <input v-model.trim="routeForm.routeNameLo" type="text" class="input-field" required :placeholder="$t('transport.route_name_lo_ph')" >
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.route_name_en') }} *</label>
-          <input v-model.trim="routeForm.routeNameEn" type="text" class="input-field" required :placeholder="$t('transport.route_name_en_ph')" />
+          <input v-model.trim="routeForm.routeNameEn" type="text" class="input-field" required :placeholder="$t('transport.route_name_en_ph')" >
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.assigned_vehicle') }}</label>
@@ -513,7 +513,7 @@
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.route_desc') }}</label>
-          <textarea v-model.trim="routeForm.description" class="input-field" rows="2"></textarea>
+          <textarea v-model.trim="routeForm.description" class="input-field" rows="2" />
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <button type="button" class="btn-secondary" @click="routeModalOpen = false">{{ $t('common.cancel') }}</button>
@@ -540,11 +540,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.pickup_stop') }}</label>
-            <input v-model.trim="assignForm.pickupStop" type="text" class="input-field" />
+            <input v-model.trim="assignForm.pickupStop" type="text" class="input-field" >
           </div>
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.dropoff_stop') }}</label>
-            <input v-model.trim="assignForm.dropoffStop" type="text" class="input-field" />
+            <input v-model.trim="assignForm.dropoffStop" type="text" class="input-field" >
           </div>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
@@ -713,8 +713,8 @@ const submitCardScan = async () => {
     scanForm.cardUid = '';
     await fetchManifest();
     await fetchLogs();
-  } catch (err: any) {
-    scanFeedback.value = `❌ ${t('transport.error_scan')}: ${err?.data?.message || err?.message}`;
+  } catch (err) {
+    scanFeedback.value = `❌ ${t('transport.error_scan')}: ${getErrorMessage(err, t('common.error'))}`;
   } finally {
     scanning.value = false;
   }
@@ -810,7 +810,7 @@ const submitAssign = async () => {
     assignModalOpen.value = false;
     await fetchBusStudents();
     await fetchManifest();
-  } catch (err: any) {
+  } catch (err) {
     dialog.error(getErrorMessage(err));
   }
 };

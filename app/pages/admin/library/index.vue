@@ -126,13 +126,13 @@
               type="text"
               class="input-field"
               :placeholder="$t('library.card_ph')"
-            />
+            >
           </div>
 
           <div class="relative flex py-1 items-center">
-            <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+            <div class="flex-grow border-t border-slate-200 dark:border-slate-800" />
             <span class="flex-shrink mx-2 text-[11px] text-ink-muted uppercase">{{ $t('library.or_manual_student') }}</span>
-            <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+            <div class="flex-grow border-t border-slate-200 dark:border-slate-800" />
           </div>
 
           <div>
@@ -161,11 +161,11 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block mb-1 text-xs font-semibold">{{ $t('library.loan_duration') }}</label>
-              <input v-model.number="borrowForm.days" type="number" min="1" max="60" class="input-field" />
+              <input v-model.number="borrowForm.days" type="number" min="1" max="60" class="input-field" >
             </div>
             <div>
               <label class="block mb-1 text-xs font-semibold">{{ $t('library.notes') }}</label>
-              <input v-model.trim="borrowForm.notes" type="text" class="input-field" :placeholder="$t('library.notes_ph')" />
+              <input v-model.trim="borrowForm.notes" type="text" class="input-field" :placeholder="$t('library.notes_ph')" >
             </div>
           </div>
 
@@ -194,7 +194,7 @@
           class="input-field max-w-sm"
           :placeholder="$t('library.search_books_ph')"
           @input="fetchBooks"
-        />
+        >
         <div class="flex items-center gap-2">
           <button type="button" class="btn-secondary text-xs" @click="categoryModalOpen = true">
             {{ $t('library.manage_categories') }}
@@ -349,8 +349,8 @@
         <ul v-if="categories.length" class="flex flex-col divide-y divide-line border border-line rounded-lg">
           <li v-for="c in categories" :key="c.categoryId" class="flex items-center gap-3 px-3 py-2">
             <template v-if="editingCategoryId === c.categoryId">
-              <input v-model.trim="categoryEdit.nameLo" type="text" class="input-field flex-1" :aria-label="$t('library.category_name_lo')" />
-              <input v-model.trim="categoryEdit.nameEn" type="text" class="input-field flex-1" :aria-label="$t('library.category_name_en')" />
+              <input v-model.trim="categoryEdit.nameLo" type="text" class="input-field flex-1" :aria-label="$t('library.category_name_lo')" >
+              <input v-model.trim="categoryEdit.nameEn" type="text" class="input-field flex-1" :aria-label="$t('library.category_name_en')" >
               <button type="button" class="btn-primary text-xs px-2.5 py-1" :disabled="!categoryEdit.nameLo || !categoryEdit.nameEn" @click="saveCategory(c.categoryId)">{{ $t('common.save') }}</button>
               <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="editingCategoryId = null">{{ $t('common.cancel') }}</button>
             </template>
@@ -367,8 +367,8 @@
         <EmptyState v-else :title="$t('library.no_categories')" size="sm" />
 
         <form class="flex flex-col sm:flex-row gap-2 pt-4 border-t border-line" @submit.prevent="addCategory">
-          <input v-model.trim="categoryNew.nameLo" type="text" class="input-field flex-1" required :placeholder="$t('library.category_name_lo')" />
-          <input v-model.trim="categoryNew.nameEn" type="text" class="input-field flex-1" required :placeholder="$t('library.category_name_en')" />
+          <input v-model.trim="categoryNew.nameLo" type="text" class="input-field flex-1" required :placeholder="$t('library.category_name_lo')" >
+          <input v-model.trim="categoryNew.nameEn" type="text" class="input-field flex-1" required :placeholder="$t('library.category_name_en')" >
           <button type="submit" class="btn-primary shrink-0">+ {{ $t('library.add_category') }}</button>
         </form>
       </div>
@@ -378,20 +378,20 @@
       <form class="flex flex-col gap-4" @submit.prevent="submitBook">
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.col_isbn') }}</label>
-          <input v-model.trim="bookForm.isbn" type="text" class="input-field" :placeholder="$t('library.isbn_ph')" />
+          <input v-model.trim="bookForm.isbn" type="text" class="input-field" :placeholder="$t('library.isbn_ph')" >
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.title_lo') }} *</label>
-          <input v-model.trim="bookForm.titleLo" type="text" class="input-field" required />
+          <input v-model.trim="bookForm.titleLo" type="text" class="input-field" required >
         </div>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.title_en') }} *</label>
-          <input v-model.trim="bookForm.titleEn" type="text" class="input-field" required />
+          <input v-model.trim="bookForm.titleEn" type="text" class="input-field" required >
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.author_label') }} *</label>
-            <input v-model.trim="bookForm.author" type="text" class="input-field" required />
+            <input v-model.trim="bookForm.author" type="text" class="input-field" required >
           </div>
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.col_category') }}</label>
@@ -406,11 +406,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.shelf_label') }}</label>
-            <input v-model.trim="bookForm.shelfLocation" type="text" class="input-field" :placeholder="$t('library.shelf_ph')" />
+            <input v-model.trim="bookForm.shelfLocation" type="text" class="input-field" :placeholder="$t('library.shelf_ph')" >
           </div>
           <div>
             <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.total_copies_label') }} *</label>
-            <input v-model.number="bookForm.totalCopies" type="number" min="1" max="1000" class="input-field" required />
+            <input v-model.number="bookForm.totalCopies" type="number" min="1" max="1000" class="input-field" required >
           </div>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
@@ -552,8 +552,8 @@ const submitBorrow = async () => {
     await fetchOverview();
     await fetchBooks();
     await fetchLoans();
-  } catch (err: any) {
-    borrowFeedback.value = `❌ ${err?.data?.message || err?.message}`;
+  } catch (err) {
+    borrowFeedback.value = `❌ ${getErrorMessage(err, t('common.error'))}`;
   } finally {
     borrowing.value = false;
   }

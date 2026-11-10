@@ -258,7 +258,7 @@
             step="1000"
             :max="pay.invoice ? pay.invoice.outstanding : undefined"
             class="input-field tnum"
-          />
+          >
         </div>
         <div>
           <label for="pay-method" class="block mb-1.5 text-sm font-semibold">{{
@@ -285,7 +285,7 @@
             v-model.trim="pay.referenceNo"
             type="text"
             class="input-field"
-          />
+          >
         </div>
         <div>
           <label for="pay-notes" class="block mb-1.5 text-sm font-semibold">{{

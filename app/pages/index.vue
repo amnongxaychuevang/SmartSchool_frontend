@@ -3,7 +3,7 @@
     <!-- ══ Brand panel (desktop) ══ -->
     <aside class="hidden lg:flex lg:w-[44%] xl:w-1/2 flex-col justify-between bg-primary-hover text-white p-12 xl:p-16">
       <div class="flex items-center gap-3">
-        <img src="/logo.png" alt="EduSmart Logo" class="w-12 h-12 rounded-xl object-contain bg-white/95 p-1 shadow-md shadow-black/10" />
+        <img src="/logo.png" alt="EduSmart Logo" class="w-12 h-12 rounded-xl object-contain bg-white/95 p-1 shadow-md shadow-black/10" >
         <div>
           <p class="text-lg font-bold leading-tight">{{ t('auth.title') }}</p>
           <p class="text-sm text-white/75">{{ t('auth.subtitle') }}</p>
@@ -43,7 +43,7 @@
         <div class="w-full max-w-sm">
           <!-- Compact brand (mobile) -->
           <div class="lg:hidden flex items-center gap-3 mb-8">
-            <img src="/logo.png" alt="EduSmart Logo" class="w-12 h-12 rounded-xl object-contain bg-white shadow-md p-1 border border-line" />
+            <img src="/logo.png" alt="EduSmart Logo" class="w-12 h-12 rounded-xl object-contain bg-white shadow-md p-1 border border-line" >
             <div>
               <p class="font-bold leading-tight text-primary-ink">{{ t('auth.title') }}</p>
               <p class="text-xs text-ink-muted">{{ t('auth.subtitle') }}</p>
@@ -180,7 +180,6 @@ import { authRepository } from '../infrastructure/api/AuthRepository';
 import LangSwitch from '../components/LangSwitch.vue';
 import ThemeSwitch from '../components/ThemeSwitch.vue';
 import { firstAllowedAdminPath } from '../components/layout/adminNav';
-import { useDialog } from '../composables/useDialog';
 import { isNetworkError } from '../utils/errors';
 
 definePageMeta({ layout: 'default' });

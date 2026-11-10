@@ -14,12 +14,12 @@
 
       <div>
         <label class="block mb-1.5 text-sm font-semibold">{{ $t('admin.content_lo') }}</label>
-        <textarea v-model="form.contentLo" required rows="2" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_lo')"></textarea>
+        <textarea v-model="form.contentLo" required rows="2" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_lo')" />
       </div>
 
       <div>
         <label class="block mb-1.5 text-sm font-semibold">{{ $t('admin.content_en') }}</label>
-        <textarea v-model="form.contentEn" required rows="2" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_en')"></textarea>
+        <textarea v-model="form.contentEn" required rows="2" class="input-field resize-none" :placeholder="$t('announcements_admin.ph_content_en')" />
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -80,17 +80,19 @@ const props = defineProps<{
   modelValue: boolean;
   isEditMode: boolean;
   saving: boolean;
-  form: {
-    titleLo: string;
-    titleEn: string;
-    contentLo: string;
-    contentEn: string;
-    targetAudience: 'all' | 'teachers' | 'parents' | 'class';
-    classId: number | null;
-    expiryDate: string;
-  };
   classOptions: SchoolClass[];
 }>();
+
+// Two-way bound (v-model:form): the inputs below edit the parent's form object.
+const form = defineModel<{
+  titleLo: string;
+  titleEn: string;
+  contentLo: string;
+  contentEn: string;
+  targetAudience: 'all' | 'teachers' | 'parents' | 'class';
+  classId: number | null;
+  expiryDate: string;
+}>('form', { required: true });
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;

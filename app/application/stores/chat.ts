@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { chatRepository, type ChatConversation, type ChatMessage, type ChatUser } from '../../infrastructure/api/ChatRepository';
 import { useAuthStore } from './auth';
 

@@ -12,12 +12,12 @@
           src="/logo.png"
           alt="EduSmart Logo"
           class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 p-0.5 object-contain shrink-0 shadow-md shadow-amber-500/10"
-        />
+        >
         <div>
           <h1 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <span>{{ $t('driver_console.title') }}</span>
             <span v-if="isRunActive" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400" />
               {{ $t('driver_console.broadcasting') }}
             </span>
           </h1>
@@ -152,7 +152,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full" :class="isBroadcasting ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'"></span>
+              <span class="w-2.5 h-2.5 rounded-full" :class="isBroadcasting ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'" />
               <span>{{ $t('driver_console.gps_telemetry') }}</span>
             </h3>
             <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
@@ -409,12 +409,12 @@ const currentLng = ref(102.6331);
 const currentSpeed = ref(0);
 const simulateGps = ref(false);
 let gpsWatchId: number | null = null;
-let simulationTimer: any = null;
+let simulationTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Clock
 const currentTime = ref('');
 const currentDate = ref('');
-let clockTimer: any = null;
+let clockTimer: ReturnType<typeof setTimeout> | null = null;
 
 const lastScan = ref<{ success: boolean; name: string; message: string; logType?: string; time: string } | null>(null);
 
@@ -478,7 +478,9 @@ const playChime = (success: boolean) => {
       osc.start();
       osc.stop(ctx.currentTime + 0.4);
     }
-  } catch {}
+  } catch {
+    // No audio available: the scan result is still shown.
+  }
 };
 
 const updateClock = () => {
@@ -609,7 +611,7 @@ async function postLocation() {
         speed: currentSpeed.value,
       },
     });
-  } catch (e) {
+  } catch {
     // non-blocking
   }
 }
@@ -684,12 +686,12 @@ async function performScan(opts: { cardUid: string; logType?: 'board' | 'alight'
       logType,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-  } catch (err: any) {
+  } catch (err) {
     playChime(false);
     lastScan.value = {
       success: false,
       name: opts.cardUid,
-      message: err.message || 'Card scan rejected or unregistered',
+      message: getErrorMessage(err, t('common.error')),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
   }

@@ -168,7 +168,7 @@
             class="search-bar"
             :placeholder="$t('summer.search_placeholder')"
             @input="handleSearch"
-          />
+          >
         </div>
       </div>
 
@@ -420,27 +420,27 @@
           <button type="button" class="text-ink-muted hover:text-ink text-2xl font-bold leading-none" @click="showRegisterModal = false">&times;</button>
         </div>
 
-        <form @submit.prevent="submitRegistration" class="flex flex-col gap-4">
+        <form class="flex flex-col gap-4" @submit.prevent="submitRegistration">
           <!-- Student Info -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.student_name_lo') }} *</label>
-              <input v-model.trim="regForm.fullNameLo" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ້າວ ສົມພອນ ວົງສາ" />
+              <input v-model.trim="regForm.fullNameLo" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ້າວ ສົມພອນ ວົງສາ" >
             </div>
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.student_name_en') }} *</label>
-              <input v-model.trim="regForm.fullNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Somphone Vongsa" />
+              <input v-model.trim="regForm.fullNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Somphone Vongsa" >
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.parent_name') }} *</label>
-              <input v-model.trim="regForm.parentName" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ່ານ ສົມຫວັງ (ພໍ່)" />
+              <input v-model.trim="regForm.parentName" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ່ານ ສົມຫວັງ (ພໍ່)" >
             </div>
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.phone') }} *</label>
-              <input v-model.trim="regForm.phoneNumber" type="text" class="input-text text-sm" required placeholder="020 xxxx xxxx" />
+              <input v-model.trim="regForm.phoneNumber" type="text" class="input-text text-sm" required placeholder="020 xxxx xxxx" >
             </div>
           </div>
 
@@ -457,11 +457,11 @@
                 :class="regForm.monthsEnrolled.includes(m) ? 'bg-primary/10 border-primary text-primary font-semibold' : 'bg-surface border-line text-ink'"
               >
                 <input
+                  v-model="regForm.monthsEnrolled"
                   type="checkbox"
                   :value="m"
-                  v-model="regForm.monthsEnrolled"
                   class="rounded text-primary focus:ring-primary"
-                />
+                >
                 <span class="text-xs">{{ $t(`summer.month_${m}`) }}</span>
               </label>
             </div>
@@ -481,11 +481,11 @@
               >
                 <div class="flex items-center gap-2">
                   <input
+                    v-model="regForm.courseIds"
                     type="checkbox"
                     :value="c.courseId"
-                    v-model="regForm.courseIds"
                     class="rounded text-primary focus:ring-primary"
-                  />
+                  >
                   <div>
                     <p class="text-xs font-semibold text-ink">{{ pick(c.subjectNameLo, c.subjectNameEn) }}</p>
                     <p class="text-[11px] text-ink-muted">{{ c.timeSlot || c.roomNumber || '' }}</p>
@@ -520,7 +520,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.paid_amount') }}</label>
-              <input v-model.number="regForm.paidAmount" type="number" class="input-text text-sm" />
+              <input v-model.number="regForm.paidAmount" type="number" class="input-text text-sm" >
             </div>
           </div>
 
@@ -554,47 +554,47 @@
           <button type="button" class="text-ink-muted hover:text-ink text-2xl font-bold leading-none" @click="showCourseModal = false">&times;</button>
         </div>
 
-        <form @submit.prevent="submitCourse" class="flex flex-col gap-3">
+        <form class="flex flex-col gap-3" @submit.prevent="submitCourse">
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.course_name_lo') }} *</label>
-              <input v-model.trim="courseForm.subjectNameLo" type="text" class="input-text text-sm" required placeholder="ເຊັ່ນ: ຄະນິດສາດ" />
+              <input v-model.trim="courseForm.subjectNameLo" type="text" class="input-text text-sm" required placeholder="ເຊັ່ນ: ຄະນິດສາດ" >
             </div>
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.course_name_en') }} *</label>
-              <input v-model.trim="courseForm.subjectNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Mathematics" />
+              <input v-model.trim="courseForm.subjectNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Mathematics" >
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.monthly_fee') }} (LAK) *</label>
-              <input v-model.number="courseForm.monthlyFee" type="number" class="input-text text-sm" required min="1000" />
+              <input v-model.number="courseForm.monthlyFee" type="number" class="input-text text-sm" required min="1000" >
             </div>
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.grade_level') }}</label>
-              <input v-model.trim="courseForm.gradeLevel" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ປ.1 - ປ.5" />
+              <input v-model.trim="courseForm.gradeLevel" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ປ.1 - ປ.5" >
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.teacher') }}</label>
-              <input v-model.trim="courseForm.teacherName" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ອາຈານ ສົມສັກ" />
+              <input v-model.trim="courseForm.teacherName" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ອາຈານ ສົມສັກ" >
             </div>
             <div>
               <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.room') }}</label>
-              <input v-model.trim="courseForm.roomNumber" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ຫ້ອງ 201" />
+              <input v-model.trim="courseForm.roomNumber" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ຫ້ອງ 201" >
             </div>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.time_slot') }}</label>
-            <input v-model.trim="courseForm.timeSlot" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: 08:30 - 10:00 (ຈັນ - ສຸກ)" />
+            <input v-model.trim="courseForm.timeSlot" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: 08:30 - 10:00 (ຈັນ - ສຸກ)" >
           </div>
 
           <div class="flex items-center gap-2 mt-2">
-            <input id="course-active" type="checkbox" v-model="courseForm.isActive" class="rounded text-primary focus:ring-primary" />
+            <input id="course-active" v-model="courseForm.isActive" type="checkbox" class="rounded text-primary focus:ring-primary" >
             <label for="course-active" class="text-xs font-medium text-ink cursor-pointer">{{ $t('summer.active') }}</label>
           </div>
 
@@ -958,7 +958,7 @@ const submitRegistration = async () => {
     if (reg) {
       selectedRegForPass.value = reg;
     }
-  } catch (e: any) {
+  } catch (e) {
     dialog.error(getErrorMessage(e, t('common.error')));
   } finally {
     submitting.value = false;
@@ -1007,7 +1007,7 @@ const submitCourse = async () => {
     }
     showCourseModal.value = false;
     await loadCourses();
-  } catch (e: any) {
+  } catch (e) {
     dialog.error(getErrorMessage(e, t('common.error')));
   } finally {
     submittingCourse.value = false;

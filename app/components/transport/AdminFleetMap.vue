@@ -150,11 +150,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import LoadingSpinner from '../LoadingSpinner.vue';
 import { useApiClient } from '../../infrastructure/api/apiClient';
 
-const { locale, t } = useI18n();
+const { locale } = useI18n();
 const apiClient = useApiClient();
 
 const mapContainer = ref<HTMLElement | null>(null);
@@ -165,9 +166,9 @@ const selectedVehicleId = ref<number | null>(null);
 const fleet = ref<any[]>([]);
 
 let mapInstance: any = null;
-let markersMap = new Map<number, any>();
+const markersMap = new Map<number, any>();
 let socketInstance: Socket | null = null;
-let simInterval: any = null;
+let simInterval: ReturnType<typeof setTimeout> | null = null;
 
 // Default Vientiane, Laos Coordinates (Smart International School Area)
 const VIENTIANE_CENTER = { lat: 17.9757, lng: 102.6331 };
@@ -272,7 +273,6 @@ async function initMap() {
 }
 
 function createBusIcon(L: any, bus: any) {
-  const isMoving = bus.speed && bus.speed > 0;
   return L.divIcon({
     className: 'admin-bus-marker',
     html: `
@@ -422,7 +422,7 @@ function toggleSimulation() {
       });
     }, 2500);
   } else {
-    clearInterval(simInterval);
+    if (simInterval) clearInterval(simInterval);
     simInterval = null;
     fleet.value.forEach(bus => {
       bus.speed = 0;

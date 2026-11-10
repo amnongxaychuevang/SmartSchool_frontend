@@ -8,7 +8,7 @@
       rounded ? 'rounded-xl' : '',
       border ? 'border border-slate-200 dark:border-slate-800' : '',
     ]"
-  />
+  >
 </template>
 
 <script setup lang="ts">

@@ -29,7 +29,8 @@
           <h4 class="font-semibold text-sm text-white group-hover:text-teal-200 flex-1">
             {{ locale === 'lo' ? announcement.titleLo : announcement.titleEn }}
           </h4>
-          <span class="text-xs px-2 py-1 rounded-full flex-shrink-0"
+          <span
+class="text-xs px-2 py-1 rounded-full flex-shrink-0"
             :class="getPriorityClass(announcement.priority)">
             {{ $t(`admin.priority_${announcement.priority}`) }}
           </span>

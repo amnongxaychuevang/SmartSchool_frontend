@@ -10,7 +10,7 @@
             type="month"
             class="h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 transition-all cursor-pointer hover:border-slate-300 dark:hover:border-slate-600"
             @change="handleFilter"
-          />
+          >
         </div>
 
         <!-- Class Filter -->
@@ -140,7 +140,7 @@
               </td>
               <td class="align-middle whitespace-nowrap">
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium" :class="grade.isPublished ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 ring-1 ring-inset ring-teal-600/20 dark:ring-teal-500/20' : 'bg-slate-50 dark:bg-slate-500/10 text-slate-700 dark:text-slate-400 ring-1 ring-inset ring-slate-600/20 dark:ring-slate-500/20'">
-                  <div class="w-1.5 h-1.5 rounded-full mr-1.5" :class="grade.isPublished ? 'bg-teal-500' : 'bg-slate-400'"></div>
+                  <div class="w-1.5 h-1.5 rounded-full mr-1.5" :class="grade.isPublished ? 'bg-teal-500' : 'bg-slate-400'" />
                   {{ grade.isPublished ? $t('grades_admin.col_published') : $t('grades_admin.draft') }}
                 </span>
               </td>
@@ -190,7 +190,6 @@
 <script setup lang="ts">
 import type { Grade } from '../../../domain/models/Academics';
 import type { SchoolClass } from '../../../domain/models/SchoolClass';
-import type { Student } from '../../../domain/models/Student';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAcademicsStore, GRADES_PER_PAGE } from '../../../application/stores/academics';
@@ -201,7 +200,6 @@ import GradeFormModal from '../../../components/admin/GradeFormModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import { useFormat } from '../../../composables/useFormat';
-import { schoolToday } from '../../../utils/schoolDate';
 
 definePageMeta({ layout: 'admin' });
 

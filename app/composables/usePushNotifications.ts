@@ -1,5 +1,6 @@
 import { ref, onMounted } from 'vue';
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { useAuthStore } from '../application/stores/auth';
 
 let socketInstance: Socket | null = null;
@@ -63,7 +64,7 @@ export const usePushNotifications = () => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       try {
         await navigator.serviceWorker.register('/sw.js');
-      } catch (err) {
+      } catch {
         // Service worker optional in non-https local dev
       }
     }

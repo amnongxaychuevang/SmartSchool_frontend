@@ -643,8 +643,8 @@ const loadBackups = async () => {
   try {
     const res = await useApiClient()<any>('/settings/backups');
     backups.value = res.data?.backups || [];
-  } catch (err: any) {
-    backupError.value = err.message || 'Failed to load backup archives';
+  } catch (err) {
+    backupError.value = getErrorMessage(err, t('common.error'));
   } finally {
     loadingBackups.value = false;
   }
@@ -658,8 +658,8 @@ const handleRunBackup = async () => {
     const res = await useApiClient()<any>('/settings/backups/run', { method: 'POST' });
     backupSuccess.value = `${t('database_backup.backup_success')}: ${res.data?.fileName} (${res.data?.sizeKb} KB)`;
     await loadBackups();
-  } catch (err: any) {
-    backupError.value = err.message || 'Failed to create backup archive';
+  } catch (err) {
+    backupError.value = getErrorMessage(err, t('common.error'));
   } finally {
     runningBackup.value = false;
   }
@@ -682,8 +682,8 @@ const downloadBackup = async (fileName: string) => {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
-  } catch (err: any) {
-    backupError.value = err.message || 'Download error';
+  } catch (err) {
+    backupError.value = getErrorMessage(err, t('common.error'));
   }
 };
 

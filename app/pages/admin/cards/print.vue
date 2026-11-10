@@ -77,7 +77,7 @@
           <!-- Top Header Strip -->
           <div class="card-header">
             <div class="flex items-center gap-2">
-              <img src="/logo.png" alt="Logo" class="w-7 h-7 rounded-full bg-white object-contain p-0.5 shadow-sm shrink-0" />
+              <img src="/logo.png" alt="Logo" class="w-7 h-7 rounded-full bg-white object-contain p-0.5 shadow-sm shrink-0" >
               <div class="min-w-0">
                 <p class="text-[10px] font-extrabold uppercase tracking-wider text-white leading-tight truncate">
                   {{ schoolNameLo }}
@@ -99,7 +99,7 @@
                 :src="card.student.photoUrl"
                 alt="Student Photo"
                 class="student-photo"
-              />
+              >
               <div v-else class="fallback-photo">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -126,12 +126,14 @@
             </div>
 
             <!-- QR Code -->
-            <div class="qr-wrapper" v-html="generateQr(card.cardUid)"></div>
+            <!-- eslint-disable-next-line vue/no-v-html -- SVG of rects built from numbers only (utils/barcode.ts), never the UID text -->
+            <div class="qr-wrapper" v-html="generateQr(card.cardUid)" />
           </div>
 
           <!-- Bottom Footer Barcode -->
           <div class="card-footer">
-            <div class="barcode-container" v-html="generateBarcode(card.cardUid)"></div>
+            <!-- eslint-disable-next-line vue/no-v-html -- SVG of rects built from numbers only (utils/barcode.ts), never the UID text -->
+            <div class="barcode-container" v-html="generateBarcode(card.cardUid)" />
             <div class="card-meta">
               <span class="font-mono text-[8px] text-slate-600 font-bold tracking-wider">{{ card.cardUid }}</span>
               <span class="text-[7px] text-slate-400">SMART CAMPUS PASS</span>
@@ -182,7 +184,7 @@
               <p>{{ schoolPhone }} &middot; {{ schoolEmail }}</p>
             </div>
             <div class="signature-box">
-              <div class="sig-line"></div>
+              <div class="sig-line" />
               <span class="text-[6px] text-slate-400 uppercase">{{ $t('card_print.signature_label') }}</span>
             </div>
           </div>
@@ -227,7 +229,9 @@ onMounted(async () => {
   try {
     const classRes = await adminRepository.getClasses({ limit: 100 });
     classes.value = classRes.classes || [];
-  } catch {}
+  } catch {
+    // The class filter is optional; printing works without it.
+  }
 
   const targetCardId = route.query.cardId ? Number(route.query.cardId) : null;
   const targetClassId = route.query.classId ? Number(route.query.classId) : 0;

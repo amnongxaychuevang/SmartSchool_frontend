@@ -186,7 +186,7 @@
               type="month"
               required
               class="input-field w-full"
-            />
+            >
           </div>
 
           <div>
@@ -196,7 +196,7 @@
               type="text"
               class="input-field w-full text-sm"
               :placeholder="$t('payroll.notes_placeholder')"
-            />
+            >
           </div>
 
           <div v-if="genError" class="p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500">
@@ -334,8 +334,8 @@ const handleGenerate = async () => {
       // Redirect to the newly generated period detail
       router.push(`/admin/finance/payroll/${res.data.period.periodId}`);
     }
-  } catch (err: any) {
-    genError.value = err?.data?.message || err.message || 'Failed to generate payroll';
+  } catch (err) {
+    genError.value = getErrorMessage(err, t('common.error'));
   } finally {
     submitting.value = false;
   }

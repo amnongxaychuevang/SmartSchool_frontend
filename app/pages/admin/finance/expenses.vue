@@ -78,7 +78,7 @@
             class="input-field w-auto text-xs"
             :aria-label="$t('expenses.date')"
             @change="applyFilters"
-          />
+          >
           <span>-</span>
           <input
             v-model="filters.endDate"
@@ -86,7 +86,7 @@
             class="input-field w-auto text-xs"
             :aria-label="$t('expenses.date')"
             @change="applyFilters"
-          />
+          >
         </div>
 
         <!-- Clear Filters Button -->
@@ -192,7 +192,7 @@
                     :title="$t('expenses.view_receipt')"
                     @click="viewReceipt(e)"
                   >
-                    <img :src="mediaUrl(e.receiptUrl)!" :alt="$t('expenses.receipt_col')" class="h-9 w-9 object-cover group-hover:scale-110 transition-transform" />
+                    <img :src="mediaUrl(e.receiptUrl)!" :alt="$t('expenses.receipt_col')" class="h-9 w-9 object-cover group-hover:scale-110 transition-transform" >
                   </button>
                   <IconButton icon="delete" :label="$t('expenses.remove_receipt')" @click="confirmRemoveReceipt(e)" />
                 </div>
@@ -202,7 +202,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     <span>{{ $t('expenses.upload_receipt') }}</span>
-                    <input type="file" accept="image/*" class="hidden" @change="(evt) => handleRowReceiptUpload(e, evt)" />
+                    <input type="file" accept="image/*" class="hidden" @change="(evt) => handleRowReceiptUpload(e, evt)" >
                   </label>
                 </div>
               </td>
@@ -255,13 +255,13 @@
               <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
                 {{ $t('expenses.academic_year') }} *
               </label>
-              <input v-model="form.academicYear" required type="text" placeholder="2026-2027" class="input-field w-full" />
+              <input v-model="form.academicYear" required type="text" placeholder="2026-2027" class="input-field w-full" >
             </div>
             <div>
               <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
                 {{ $t('expenses.date') }} *
               </label>
-              <input v-model="form.expenseDate" required type="date" class="input-field w-full" />
+              <input v-model="form.expenseDate" required type="date" class="input-field w-full" >
             </div>
           </div>
 
@@ -276,7 +276,7 @@
               type="text"
               :placeholder="$t('expenses.title_placeholder')"
               class="input-field w-full"
-            />
+            >
           </div>
 
           <!-- Amount & Payment Method -->
@@ -299,7 +299,7 @@
                   required
                   placeholder="50,000"
                   class="input-field pl-7 w-full font-mono font-bold text-rose-600 dark:text-rose-400"
-                />
+                >
               </div>
             </div>
             <div>
@@ -324,7 +324,7 @@
                 type="text"
                 :placeholder="$t('expenses.paid_to_placeholder')"
                 class="input-field w-full"
-              />
+              >
             </div>
             <div>
               <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
@@ -335,7 +335,7 @@
                 type="text"
                 :placeholder="$t('expenses.ref_placeholder')"
                 class="input-field w-full font-mono"
-              />
+              >
             </div>
           </div>
 
@@ -349,7 +349,7 @@
               rows="2"
               :placeholder="$t('expenses.notes_placeholder')"
               class="input-field w-full"
-            ></textarea>
+            />
           </div>
 
           <!-- Optional Receipt file picker -->
@@ -364,7 +364,7 @@
                 accept="image/*"
                 class="input-field text-xs w-full file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                 @change="handleFormReceiptSelected"
-              />
+              >
             </div>
           </div>
 
@@ -392,6 +392,14 @@
           <button type="button" class="text-ink-muted hover:text-ink text-xl font-bold leading-none" @click="showCategoryModal = false">&times;</button>
         </div>
 
+        <!-- Existing categories; one still used by expenses is refused by the server. -->
+        <ul v-if="categories.length" class="mb-4 max-h-48 overflow-y-auto divide-y divide-line rounded border border-line">
+          <li v-for="c in categories" :key="c.categoryId" class="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
+            <span class="truncate">{{ pick(c.nameLo, c.nameEn) }}</span>
+            <IconButton icon="delete" size="sm" :label="`${$t('common.delete')} ${pick(c.nameLo, c.nameEn)}`" @click="deleteCategory(c)" />
+          </li>
+        </ul>
+
         <form class="space-y-4" @submit.prevent="addCategory">
           <div>
             <label class="block text-xs font-semibold text-ink mb-1.5">
@@ -404,7 +412,7 @@
               :placeholder="$t('expenses.category_name_lo')"
               class="input-field w-full text-sm"
               autofocus
-            />
+            >
           </div>
 
           <div>
@@ -417,7 +425,7 @@
               required
               :placeholder="$t('expenses.category_name_en')"
               class="input-field w-full text-sm"
-            />
+            >
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
@@ -459,7 +467,7 @@
             :src="mediaUrl(viewingReceiptExpense.receiptUrl)!"
             :alt="$t('expenses.receipt_col')"
             class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-md border border-line"
-          />
+          >
         </div>
 
         <div class="flex items-center justify-between pt-3 mt-3 border-t border-line">
@@ -499,7 +507,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import PaginationBar from '../../../components/PaginationBar.vue';
 import { financeRepository } from '../../../infrastructure/api/FinanceRepository';
@@ -771,8 +778,8 @@ const saveExpense = async () => {
 
     showFormModal.value = false;
     await loadExpenses();
-  } catch (err: any) {
-    formError.value = err?.data?.message || err.message || 'Failed to save expense';
+  } catch (err) {
+    formError.value = getErrorMessage(err, t('common.error'));
   } finally {
     saving.value = false;
   }

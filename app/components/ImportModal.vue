@@ -175,7 +175,7 @@ function onDrop(e: DragEvent) {
 
 function downloadTemplate() {
   let sampleData: Record<string, any>[] = [];
-  let filename = `${props.type}_template.xlsx`;
+  const filename = `${props.type}_template.xlsx`;
 
   if (props.type === 'students') {
     sampleData = [
@@ -271,9 +271,9 @@ async function handleImport() {
         emit('update:open', false);
       }, 1500);
     }
-  } catch (err: any) {
+  } catch (err) {
     resultType.value = 'error';
-    resultMessage.value = err?.message || t('common.error');
+    resultMessage.value = getErrorMessage(err, t('common.error'));
   } finally {
     loading.value = false;
   }

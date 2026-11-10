@@ -98,12 +98,10 @@ import { useAcademicsStore, SUBJECTS_PER_PAGE } from '../../../application/store
 import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
-import { useFormat } from '../../../composables/useFormat';
 
 definePageMeta({ layout: 'admin' });
 
 const { t, locale } = useI18n();
-const f = useFormat();
 useHead({ title: () => t('subjects_admin.title') });
 
 const academicsStore = useAcademicsStore();

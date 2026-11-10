@@ -143,7 +143,7 @@ interface NotificationItem {
 
 const router = useRouter();
 const { t, locale } = useI18n();
-const { isSupported, permission, requestPermission } = usePushNotifications();
+const { permission, requestPermission } = usePushNotifications();
 
 const isOpen = ref(false);
 const loading = ref(false);
