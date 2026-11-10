@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <PageHeader :title="$t('reports_detail.fees_analytics')" :subtitle="$t('reports_detail.fees_subtitle')">
+    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <select v-model="year" class="input-field w-auto" :aria-label="$t('fee_report.year')" @change="load">
         <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
       </select>
       <ExportButton path="/reports/fees/export" permission="reports.export" :filters="{ academicYear: year }" :file-base="`fees-${year}`" :disabled="!report" />
-    </PageHeader>
+    </div>
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
 

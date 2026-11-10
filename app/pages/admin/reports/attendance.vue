@@ -1,9 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
-      :title="$t('reports_detail.attendance_analytics')"
-      :subtitle="report ? $t('attendance_report.period', { days: report.schoolDays, students: report.students }) : $t('reports_detail.attendance_subtitle')"
-    >
+    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <div class="flex gap-6 mr-4" role="group">
         <button
           v-for="r in ranges"
@@ -21,7 +18,7 @@
         {{ $t('common.refresh') }}
       </button>
       <ExportButton path="/reports/attendance/export" permission="reports.export" :filters="{ range: range }" :file-base="`attendance-${range}`" :disabled="!report" />
-    </PageHeader>
+    </div>
 
     <div v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm flex items-center justify-between gap-4">
       <span>{{ $t('attendance_report.load_error') }}: {{ error }}</span>
@@ -272,7 +269,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import { useFormat } from '../../../composables/useFormat';
 import { getErrorMessage } from '../../../utils/errors';

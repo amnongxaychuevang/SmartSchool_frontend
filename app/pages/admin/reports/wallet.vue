@@ -1,6 +1,5 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <PageHeader :title="t('wallet_report.title')" :subtitle="t('wallet_report.subtitle')" />
 
     <!-- Stats Row -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -87,7 +86,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useFinanceStore, WALLETS_PER_PAGE } from '~/application/stores/finance';
-import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
 definePageMeta({ layout: 'admin' });

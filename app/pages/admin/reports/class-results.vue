@@ -1,9 +1,10 @@
 <template>
   <div class="flex flex-col gap-6 print-document">
-    <PageHeader
-      :title="$t('report_results.title')"
-      :subtitle="data ? `${pick(data.class.classNameLo, data.class.classNameEn)} · ${pick(data.term.termNameLo, data.term.termNameEn)} · ${data.term.academicYear}` : $t('report_results.subtitle')"
-    >
+    <div class="hidden print:block">
+      <h2 class="text-xl font-bold">{{ $t('report_results.title') }}</h2>
+      <p v-if="data" class="text-sm">{{ pick(data.class.classNameLo, data.class.classNameEn) }} · {{ pick(data.term.termNameLo, data.term.termNameEn) }} · {{ data.term.academicYear }}</p>
+    </div>
+    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <select v-model="termId" class="input-field w-auto print:hidden" :aria-label="$t('report_results.term')" @change="onTermChange">
         <option v-for="term in terms" :key="term.termId" :value="term.termId">{{ pick(term.termNameLo, term.termNameEn) }} · {{ term.academicYear }}</option>
       </select>
@@ -13,7 +14,7 @@
       </select>
       <ExportButton path="/reports/class-results/export" permission="reports.export" :filters="{ classId: classId, termId: termId }" file-base="class-results" class="print:hidden" :disabled="!data?.students.length" />
       <button type="button" class="btn-primary print:hidden" :disabled="!data" @click="print">{{ $t('report_cash.print') }}</button>
-    </PageHeader>
+    </div>
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
     <LoadingSpinner v-if="loading" />

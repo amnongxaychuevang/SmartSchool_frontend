@@ -1,6 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('report_debtors.title')" :subtitle="$t('report_debtors.subtitle')" />
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
     <LoadingSpinner v-if="loading && !report" />

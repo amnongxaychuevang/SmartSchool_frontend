@@ -1,6 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('reports.title')" :subtitle="$t('reports.subtitle')" />
 
     <section v-for="group in visibleGroups" :key="group.key" class="flex flex-col gap-3">
       <h2 class="text-xs font-bold uppercase tracking-wider text-ink-muted">{{ $t(`reports.group_${group.key}`) }}</h2>

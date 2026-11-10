@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('students_report.title')" :subtitle="$t('students_report.subtitle')">
+    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <button type="button" class="btn-secondary" :disabled="loading" @click="load">{{ $t('common.refresh') }}</button>
       <ExportButton path="/students/export" permission="students.export" file-base="students" :disabled="!stats?.total" />
-    </PageHeader>
+    </div>
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
     <LoadingSpinner v-if="loading && !stats" />

@@ -1,21 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <!-- Header & Controls -->
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </span>
-          {{ $t('cashflow.title') }}
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          {{ $t('cashflow.subtitle') }}
-        </p>
-      </div>
-
+    <div class="flex flex-col lg:flex-row lg:items-center justify-end gap-4">
       <!-- Filters -->
       <div class="flex flex-wrap items-center gap-2.5 text-xs">
         <div>

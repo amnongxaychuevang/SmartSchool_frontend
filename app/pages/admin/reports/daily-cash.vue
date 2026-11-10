@@ -1,10 +1,14 @@
 <template>
   <div class="flex flex-col gap-6 print-document">
-    <PageHeader :title="$t('report_cash.title')" :subtitle="report ? f.date(report.date) : $t('report_cash.subtitle')">
+    <div class="hidden print:block">
+      <h2 class="text-xl font-bold">{{ $t('report_cash.title') }}</h2>
+      <p v-if="report" class="text-sm">{{ f.date(report.date) }}</p>
+    </div>
+    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <input v-model="date" type="date" class="input-field w-auto print:hidden" :max="todayStr" :aria-label="$t('report_cash.date')" @change="load">
       <ExportButton path="/reports/daily-cash/export" permission="reports.export" :filters="{ date: date }" :file-base="`daily-cash-${date}`" class="print:hidden" :disabled="!report?.entries.length" />
       <button type="button" class="btn-primary print:hidden" :disabled="!report" @click="print">{{ $t('report_cash.print') }}</button>
-    </PageHeader>
+    </div>
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
     <LoadingSpinner v-if="loading && !report" />

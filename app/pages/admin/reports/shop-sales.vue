@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="$t('shop_sales.title')" :subtitle="$t('shop_sales.subtitle')">
+    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
       <div class="flex items-center gap-3">
         <select v-model="rangePreset" class="input-field w-auto" @change="applyPreset">
           <option value="today">{{ $t('shop_sales.today') }}</option>
@@ -12,7 +12,7 @@
           <DateRangeFilter v-model:from="dateFrom" v-model:to="dateTo" @change="load" />
         </template>
       </div>
-    </PageHeader>
+    </div>
 
     <!-- Stat cards -->
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -73,7 +73,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { financeRepository, type ShopSalesReport, type ShopSalesSummary } from '../../../infrastructure/api/FinanceRepository';
-import PageHeader from '../../../components/PageHeader.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import { useFormat } from '../../../composables/useFormat';
 
