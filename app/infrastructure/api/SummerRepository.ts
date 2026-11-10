@@ -135,14 +135,14 @@ export const summerRepository = {
     if (params.limit) q.set('limit', String(params.limit));
 
     const url = q.toString() ? `/summer/registrations?${q}` : '/summer/registrations';
-    const res = await useApiClient()<ApiResponse<{
-      data: SummerRegistration[];
-      pagination: { total: number; page: number; limit: number; totalPages: number };
-    }>>(url, { method: 'GET' });
+    // The API spreads the list result: { success, data: [...], pagination } (pagination is top-level).
+    const res = await useApiClient()<ApiResponse<SummerRegistration[]> & {
+      pagination?: { total: number; page: number; limit: number; totalPages: number };
+    }>(url, { method: 'GET' });
 
     return {
       registrations: res.data || [],
-      pagination: (res as any).pagination || { total: 0, page: 1, limit: 20, totalPages: 1 },
+      pagination: res.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 },
     };
   },
 
