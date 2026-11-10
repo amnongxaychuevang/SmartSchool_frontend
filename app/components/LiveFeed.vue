@@ -46,9 +46,7 @@
         </div>
       </transition-group>
       
-      <div v-if="logs.length === 0" class="text-center text-slate-500 py-8 text-sm">
-        {{ $t('admin.waiting_for_scans') }}
-      </div>
+      <EmptyState v-if="logs.length === 0" :title="$t('admin.waiting_for_scans')" size="sm" />
     </div>
   </div>
 </template>

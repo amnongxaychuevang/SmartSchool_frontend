@@ -26,7 +26,9 @@
         </section>
       </div>
 
-      <p v-if="!invoices.length" class="panel p-12 text-center text-sm text-ink-subtle">{{ $t('parent_fees.empty') }}</p>
+      <div v-if="!invoices.length" class="panel">
+        <EmptyState icon="receipt" :title="$t('parent_fees.empty')" />
+      </div>
 
       <!-- One card per invoice, with its payments and their receipts -->
       <section v-for="inv in invoices" :key="inv.invoiceId" class="panel overflow-hidden">
@@ -45,7 +47,7 @@
             </p>
           </div>
         </div>
-        <p v-if="!inv.payments?.length" class="px-5 py-3 text-sm text-ink-subtle">{{ $t('parent_fees.no_payments') }}</p>
+        <EmptyState v-if="!inv.payments?.length" :title="$t('parent_fees.no_payments')" size="sm" />
         <ul v-else class="divide-y divide-line">
           <li v-for="p in inv.payments" :key="p.paymentId" class="px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-sm">
             <span class="tnum">

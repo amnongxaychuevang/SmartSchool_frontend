@@ -238,9 +238,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto max-h-[460px]">
-              <p v-if="!history.length" class="p-8 text-center text-xs text-ink-subtle">
-                {{ $t('attendance_simulator.history_empty') }}
-              </p>
+              <EmptyState v-if="!history.length" :title="$t('attendance_simulator.history_empty')" size="sm" />
               <ul v-else class="divide-y divide-line">
                 <li
                   v-for="h in history"

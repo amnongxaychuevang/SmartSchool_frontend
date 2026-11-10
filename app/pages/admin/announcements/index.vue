@@ -28,14 +28,8 @@
     <LoadingSpinner v-if="loading" class="my-12" />
 
     <!-- Empty State -->
-    <div v-else-if="announcements.length === 0" class="glass-panel p-16 flex flex-col items-center justify-center text-center">
-      <div class="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-        </svg>
-      </div>
-      <h3 class="text-lg text-white font-bold mb-2">{{ announcements.length === 0 ? $t('admin.no_announcements_found') : $t('common.no_data') }}</h3>
-      <p class="text-slate-400 text-sm max-w-sm">{{ announcements.length === 0 ? $t('admin.create_first_announcement') : '' }}</p>
+    <div v-else-if="announcements.length === 0" class="glass-panel">
+      <EmptyState icon="megaphone" size="lg" :title="$t('admin.no_announcements_found')" :description="$t('admin.create_first_announcement')" />
     </div>
 
     <!-- Data Grid -> Table -->

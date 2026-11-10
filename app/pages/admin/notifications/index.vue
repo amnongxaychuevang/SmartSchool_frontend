@@ -53,7 +53,7 @@
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="academicsStore.notificationsLoading" />
-      <p v-else-if="!academicsStore.notifications.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('notifications_admin.empty') }}</p>
+      <EmptyState v-else-if="!academicsStore.notifications.length" :title="$t('notifications_admin.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

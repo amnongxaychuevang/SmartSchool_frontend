@@ -46,13 +46,7 @@
     <!-- Table Section -->
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="loading && !payslips.length" />
-      <div v-else-if="!payslips.length" class="py-16 text-center text-sm text-ink-subtle">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-ink-subtle/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <p class="font-medium text-base text-ink mb-1">{{ $t('payroll.no_payslips') }}</p>
-        <p class="text-xs text-ink-muted">{{ $t('payroll.my_payslips_subtitle') }}</p>
-      </div>
+      <EmptyState v-else-if="!payslips.length" icon="document" :title="$t('payroll.no_payslips')" :description="$t('payroll.my_payslips_subtitle')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

@@ -27,12 +27,7 @@
 
     <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="financeStore.shopsLoading" class="my-12" />
-      <div v-else-if="!financeStore.shops.length" class="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-        <p>{{ $t('shops_admin.empty') }}</p>
-      </div>
+      <EmptyState v-else-if="!financeStore.shops.length" icon="cart" :title="$t('shops_admin.empty')" />
       <table v-else class="data-table w-full min-w-max">
         <thead>
           <tr>

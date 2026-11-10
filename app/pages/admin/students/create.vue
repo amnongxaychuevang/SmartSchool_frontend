@@ -237,9 +237,9 @@
           </div>
 
           <!-- Linked parents -->
-          <p v-if="form.parents.length === 0" class="text-sm text-ink-subtle text-center py-4 rounded border border-dashed border-line">
-            {{ L('No parents linked yet.', 'ຍັງບໍ່ໄດ້ເຊື່ອມຜູ້ປົກຄອງ.') }}
-          </p>
+          <div v-if="form.parents.length === 0" class="rounded border border-dashed border-line">
+            <EmptyState :title="L('No parents linked yet.', 'ຍັງບໍ່ໄດ້ເຊື່ອມຜູ້ປົກຄອງ.')" size="sm" />
+          </div>
           <ul v-else class="flex flex-col gap-2">
             <li
               v-for="(p, i) in form.parents"

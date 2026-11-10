@@ -102,9 +102,7 @@
           <span class="text-[11px] text-teal-600 dark:text-teal-400 font-medium">Live GPS</span>
         </div>
 
-        <div v-if="!fleet.length && !loading" class="text-center py-8 text-xs text-slate-400">
-          {{ $t('transport.no_vehicles') }}
-        </div>
+        <EmptyState v-if="!fleet.length && !loading" :title="$t('transport.no_vehicles')" size="sm" />
 
         <div
           v-for="bus in fleet"

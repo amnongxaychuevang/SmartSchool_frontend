@@ -16,9 +16,7 @@
     <div class="glass-panel overflow-hidden">
       <div class="overflow-x-auto">
         <LoadingSpinner v-if="loading" class="my-12" />
-        <div v-else-if="terms.length === 0" class="py-16 text-center text-slate-500 dark:text-slate-400 text-sm">
-          {{ $t('academic_terms_ui.no_terms') }}
-        </div>
+        <EmptyState v-else-if="terms.length === 0" icon="calendar" :title="$t('academic_terms_ui.no_terms')" />
         <table v-else class="data-table w-full min-w-max">
           <thead>
             <tr>

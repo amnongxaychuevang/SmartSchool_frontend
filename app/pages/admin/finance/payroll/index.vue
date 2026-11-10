@@ -94,13 +94,7 @@
     <!-- Table Section -->
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="loading && !periods.length" />
-      <div v-else-if="!filteredPeriods.length" class="py-16 text-center text-sm text-ink-subtle">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-ink-subtle/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
-        </svg>
-        <p class="font-medium text-base text-ink mb-1">{{ searchInput ? $t('common.empty') : $t('payroll.no_periods') }}</p>
-        <p class="text-xs text-ink-muted">{{ searchInput ? '' : $t('payroll.generate_desc') }}</p>
-      </div>
+      <EmptyState v-else-if="!filteredPeriods.length" icon="receipt" :title="searchInput ? $t('common.empty') : $t('payroll.no_periods')" :description="searchInput ? '' : $t('payroll.generate_desc')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

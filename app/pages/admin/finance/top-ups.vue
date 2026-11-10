@@ -23,7 +23,7 @@
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="financeStore.topUpRequestsLoading && !financeStore.topUpRequests.length" />
-      <p v-else-if="!financeStore.topUpRequests.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('topups.empty') }}</p>
+      <EmptyState v-else-if="!financeStore.topUpRequests.length" :title="$t('topups.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

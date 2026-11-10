@@ -19,7 +19,7 @@
 
       <section class="panel overflow-hidden">
         <h2 class="px-5 py-4 text-sm font-semibold border-b border-line">{{ $t('report_cash.by_staff') }}</h2>
-        <p v-if="!report.staff.length" class="py-8 text-center text-sm text-ink-subtle">{{ $t('report_cash.empty') }}</p>
+        <EmptyState v-if="!report.staff.length" :title="$t('report_cash.empty')" size="sm" />
         <div v-else class="overflow-x-auto">
           <table class="data-table w-full min-w-max">
             <thead>
@@ -46,7 +46,7 @@
 
       <section class="panel overflow-hidden">
         <h2 class="px-5 py-4 text-sm font-semibold border-b border-line">{{ $t('report_cash.entries') }}</h2>
-        <p v-if="!report.entries.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('report_cash.empty') }}</p>
+        <EmptyState v-if="!report.entries.length" :title="$t('report_cash.empty')" />
         <div v-else class="overflow-x-auto">
           <table class="data-table w-full min-w-max">
             <thead>

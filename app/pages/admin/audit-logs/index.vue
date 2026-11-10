@@ -23,7 +23,7 @@
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="adminStore.auditLogsLoading" />
-      <p v-else-if="!adminStore.auditLogs.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('audit_admin.empty') }}</p>
+      <EmptyState v-else-if="!adminStore.auditLogs.length" :title="$t('audit_admin.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

@@ -98,7 +98,7 @@
                 <p class="text-xs text-ink-subtle">{{ $t('attendance_report.by_class_sub') }}</p>
               </div>
             </div>
-            <p v-if="!report.classes.length" class="py-8 text-center text-sm text-ink-subtle">{{ $t('attendance_report.no_classes') }}</p>
+            <EmptyState v-if="!report.classes.length" :title="$t('attendance_report.no_classes')" size="sm" />
             <ul v-else class="space-y-4">
               <li v-for="c in report.classes" :key="c.classId">
                 <div class="flex items-center justify-between text-sm">
@@ -274,11 +274,12 @@
                     </button>
                   </td>
                 </tr>
-                <tr v-if="!filteredAbsentees.length">
-                  <td colspan="9" class="py-12 text-center text-sm text-ink-subtle">
-                    {{ search || statusFilter !== 'all' ? $t('attendance_report.no_match') : $t('attendance_report.no_absentees') }}
-                  </td>
-                </tr>
+                <EmptyRow
+                  v-if="!filteredAbsentees.length"
+                  :colspan="9"
+                  :icon="search || statusFilter !== 'all' ? 'search' : 'inbox'"
+                  :title="search || statusFilter !== 'all' ? $t('attendance_report.no_match') : $t('attendance_report.no_absentees')"
+                />
               </tbody>
             </table>
           </div>

@@ -35,7 +35,7 @@
     <!-- Table -->
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="loading" />
-      <p v-else-if="!report.summary.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('shop_sales.empty') }}</p>
+      <EmptyState v-else-if="!report.summary.length" :title="$t('shop_sales.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

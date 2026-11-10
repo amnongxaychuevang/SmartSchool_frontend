@@ -280,10 +280,7 @@
               {{ $t('common.loading') }}
             </div>
 
-            <div v-else-if="!filteredStudents.length" class="py-12 text-center text-slate-500 text-sm flex flex-col items-center gap-2">
-              <span class="text-3xl">🚌</span>
-              <p>{{ $t('driver_console.no_students_assigned') }}</p>
-            </div>
+            <EmptyState v-else-if="!filteredStudents.length" icon="bus" :title="$t('driver_console.no_students_assigned')" />
 
             <div
               v-for="s in filteredStudents"

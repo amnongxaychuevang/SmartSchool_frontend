@@ -18,7 +18,7 @@
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="adminStore.studentsLoading" />
-      <p v-else-if="!adminStore.students.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('limits_admin.empty') }}</p>
+      <EmptyState v-else-if="!adminStore.students.length" :title="$t('limits_admin.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>
@@ -73,7 +73,7 @@
         <fieldset class="sm:col-span-2">
           <legend class="text-sm font-semibold">{{ $t('limits_admin.blocked') }}</legend>
           <p class="text-xs text-ink-subtle mb-2">{{ $t('limits_admin.blocked_hint') }}</p>
-          <p v-if="!shops.length" class="text-sm text-ink-subtle">{{ $t('limits_admin.no_shops') }}</p>
+          <EmptyState v-if="!shops.length" :title="$t('limits_admin.no_shops')" size="sm" />
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <label v-for="shop in shops" :key="shop.shopId" class="flex items-center gap-2 rounded border border-line px-3 py-2 text-sm">
               <input v-model="modal.form.blockedShops" type="checkbox" :value="shop.shopId" class="h-4 w-4 rounded border-line-strong">

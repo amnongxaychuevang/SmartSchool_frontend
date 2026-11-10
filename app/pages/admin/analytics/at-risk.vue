@@ -242,9 +242,7 @@
         <!-- Interventions history -->
         <div>
           <h4 class="font-bold text-sm mb-2">{{ $t('at_risk.interventions_history') }}</h4>
-          <div v-if="!selectedStudentDetail.interventions?.length" class="text-xs text-ink-muted py-2">
-            {{ $t('at_risk.no_interventions') }}
-          </div>
+          <EmptyState v-if="!selectedStudentDetail.interventions?.length" :title="$t('at_risk.no_interventions')" size="sm" />
           <div v-else class="space-y-2">
             <div
               v-for="inv in selectedStudentDetail.interventions"

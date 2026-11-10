@@ -41,12 +41,7 @@
     </div>
 
     <LoadingSpinner v-if="loading" size="sm" padding="py-8" />
-    <div
-      v-else-if="classesData.length === 0"
-      class="text-center text-slate-500 py-8 text-sm"
-    >
-      {{ $t('admin.no_data') }}
-    </div>
+    <EmptyState v-else-if="classesData.length === 0" size="sm" />
     <!--
       One card per class (its top 3), side by side. Auto-advances one card every
       few seconds; pauses while hovered/focused/touched, and never under reduced motion.

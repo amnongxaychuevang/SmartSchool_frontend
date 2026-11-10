@@ -51,7 +51,7 @@
     <!-- Table -->
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="academicsStore.gradesLoading && !academicsStore.grades.length" />
-      <p v-else-if="!filteredGrades.length" class="py-12 text-center text-sm text-ink-subtle">{{ t('grades_report.empty') }}</p>
+      <EmptyState v-else-if="!filteredGrades.length" :title="$t('grades_report.empty')" />
       <div v-else class="overflow-x-auto">
 
         <table class="data-table w-full min-w-max">

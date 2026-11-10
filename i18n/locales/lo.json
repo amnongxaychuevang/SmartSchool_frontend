@@ -170,7 +170,9 @@
     "content": "ເນື້ອຫາ",
     "description": "ລາຍລະອຽດ",
     "items": "ລາຍການ",
-    "clear_search": "ລຶບຄຳຄົ້ນຫາ"
+    "clear_search": "ລຶບຄຳຄົ້ນຫາ",
+    "empty": "ບໍ່ພົບລາຍການທີ່ຄົ້ນຫາ",
+    "no_results": "ບໍ່ພົບຜົນລັບ"
   },
   "admin": {
     "attendance_status": "ສະຖານະການເຂົ້າ-ອອກໂຮງຮຽນສົດ",

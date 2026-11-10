@@ -26,7 +26,7 @@
       </div>
 
       <section class="panel overflow-hidden">
-        <p v-if="!loans.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('parent_library.empty') }}</p>
+        <EmptyState v-if="!loans.length" :title="$t('parent_library.empty')" />
         <ul v-else class="divide-y divide-line">
           <li v-for="loan in loans" :key="loan.loanId" class="px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
             <div class="min-w-0">

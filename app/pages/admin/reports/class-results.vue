@@ -43,7 +43,7 @@
       </div>
 
       <section class="panel overflow-hidden">
-        <p v-if="!data.students.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('report_results.empty') }}</p>
+        <EmptyState v-if="!data.students.length" :title="$t('report_results.empty')" />
         <div v-else class="overflow-x-auto">
           <table class="data-table w-full min-w-max">
             <thead>

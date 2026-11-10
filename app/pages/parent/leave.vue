@@ -23,11 +23,8 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
 
     <!-- Content -->
     <template v-else-if="selectedChildId">
-      <div v-if="!parentStore.leaveRequests || parentStore.leaveRequests.length === 0" class="glass-panel p-12 flex flex-col items-center justify-center text-slate-500 rounded-2xl">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15" />
-        </svg>
-        <p>{{ $t('parentPortal.no_leaves') }}</p>
+      <div v-if="!parentStore.leaveRequests || parentStore.leaveRequests.length === 0" class="glass-panel">
+        <EmptyState icon="calendar" :title="$t('parentPortal.no_leaves')" />
       </div>
       <div v-else class="glass-panel rounded-2xl overflow-hidden">
         <table class="data-table w-full min-w-max">

@@ -252,8 +252,8 @@
             <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-subtle">{{ $t('pos.session_history') }}</h3>
             <span class="text-xs text-ink-muted font-mono">{{ history.length }} {{ $t('pos.transactions') }}</span>
           </div>
-          <p v-if="!history.length" class="text-sm text-ink-subtle py-8 text-center">{{ $t('pos.no_transactions') }}</p>
-          <p v-else-if="!filteredHistory.length" class="text-sm text-ink-subtle py-8 text-center">{{ $t('common.empty') }}</p>
+          <EmptyState v-if="!history.length" :title="$t('pos.no_transactions')" size="sm" />
+          <EmptyState v-else-if="!filteredHistory.length" icon="search" :title="$t('common.empty')" size="sm" />
           <ul v-else class="flex flex-col gap-2 max-h-[60vh] overflow-y-auto divide-y divide-line">
             <li v-for="(h, i) in filteredHistory" :key="i" class="flex items-center justify-between gap-2 py-2.5">
               <div class="min-w-0">

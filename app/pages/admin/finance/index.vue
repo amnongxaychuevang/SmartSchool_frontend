@@ -24,7 +24,7 @@
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="financeStore.walletsLoading" />
-      <p v-else-if="!financeStore.wallets.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('wallets_admin.empty') }}</p>
+      <EmptyState v-else-if="!financeStore.wallets.length" :title="$t('wallets_admin.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>
@@ -121,7 +121,7 @@
     >
       <LoadingSpinner v-if="history.loading" />
       <p v-else-if="history.error" role="alert" class="text-sm text-danger">{{ history.error }}</p>
-      <p v-else-if="!history.items.length" class="py-8 text-center text-sm text-ink-subtle">{{ $t('parentPortal.no_transactions') }}</p>
+      <EmptyState v-else-if="!history.items.length" :title="$t('parentPortal.no_transactions')" size="sm" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

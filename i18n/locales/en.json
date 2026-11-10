@@ -170,7 +170,9 @@
     "content": "Content",
     "description": "Description",
     "items": "items",
-    "clear_search": "Clear search"
+    "clear_search": "Clear search",
+    "empty": "No matching items",
+    "no_results": "No results found"
   },
   "admin": {
     "attendance_status": "Live check-in / check-out",

@@ -151,12 +151,7 @@
     <!-- Table Section -->
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="loading && !expenses.length" />
-      <div v-else-if="!expenses.length" class="py-16 text-center text-sm text-ink-subtle">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-ink-subtle/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
-        </svg>
-        <p class="font-medium text-base text-ink">{{ $t('expenses.no_expenses') }}</p>
-      </div>
+      <EmptyState v-else-if="!expenses.length" icon="receipt" :title="$t('expenses.no_expenses')" />
 
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">

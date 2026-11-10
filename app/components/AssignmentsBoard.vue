@@ -30,7 +30,7 @@
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="loading && !rows.length" />
-      <p v-else-if="!rows.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('assignments.empty') }}</p>
+      <EmptyState v-else-if="!rows.length" :title="$t('assignments.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

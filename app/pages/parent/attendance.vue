@@ -17,12 +17,7 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
 
     <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="parentStore.loadingAttendance" color="amber" />
-      <div v-else-if="parentStore.childAttendance.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <p>{{ $t('parentPortal.no_attendance') }}</p>
-      </div>
+      <EmptyState v-else-if="parentStore.childAttendance.length === 0" icon="calendar" :title="$t('parentPortal.no_attendance')" />
       <table v-else class="data-table w-full min-w-max">
         <thead>
           <tr>

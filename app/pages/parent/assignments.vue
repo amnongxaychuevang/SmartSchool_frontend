@@ -10,7 +10,9 @@
     <LoadingSpinner v-if="loading" />
 
     <template v-else-if="selectedChildId">
-      <p v-if="!assignments.length" class="panel p-12 text-center text-sm text-ink-subtle">{{ $t('assignments.empty') }}</p>
+      <div v-if="!assignments.length" class="panel">
+        <EmptyState icon="document" :title="$t('assignments.empty')" />
+      </div>
       <template v-for="group in groups" :key="group.id">
         <section v-if="group.items.length" class="panel overflow-hidden">
           <h2 class="px-5 py-4 text-sm font-semibold border-b border-line">{{ group.label }}</h2>

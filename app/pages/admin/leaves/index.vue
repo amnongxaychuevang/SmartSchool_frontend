@@ -20,7 +20,7 @@
 
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="loading && !requests.length" />
-      <p v-else-if="!requests.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('leave_admin.empty') }}</p>
+      <EmptyState v-else-if="!requests.length" :title="$t('leave_admin.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

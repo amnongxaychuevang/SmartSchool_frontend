@@ -84,7 +84,7 @@
     <section v-show="activeTab === 'types'" id="panel-types" role="tabpanel" aria-labelledby="tab-types" class="panel overflow-hidden">
       <p class="px-5 py-3 text-xs text-ink-muted border-b border-line">{{ $t('fee_structures.types_subtitle') }}</p>
       <LoadingSpinner v-if="financeStore.feeTypesLoading" class="my-8" />
-      <p v-else-if="!financeStore.feeTypes.length" class="px-5 py-8 text-center text-sm text-ink-subtle">{{ $t('fee_structures.type_empty') }}</p>
+      <EmptyState v-else-if="!financeStore.feeTypes.length" :title="$t('fee_structures.type_empty')" size="sm" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>
@@ -133,7 +133,7 @@
     <section v-show="activeTab === 'structures'" id="panel-structures" role="tabpanel" aria-labelledby="tab-structures" class="panel overflow-hidden">
       <p class="px-5 py-3 text-xs text-ink-muted border-b border-line">{{ $t('fee_structures.structures_subtitle') }}</p>
       <LoadingSpinner v-if="financeStore.feeStructuresLoading" class="my-8" />
-      <p v-else-if="!financeStore.feeStructures.length" class="px-5 py-8 text-center text-sm text-ink-subtle">{{ $t('fee_structures.empty') }}</p>
+      <EmptyState v-else-if="!financeStore.feeStructures.length" :title="$t('fee_structures.empty')" size="sm" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

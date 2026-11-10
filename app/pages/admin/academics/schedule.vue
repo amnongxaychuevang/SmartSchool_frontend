@@ -84,9 +84,12 @@
       </div>
     </div>
 
-    <div v-if="classId && !loading && classSubjects.length === 0" class="glass-panel p-6 text-sm text-slate-400">
-      {{ $t('schedule_admin.no_subjects_yet') }}
-      <NuxtLink to="/admin/academics/class-subjects" class="text-teal-400 hover:underline ml-1">{{ $t('schedule_admin.assign_subjects') }}</NuxtLink>
+    <div v-if="classId && !loading && classSubjects.length === 0" class="glass-panel">
+      <EmptyState icon="calendar" :title="$t('schedule_admin.no_subjects_yet')">
+        <template #action>
+          <NuxtLink to="/admin/academics/class-subjects" class="btn-primary">{{ $t('schedule_admin.assign_subjects') }}</NuxtLink>
+        </template>
+      </EmptyState>
     </div>
 
     <LoadingSpinner v-if="loading" />

@@ -20,11 +20,8 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
 
     <!-- Content -->
     <template v-else-if="selectedChildId">
-      <div v-if="!parentStore.childSchedule || parentStore.childSchedule.length === 0" class="glass-panel p-12 flex flex-col items-center justify-center text-slate-500 rounded-2xl">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <p>{{ $t('parentPortal.no_schedule') }}</p>
+      <div v-if="!parentStore.childSchedule || parentStore.childSchedule.length === 0" class="glass-panel">
+        <EmptyState icon="calendar" :title="$t('parentPortal.no_schedule')" />
       </div>
       <div v-else class="glass-panel rounded-2xl overflow-hidden">
         <table class="data-table w-full min-w-max">

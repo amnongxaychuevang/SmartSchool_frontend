@@ -303,8 +303,8 @@
             {{ $t('common.loading') }}
           </div>
 
-          <div v-else-if="!backups.length" class="rounded-xl border border-line p-8 text-center text-xs text-ink-muted">
-            {{ $t('database_backup.no_backups') }}
+          <div v-else-if="!backups.length" class="rounded-xl border border-line">
+            <EmptyState :title="$t('database_backup.no_backups')" size="sm" />
           </div>
 
           <div v-else class="overflow-x-auto border border-line rounded-xl">

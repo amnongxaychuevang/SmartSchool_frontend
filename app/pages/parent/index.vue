@@ -168,7 +168,7 @@
           <p class="text-xs text-ink-subtle font-mono">{{ child.studentCode }}</p>
         </div>
         <p v-if="rates[child.studentId] === undefined" class="text-sm text-ink-subtle">…</p>
-        <p v-else-if="rates[child.studentId] === null" class="text-sm text-ink-subtle">{{ $t('parentPortal.no_attendance_yet') }}</p>
+        <EmptyState v-else-if="rates[child.studentId] === null" :title="$t('parentPortal.no_attendance_yet')" size="sm" />
         <p v-else class="text-2xl font-bold tnum">{{ f.percent(rates[child.studentId]) }}</p>
       </div>
     </section>

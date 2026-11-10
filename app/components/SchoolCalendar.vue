@@ -75,7 +75,7 @@
         <span class="text-xs text-ink-muted">{{ monthEvents.length }} {{ $t('common.items') }}</span>
       </div>
       <LoadingSpinner v-if="loading" />
-      <p v-else-if="!monthEvents.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('calendar.empty') }}</p>
+      <EmptyState v-else-if="!monthEvents.length" :title="$t('calendar.empty')" />
       <ul v-else class="divide-y divide-line">
         <li v-for="e in monthEvents" :key="e.eventId">
           <button type="button" class="w-full text-left px-5 py-3.5 flex items-start gap-4 hover:bg-surface-2 transition-colors" @click="openEvent(e)">

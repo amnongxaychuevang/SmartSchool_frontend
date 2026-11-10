@@ -272,9 +272,9 @@
               </button>
             </div>
 
-            <p v-if="!documents.length && !pendingDocs.length" class="text-sm text-ink-subtle text-center py-4 rounded border border-dashed border-line">
-              {{ $t('teachers.no_documents') }}
-            </p>
+            <div v-if="!documents.length && !pendingDocs.length" class="rounded border border-dashed border-line">
+              <EmptyState :title="$t('teachers.no_documents')" size="sm" />
+            </div>
           </div>
         </section>
 

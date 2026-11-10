@@ -66,12 +66,7 @@
     <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="adminStore.parentsLoading" />
 
-      <div v-else-if="adminStore.parents.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        <p>{{ $t('parents.no_parents') }}</p>
-      </div>
+      <EmptyState v-else-if="adminStore.parents.length === 0" icon="users" :title="$t('parents.no_parents')" />
 
       <table v-else class="data-table w-full min-w-max">
         <thead>

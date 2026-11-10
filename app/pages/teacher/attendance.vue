@@ -39,9 +39,7 @@
 
       <LoadingSpinner v-if="teacherStore.loadingStudents" color="amber" />
       
-      <div v-else-if="students.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <p>{{ $t('teacherPortal.no_students_in_class') }}</p>
-      </div>
+      <EmptyState v-else-if="students.length === 0" icon="users" :title="$t('teacherPortal.no_students_in_class')" />
 
       <table v-else class="data-table w-full min-w-max">
         <thead>

@@ -180,7 +180,7 @@
           <!-- By fee type: on wide screens it takes the trend card's height and scrolls inside -->
           <section class="panel p-5 flex flex-col gap-4 lg:h-0 lg:min-h-full">
             <h3 class="text-sm font-bold uppercase tracking-wider shrink-0">{{ $t('fee_report.by_type') }}</h3>
-            <p v-if="!report.byFeeType.length" class="text-sm text-ink-subtle">{{ $t('fee_report.no_data') }}</p>
+            <EmptyState v-if="!report.byFeeType.length" :title="$t('fee_report.no_data')" size="sm" />
             <div v-else class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 pr-1 [&>*]:my-auto">
               <div v-for="ft in report.byFeeType" :key="ft.feeTypeId" class="flex flex-col gap-1.5" :title="`${f.kip(ft.collected)} / ${f.kip(ft.billed)}`">
                 <div class="flex justify-between gap-3 text-sm">
@@ -198,7 +198,7 @@
 
         <!-- By class -->
         <section class="panel overflow-hidden">
-          <p v-if="!report.byClass.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('fee_report.no_data') }}</p>
+          <EmptyState v-if="!report.byClass.length" :title="$t('fee_report.no_data')" size="sm" />
           <div v-else class="overflow-x-auto">
             <table class="data-table w-full min-w-max">
               <thead>
@@ -236,7 +236,7 @@
       <!-- Recent payments -->
       <section v-else class="panel overflow-hidden">
         <LoadingSpinner v-if="paymentsLoading && !payments.length" />
-        <p v-else-if="!payments.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('fee_report.no_payments') }}</p>
+        <EmptyState v-else-if="!payments.length" :title="$t('fee_report.no_payments')" size="sm" />
         <div v-else class="overflow-x-auto">
           <table class="data-table w-full min-w-max">
             <thead>

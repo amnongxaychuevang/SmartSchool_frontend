@@ -40,7 +40,7 @@
           <h2 class="px-5 py-4 text-sm font-semibold uppercase tracking-wider text-ink-muted border-b border-line">
             {{ $t('parent_wallet.requests') }}
           </h2>
-          <p v-if="!requests.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('parent_wallet.no_requests') }}</p>
+          <EmptyState v-if="!requests.length" :title="$t('parent_wallet.no_requests')" size="sm" />
           <ul v-else class="divide-y divide-line">
             <li v-for="req in requests" :key="req.requestId" class="px-5 py-3 flex items-start justify-between gap-4">
               <div class="min-w-0">
@@ -61,7 +61,7 @@
         <h2 class="px-5 py-4 text-sm font-semibold uppercase tracking-wider text-ink-muted border-b border-line">
           {{ $t('parentPortal.recent_transactions') }}
         </h2>
-        <p v-if="!transactions.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('parentPortal.no_transactions') }}</p>
+        <EmptyState v-if="!transactions.length" :title="$t('parentPortal.no_transactions')" size="sm" />
         <div v-else class="overflow-x-auto">
           <table class="data-table w-full min-w-max">
             <thead>
@@ -98,7 +98,7 @@
           <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-muted">{{ $t('parent_cards.title') }}</h2>
           <p class="mt-1 text-xs text-ink-subtle">{{ $t('parent_cards.subtitle') }}</p>
         </div>
-        <p v-if="!cards.length" class="py-10 text-center text-sm text-ink-subtle">{{ $t('parent_cards.empty') }}</p>
+        <EmptyState v-if="!cards.length" :title="$t('parent_cards.empty')" size="sm" />
         <ul v-else class="divide-y divide-line">
           <li v-for="card in cards" :key="card.cardId" class="px-5 py-3 flex items-center justify-between gap-4">
             <div class="min-w-0">

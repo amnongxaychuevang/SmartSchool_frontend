@@ -57,12 +57,7 @@
     <div class="glass-panel overflow-x-auto">
       <LoadingSpinner v-if="adminStore.classesLoading" />
 
-      <div v-else-if="adminStore.classes.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-        <p>{{ $t('classes.no_classes') }}</p>
-      </div>
+      <EmptyState v-else-if="adminStore.classes.length === 0" icon="building" :title="$t('classes.no_classes')" />
 
       <table v-else class="data-table w-full min-w-max">
         <thead>

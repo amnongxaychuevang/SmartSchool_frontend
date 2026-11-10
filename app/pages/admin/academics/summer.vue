@@ -193,11 +193,7 @@
                   <LoadingSpinner class="mx-auto" />
                 </td>
               </tr>
-              <tr v-else-if="registrations.length === 0">
-                <td colspan="7" class="py-12 text-center text-ink-muted">
-                  {{ $t('summer.no_registrations') }}
-                </td>
-              </tr>
+              <EmptyRow v-else-if="registrations.length === 0" :colspan="7" :title="$t('summer.no_registrations')" />
               <tr
                 v-for="reg in registrations"
                 v-else

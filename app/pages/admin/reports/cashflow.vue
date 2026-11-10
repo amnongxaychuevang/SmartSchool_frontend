@@ -190,9 +190,7 @@
                     {{ report.summary.totalIncome > 0 ? ((ft.total / report.summary.totalIncome) * 100).toFixed(1) + '%' : '0%' }}
                   </td>
                 </tr>
-                <tr v-if="!report.breakdown.feesByType.length">
-                  <td colspan="4" class="py-8 text-center text-slate-400">{{ $t('common.no_data') }}</td>
-                </tr>
+                <EmptyRow v-if="!report.breakdown.feesByType.length" :colspan="4" />
               </tbody>
             </table>
           </div>
@@ -230,9 +228,7 @@
                     {{ report.summary.totalIncome > 0 ? ((sr.total / report.summary.totalIncome) * 100).toFixed(1) + '%' : '0%' }}
                   </td>
                 </tr>
-                <tr v-if="!report.breakdown.rentalsByShop.length">
-                  <td colspan="4" class="py-8 text-center text-slate-400">{{ $t('common.no_data') }}</td>
-                </tr>
+                <EmptyRow v-if="!report.breakdown.rentalsByShop.length" :colspan="4" />
               </tbody>
             </table>
           </div>

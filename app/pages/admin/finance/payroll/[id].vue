@@ -145,9 +145,7 @@
       </div>
 
       <LoadingSpinner v-if="loading" />
-      <div v-else-if="!filteredItems.length" class="py-12 text-center text-sm text-ink-subtle">
-        {{ $t('common.no_results') }}
-      </div>
+      <EmptyState v-else-if="!filteredItems.length" icon="search" :title="$t('common.no_results')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

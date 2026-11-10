@@ -132,9 +132,7 @@
         </div>
 
         <LoadingSpinner v-if="pendingTopUpsLoading" size="sm" padding="py-8" />
-        <div v-else-if="pendingTopUps.length === 0" class="text-center text-slate-500 py-8 text-sm">
-          {{ $t("admin.no_pending_topups") }}
-        </div>
+        <EmptyState v-else-if="pendingTopUps.length === 0" :title="$t('admin.no_pending_topups')" size="sm" />
         <div v-else class="flex flex-col gap-2 overflow-y-auto min-h-0">
           <!-- One line per request: name | method | amount -->
           <div
@@ -166,9 +164,7 @@
         </div>
 
         <LoadingSpinner v-if="recentActivityLoading" size="sm" padding="py-8" />
-        <div v-else-if="recentActivity.length === 0" class="text-center text-slate-500 py-8 text-sm">
-          {{ $t("admin.no_recent_activity") }}
-        </div>
+        <EmptyState v-else-if="recentActivity.length === 0" :title="$t('admin.no_recent_activity')" size="sm" />
         <div v-else class="flex flex-col gap-2 overflow-y-auto min-h-0">
           <!-- One line per entry: who · what | when -->
           <div

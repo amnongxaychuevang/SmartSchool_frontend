@@ -364,7 +364,7 @@
             </template>
           </li>
         </ul>
-        <p v-else class="text-sm text-ink-muted text-center py-4">{{ $t('library.no_categories') }}</p>
+        <EmptyState v-else :title="$t('library.no_categories')" size="sm" />
 
         <form class="flex flex-col sm:flex-row gap-2 pt-4 border-t border-line" @submit.prevent="addCategory">
           <input v-model.trim="categoryNew.nameLo" type="text" class="input-field flex-1" required :placeholder="$t('library.category_name_lo')" />

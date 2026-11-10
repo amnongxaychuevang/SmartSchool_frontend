@@ -41,7 +41,7 @@
 
       <section class="panel overflow-hidden">
         <h3 class="px-5 py-4 text-sm font-bold uppercase tracking-wider border-b border-line">{{ $t('students_report.by_class') }}</h3>
-        <p v-if="!stats.classes.length" class="py-12 text-center text-sm text-ink-subtle">{{ $t('students_report.no_classes') }}</p>
+        <EmptyState v-if="!stats.classes.length" :title="$t('students_report.no_classes')" />
         <div v-else class="overflow-x-auto">
           <table class="data-table w-full min-w-max">
             <thead>

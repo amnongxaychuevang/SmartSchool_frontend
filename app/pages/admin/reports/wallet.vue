@@ -55,7 +55,7 @@
     <!-- Table -->
     <section class="panel overflow-hidden">
       <LoadingSpinner v-if="financeStore.walletsLoading && !financeStore.wallets.length" />
-      <p v-else-if="!filteredWallets.length" class="py-12 text-center text-sm text-ink-subtle">{{ t('wallet_report.empty') }}</p>
+      <EmptyState v-else-if="!filteredWallets.length" :title="$t('wallet_report.empty')" />
       <div v-else class="overflow-x-auto">
         <table class="data-table w-full min-w-max">
           <thead>

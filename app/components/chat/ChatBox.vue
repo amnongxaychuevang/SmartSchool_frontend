@@ -49,25 +49,17 @@
       <!-- Conversations List -->
       <div class="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
         <LoadingSpinner v-if="chatStore.loadingConversations && !chatStore.conversations.length" class="py-12" />
-        <div
+        <EmptyState
           v-else-if="!filteredConversations.length"
-          class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 flex flex-col items-center gap-2"
+          :icon="searchQuery ? 'search' : 'chat'"
+          :title="searchQuery ? $t('common.empty') : $t('chat.no_conversations')"
         >
-          <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </div>
-          <p>{{ searchQuery ? $t('common.empty') : $t('chat.no_conversations') }}</p>
-          <button
-            v-if="!searchQuery"
-            type="button"
-            class="text-teal-600 dark:text-teal-400 font-semibold hover:underline"
-            @click="showNewChatModal = true"
-          >
-            {{ $t('chat.start_first_chat') }}
-          </button>
-        </div>
+          <template v-if="!searchQuery" #action>
+            <button type="button" class="text-sm font-semibold text-primary hover:underline" @click="showNewChatModal = true">
+              {{ $t('chat.start_first_chat') }}
+            </button>
+          </template>
+        </EmptyState>
 
         <button
           v-for="conv in filteredConversations"
@@ -377,9 +369,7 @@
 
         <div class="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
           <LoadingSpinner v-if="chatStore.loadingContacts" class="py-8" />
-          <p v-else-if="!filteredContacts.length" class="text-center py-8 text-xs text-slate-400">
-            {{ $t('common.empty') }}
-          </p>
+          <EmptyState v-else-if="!filteredContacts.length" :title="$t('common.empty')" size="sm" />
 
           <button
             v-for="contact in filteredContacts"

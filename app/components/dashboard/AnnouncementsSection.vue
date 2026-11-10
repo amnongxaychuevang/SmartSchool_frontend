@@ -17,12 +17,7 @@
     </div>
 
     <LoadingSpinner v-if="loading" size="sm" padding="py-8" />
-    <div
-      v-else-if="announcements.length === 0"
-      class="text-center text-slate-500 py-8 text-sm"
-    >
-      {{ $t('admin.no_announcements') }}
-    </div>
+    <EmptyState v-else-if="announcements.length === 0" :title="$t('admin.no_announcements')" size="sm" />
     <div v-else class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
       <div
         v-for="announcement in announcements"
