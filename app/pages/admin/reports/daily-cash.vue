@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-6 print-document">
     <PageHeader :title="$t('report_cash.title')" :subtitle="report ? f.date(report.date) : $t('report_cash.subtitle')">
       <input v-model="date" type="date" class="input-field w-auto print:hidden" :max="todayStr" :aria-label="$t('report_cash.date')" @change="load">
-      <button v-if="canExport" type="button" class="btn-secondary print:hidden" :disabled="exporting || !report?.entries.length"  @click="exportRows">{{ $t('common.export_excel') }}</button>
+      <ExportButton path="/reports/daily-cash/export" permission="reports.export" :filters="{ date: date }" :file-base="`daily-cash-${date}`" class="print:hidden" :disabled="!report?.entries.length" />
       <button type="button" class="btn-primary print:hidden" :disabled="!report" @click="print">{{ $t('report_cash.print') }}</button>
     </PageHeader>
 
@@ -85,9 +85,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted } from 'vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import type { ApiResponse } from '../../../infrastructure/api/types';
@@ -143,10 +140,6 @@ const load = async () => {
 const print = () => window.print();
 
 // Standard export: built by the server from the report's own filters, and audit-logged.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
-const { exporting, download } = useServerExport();
-const exportRows = () => download('/reports/daily-cash/export', { date: date.value }, `daily-cash-${date.value}`);
 
 onMounted(load);
 </script>

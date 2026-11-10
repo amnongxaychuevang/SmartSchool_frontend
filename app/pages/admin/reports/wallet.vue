@@ -36,9 +36,7 @@
         <button class="btn-secondary" @click="refreshData">
           {{ $t('common.refresh') }}
         </button>
-        <button v-if="canExport" class="btn-secondary"  :disabled="exporting" @click="exportWallets">
-          {{ $t('common.export_excel') }}
-        </button>
+        <ExportButton path="/reports/wallet/export" permission="reports.export" :filters="{ search: searchQuery, status: filterStatus === 'all' ? '' : filterStatus }" file-base="wallets" />
       </div>
     </div>
 
@@ -87,9 +85,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useFinanceStore, WALLETS_PER_PAGE } from '~/application/stores/finance';
 import PageHeader from '../../../components/PageHeader.vue';
@@ -152,8 +147,4 @@ const pendingTopUps = computed(() => financeStore.topUpRequestsTotal || 0);
 const frozenWallets = computed(() => (financeStore.wallets || []).filter(w => w.status === 'frozen').length);
 
 // Standard export: built by the server from the report's own filters, and audit-logged.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
-const { exporting, download } = useServerExport();
-const exportWallets = () => download('/reports/wallet/export', { search: searchQuery.value, status: filterStatus.value === 'all' ? '' : filterStatus.value }, 'wallets');
 </script>

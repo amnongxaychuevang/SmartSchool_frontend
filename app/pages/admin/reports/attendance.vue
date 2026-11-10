@@ -20,9 +20,7 @@
       <button type="button" class="btn-secondary" :disabled="loading" @click="load">
         {{ $t('common.refresh') }}
       </button>
-      <button v-if="canExport" type="button" class="btn-secondary" :disabled="exporting || !report"  @click="exportAttendance">
-        {{ $t('common.export_excel') }}
-      </button>
+      <ExportButton path="/reports/attendance/export" permission="reports.export" :filters="{ range: range }" :file-base="`attendance-${range}`" :disabled="!report" />
     </PageHeader>
 
     <div v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm flex items-center justify-between gap-4">
@@ -32,22 +30,13 @@
 
     <!-- ══ TABS NAVIGATION ══ -->
     <div class="flex gap-6">
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
-        :class="activeTab === 'overview' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'overview'"
-      >
-        {{ $t('attendance_report.tab_overview') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
-        :class="activeTab === 'absentees' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'absentees'"
-      >
-        {{ $t('attendance_report.tab_absentees') }}
-      </button>
+      <TabBar
+        v-model="activeTab"
+        :tabs="[
+          { value: 'overview', label: $t('attendance_report.tab_overview') },
+          { value: 'absentees', label: $t('attendance_report.tab_absentees') },
+        ]"
+      />
     </div>
 
     <LoadingSpinner v-if="loading && !report" />
@@ -281,9 +270,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import PageHeader from '../../../components/PageHeader.vue';
@@ -395,10 +381,6 @@ watch([search, statusFilter, pageSize], () => {
 });
 
 // Standard export: built by the server from the report's own filters, and audit-logged.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
-const { exporting, download } = useServerExport();
-const exportAttendance = () => download('/reports/attendance/export', { range: range.value }, `attendance-${range.value}`);
 
 const key = (a: AbsenceEntry) => `${a.studentId}:${a.date}`;
 const notifying = reactive(new Set<string>());

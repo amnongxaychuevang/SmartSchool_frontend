@@ -56,39 +56,33 @@
           {{ modal.error }}
         </div>
 
-        <div class="field">
-          <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $t('academic_terms_ui.col_academic_year') }} *</label>
-          <input v-model="modal.form.academicYear" required pattern="\d{4}-\d{4}" placeholder="2026-2027" class="input-field" >
-        </div>
+        <FormField v-slot="{ id }" class="field" :label="$t('academic_terms_ui.col_academic_year')" required>
+          <input :id="id" v-model="modal.form.academicYear" required pattern="\d{4}-\d{4}" placeholder="2026-2027" class="input-field" >
+        </FormField>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="field">
-            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $t('academic_terms_ui.name_en') }} *</label>
-            <input v-model="modal.form.termNameEn" required class="input-field" placeholder="Term 1" >
-          </div>
-          <div class="field">
-            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $t('academic_terms_ui.name_lo') }} *</label>
-            <input v-model="modal.form.termNameLo" required class="input-field" placeholder="ພາກຮຽນ 1" >
-          </div>
+          <FormField v-slot="{ id }" class="field" :label="$t('academic_terms_ui.name_en')" required>
+            <input :id="id" v-model="modal.form.termNameEn" required class="input-field" placeholder="Term 1" >
+          </FormField>
+          <FormField v-slot="{ id }" class="field" :label="$t('academic_terms_ui.name_lo')" required>
+            <input :id="id" v-model="modal.form.termNameLo" required class="input-field" placeholder="ພາກຮຽນ 1" >
+          </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="field">
-            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $t('academic_terms_ui.start') }} *</label>
-            <input v-model="modal.form.startDate" required type="date" class="input-field" >
-          </div>
-          <div class="field">
-            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $t('academic_terms_ui.end') }} *</label>
-            <input v-model="modal.form.endDate" required type="date" class="input-field" >
-          </div>
+          <FormField v-slot="{ id }" class="field" :label="$t('academic_terms_ui.start')" required>
+            <input :id="id" v-model="modal.form.startDate" required type="date" class="input-field" >
+          </FormField>
+          <FormField v-slot="{ id }" class="field" :label="$t('academic_terms_ui.end')" required>
+            <input :id="id" v-model="modal.form.endDate" required type="date" class="input-field" :min="modal.form.startDate || undefined">
+          </FormField>
         </div>
 
-        <div class="field">
-          <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $t('academic_terms_ui.col_status') }}</label>
-          <select v-model="modal.form.status" class="input-field">
+        <FormField v-slot="{ id }" class="field" :label="$t('academic_terms_ui.col_status')">
+          <select :id="id" v-model="modal.form.status" class="input-field">
             <option v-for="s in STATUSES" :key="s" :value="s">{{ statusLabel(s) }}</option>
           </select>
-        </div>
+        </FormField>
       </form>
       <template #footer>
         <button type="button" class="btn-secondary" @click="modal.open = false">{{ $t('common.cancel') }}</button>

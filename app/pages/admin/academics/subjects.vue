@@ -60,14 +60,12 @@
     <AppModal :open="modal.open" :title="modal.subjectId ? $t('subjects_admin.edit') : $t('subjects_admin.add')" @update:open="modal.open = $event">
       <form id="subject-form" class="grid grid-cols-2 gap-4" @submit.prevent="handleSubmit">
 
-        <div class="col-span-2">
-          <label for="s-lo" class="block mb-1.5 text-sm font-semibold">{{ $t('subjects_admin.name_lo') }}</label>
+        <FormField class="col-span-2" :label="$t('subjects_admin.name_lo')" required for="s-lo">
           <input id="s-lo" v-model.trim="modal.form.subjectNameLo" required lang="lo" class="input-field">
-        </div>
-        <div class="col-span-2">
-          <label for="s-en" class="block mb-1.5 text-sm font-semibold">{{ $t('subjects_admin.name_en') }}</label>
+        </FormField>
+        <FormField class="col-span-2" :label="$t('subjects_admin.name_en')" required for="s-en">
           <input id="s-en" v-model.trim="modal.form.subjectNameEn" required lang="en" class="input-field">
-        </div>
+        </FormField>
         <p v-if="modal.error" role="alert" class="col-span-2 rounded border border-danger-line bg-danger-soft text-sm text-danger">{{ modal.error }}</p>
       </form>
       <template #footer>

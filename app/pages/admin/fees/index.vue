@@ -245,10 +245,7 @@
         class="flex flex-col gap-4"
         @submit.prevent="handlePayment"
       >
-        <div>
-          <label for="pay-amount" class="block mb-1.5 text-sm font-semibold">{{
-            $t("fees_admin.pay_amount")
-          }}</label>
+        <FormField :label="$t('fees_admin.pay_amount')" required for="pay-amount">
           <input
             id="pay-amount"
             v-model.number="pay.amount"
@@ -259,11 +256,8 @@
             :max="pay.invoice ? pay.invoice.outstanding : undefined"
             class="input-field tnum"
           >
-        </div>
-        <div>
-          <label for="pay-method" class="block mb-1.5 text-sm font-semibold">{{
-            $t("fees_admin.pay_method")
-          }}</label>
+        </FormField>
+        <FormField :label="$t('fees_admin.pay_method')" required for="pay-method">
           <select
             id="pay-method"
             v-model="pay.method"
@@ -275,18 +269,15 @@
               {{ $t("fees_admin.pay_method_bank") }}
             </option>
           </select>
-        </div>
-        <div>
-          <label for="pay-ref" class="block mb-1.5 text-sm font-semibold">{{
-            $t("fees_admin.pay_reference")
-          }}</label>
+        </FormField>
+        <FormField :label="$t('fees_admin.pay_reference')" for="pay-ref">
           <input
             id="pay-ref"
             v-model.trim="pay.referenceNo"
             type="text"
             class="input-field"
           >
-        </div>
+        </FormField>
         <div>
           <label for="pay-notes" class="block mb-1.5 text-sm font-semibold">{{
             $t("fees_admin.pay_notes")

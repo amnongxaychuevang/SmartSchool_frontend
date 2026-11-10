@@ -30,16 +30,15 @@
         <!-- Shop selector & Mode -->
         <section class="panel p-5">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div>
-              <label class="block mb-1.5 text-sm font-semibold">{{ $t('pos.select_shop') }}</label>
-              <select v-model.number="shopId" class="input-field" @change="focusUid">
+            <FormField v-slot="{ id }" :label="$t('pos.select_shop')">
+              <select :id="id" v-model.number="shopId" class="input-field" @change="focusUid">
                 <option :value="0" disabled>{{ $t('pos.choose_shop') }}</option>
                 <option v-for="s in shops" :key="s.shopId" :value="s.shopId">
                   {{ locale === 'lo' ? s.shopNameLo : s.shopNameEn }}
                   <template v-if="s.locationLo || s.locationEn"> — {{ locale === 'lo' ? (s.locationLo || s.locationEn) : (s.locationEn || s.locationLo) }}</template>
                 </option>
               </select>
-            </div>
+            </FormField>
 
             <!-- Fixed price mode toggle for rapid lunch queue -->
             <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex flex-col gap-2">

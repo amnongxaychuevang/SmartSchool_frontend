@@ -2,9 +2,7 @@
   <div class="flex flex-col gap-6">
     <PageHeader :title="$t('students_report.title')" :subtitle="$t('students_report.subtitle')">
       <button type="button" class="btn-secondary" :disabled="loading" @click="load">{{ $t('common.refresh') }}</button>
-      <button v-if="canExport" type="button" class="btn-secondary" :disabled="exporting || !stats?.total" @click="exportStudents">
-        {{ exporting ? $t('common.loading') : $t('common.export_excel') }}
-      </button>
+      <ExportButton path="/students/export" permission="students.export" file-base="students" :disabled="!stats?.total" />
     </PageHeader>
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
@@ -77,9 +75,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import type { ApiResponse } from '../../../infrastructure/api/types';
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 
 interface StudentStats {
   total: number;
@@ -156,10 +151,6 @@ const load = async () => {
 };
 
 // Standard export: the full student list, built and audit-logged by the server.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'students.export'));
-const { exporting, download } = useServerExport();
-const exportStudents = () => download('/students/export', {}, 'students');
 
 onMounted(load);
 </script>

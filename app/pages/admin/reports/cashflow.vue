@@ -21,15 +21,10 @@
         <div>
           <select v-model="filterYear" class="input-field text-xs py-1.5" @change="loadData">
             <option value="">{{ $t('cashflow.all_years') }}</option>
-            <option value="2026-2027">2026-2027</option>
-            <option value="2025-2026">2025-2026</option>
+            <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
           </select>
         </div>
-        <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
-          <input v-model="filterStartDate" type="date" class="bg-transparent border-0 text-xs text-slate-700 dark:text-slate-200 focus:ring-0 p-1">
-          <span class="text-slate-400">—</span>
-          <input v-model="filterEndDate" type="date" class="bg-transparent border-0 text-xs text-slate-700 dark:text-slate-200 focus:ring-0 p-1">
-        </div>
+        <DateRangeFilter v-model:from="filterStartDate" v-model:to="filterEndDate" />
         <button
           type="button"
           class="h-8 px-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg flex items-center gap-1 transition-colors shadow-sm"
@@ -319,6 +314,7 @@
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { financeRepository, type CashflowReport } from '../../../infrastructure/api/FinanceRepository';
+import { academicsRepository } from '../../../infrastructure/api/AcademicsRepository';
 import { useFormat } from '../../../composables/useFormat';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
@@ -334,6 +330,16 @@ const loading = ref(true);
 const report = ref<CashflowReport | null>(null);
 
 const filterYear = ref('');
+// Academic years from the terms set up in Settings, newest first (was a hard-coded list).
+const yearOptions = ref<string[]>([]);
+async function loadYears() {
+  try {
+    const terms = await academicsRepository.getTerms();
+    yearOptions.value = [...new Set(terms.map((term) => term.academicYear))].sort().reverse();
+  } catch {
+    // The year filter stays at "all years"; the report itself still loads.
+  }
+}
 const filterStartDate = ref('');
 const filterEndDate = ref('');
 
@@ -361,5 +367,6 @@ function resetFilters() {
 
 onMounted(() => {
   loadData();
+  loadYears();
 });
 </script>

@@ -172,7 +172,9 @@
     "items": "items",
     "clear_search": "Clear search",
     "empty": "No matching items",
-    "no_results": "No results found"
+    "no_results": "No results found",
+    "date_from": "From date",
+    "date_to": "To date"
   },
   "admin": {
     "attendance_status": "Live check-in / check-out",

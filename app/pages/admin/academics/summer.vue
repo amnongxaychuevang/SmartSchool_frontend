@@ -92,32 +92,14 @@
 
     <!-- Tabs Navigation -->
     <div class="flex border-b border-line gap-6">
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'registrations' ? 'border-primary text-primary' : 'border-transparent text-ink-muted hover:text-ink'"
-        @click="activeTab = 'registrations'"
-      >
-        {{ $t('summer.tab_registrations') }}
-      </button>
-
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'courses' ? 'border-primary text-primary' : 'border-transparent text-ink-muted hover:text-ink'"
-        @click="activeTab = 'courses'"
-      >
-        {{ $t('summer.tab_courses') }} ({{ courses.length }})
-      </button>
-
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'stats' ? 'border-primary text-primary' : 'border-transparent text-ink-muted hover:text-ink'"
-        @click="activeTab = 'stats'"
-      >
-        {{ $t('summer.tab_stats') }}
-      </button>
+      <TabBar
+        v-model="activeTab"
+        :tabs="[
+          { value: 'registrations', label: $t('summer.tab_registrations') },
+          { value: 'courses', label: `${$t('summer.tab_courses')} (${courses.length})` },
+          { value: 'stats', label: $t('summer.tab_stats') },
+        ]"
+      />
     </div>
 
     <!-- TAB 1: REGISTRATIONS -->
@@ -410,10 +392,7 @@
     </div>
 
     <!-- MODAL 1: REGISTER STUDENT MODAL -->
-    <div
-      v-if="showRegisterModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto"
-    >
+    <ModalShell :open="showRegisterModal" @close="showRegisterModal = false">
       <div class="panel w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 flex flex-col gap-5 my-8">
         <div class="flex items-center justify-between border-b border-line pb-3">
           <h2 class="text-lg font-bold text-ink">{{ $t('summer.btn_register') }}</h2>
@@ -423,25 +402,21 @@
         <form class="flex flex-col gap-4" @submit.prevent="submitRegistration">
           <!-- Student Info -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.student_name_lo') }} *</label>
-              <input v-model.trim="regForm.fullNameLo" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ້າວ ສົມພອນ ວົງສາ" >
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.student_name_en') }} *</label>
-              <input v-model.trim="regForm.fullNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Somphone Vongsa" >
-            </div>
+            <FormField v-slot="{ id }" :label="$t('summer.student_name_lo')" required>
+              <input :id="id" v-model.trim="regForm.fullNameLo" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ້າວ ສົມພອນ ວົງສາ" >
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('summer.student_name_en')" required>
+              <input :id="id" v-model.trim="regForm.fullNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Somphone Vongsa" >
+            </FormField>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.parent_name') }} *</label>
-              <input v-model.trim="regForm.parentName" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ່ານ ສົມຫວັງ (ພໍ່)" >
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.phone') }} *</label>
-              <input v-model.trim="regForm.phoneNumber" type="text" class="input-text text-sm" required placeholder="020 xxxx xxxx" >
-            </div>
+            <FormField v-slot="{ id }" :label="$t('summer.parent_name')" required>
+              <input :id="id" v-model.trim="regForm.parentName" type="text" class="input-text text-sm" required placeholder="ຕົວຢ່າງ: ທ່ານ ສົມຫວັງ (ພໍ່)" >
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('summer.phone')" required>
+              <input :id="id" v-model.trim="regForm.phoneNumber" type="text" class="input-text text-sm" required placeholder="020 xxxx xxxx" >
+            </FormField>
           </div>
 
           <!-- Select Enrolled Months -->
@@ -511,17 +486,15 @@
 
           <!-- Payment Method -->
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.payment_method') }}</label>
-              <select v-model="regForm.paymentMethod" class="input-text text-sm">
+            <FormField v-slot="{ id }" :label="$t('summer.payment_method')">
+              <select :id="id" v-model="regForm.paymentMethod" class="input-text text-sm">
                 <option value="cash">{{ $t('summer.cash') }}</option>
                 <option value="bank_transfer">{{ $t('summer.bank_transfer') }}</option>
               </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.paid_amount') }}</label>
-              <input v-model.number="regForm.paidAmount" type="number" class="input-text text-sm" >
-            </div>
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('summer.paid_amount')">
+              <input :id="id" v-model.number="regForm.paidAmount" type="number" class="input-text text-sm" >
+            </FormField>
           </div>
 
           <!-- Actions -->
@@ -539,13 +512,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- MODAL 2: COURSE ADD/EDIT MODAL -->
-    <div
-      v-if="showCourseModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto"
-    >
+    <ModalShell :open="showCourseModal" @close="showCourseModal = false">
       <div class="panel w-full max-w-lg p-6 flex flex-col gap-4 my-8">
         <div class="flex items-center justify-between border-b border-line pb-3">
           <h2 class="text-lg font-bold text-ink">
@@ -556,42 +526,35 @@
 
         <form class="flex flex-col gap-3" @submit.prevent="submitCourse">
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.course_name_lo') }} *</label>
-              <input v-model.trim="courseForm.subjectNameLo" type="text" class="input-text text-sm" required placeholder="ເຊັ່ນ: ຄະນິດສາດ" >
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.course_name_en') }} *</label>
-              <input v-model.trim="courseForm.subjectNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Mathematics" >
-            </div>
+            <FormField v-slot="{ id }" :label="$t('summer.course_name_lo')" required>
+              <input :id="id" v-model.trim="courseForm.subjectNameLo" type="text" class="input-text text-sm" required placeholder="ເຊັ່ນ: ຄະນິດສາດ" >
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('summer.course_name_en')" required>
+              <input :id="id" v-model.trim="courseForm.subjectNameEn" type="text" class="input-text text-sm" required placeholder="e.g. Mathematics" >
+            </FormField>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.monthly_fee') }} (LAK) *</label>
-              <input v-model.number="courseForm.monthlyFee" type="number" class="input-text text-sm" required min="1000" >
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.grade_level') }}</label>
-              <input v-model.trim="courseForm.gradeLevel" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ປ.1 - ປ.5" >
-            </div>
+            <FormField v-slot="{ id }" :label="`${$t('summer.monthly_fee')} (LAK)`" required>
+              <input :id="id" v-model.number="courseForm.monthlyFee" type="number" class="input-text text-sm" required min="1000" >
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('summer.grade_level')">
+              <input :id="id" v-model.trim="courseForm.gradeLevel" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ປ.1 - ປ.5" >
+            </FormField>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.teacher') }}</label>
-              <input v-model.trim="courseForm.teacherName" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ອາຈານ ສົມສັກ" >
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.room') }}</label>
-              <input v-model.trim="courseForm.roomNumber" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ຫ້ອງ 201" >
-            </div>
+            <FormField v-slot="{ id }" :label="$t('summer.teacher')">
+              <input :id="id" v-model.trim="courseForm.teacherName" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ອາຈານ ສົມສັກ" >
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('summer.room')">
+              <input :id="id" v-model.trim="courseForm.roomNumber" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: ຫ້ອງ 201" >
+            </FormField>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-ink-muted mb-1">{{ $t('summer.time_slot') }}</label>
-            <input v-model.trim="courseForm.timeSlot" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: 08:30 - 10:00 (ຈັນ - ສຸກ)" >
-          </div>
+          <FormField v-slot="{ id }" :label="$t('summer.time_slot')">
+            <input :id="id" v-model.trim="courseForm.timeSlot" type="text" class="input-text text-sm" placeholder="ເຊັ່ນ: 08:30 - 10:00 (ຈັນ - ສຸກ)" >
+          </FormField>
 
           <div class="flex items-center gap-2 mt-2">
             <input id="course-active" v-model="courseForm.isActive" type="checkbox" class="rounded text-primary focus:ring-primary" >
@@ -608,13 +571,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- MODAL 3: PRINT CLASS PASS MODAL -->
-    <div
-      v-if="selectedRegForPass"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
-    >
+    <ModalShell v-if="selectedRegForPass" :open="true" @close="selectedRegForPass = null">
       <div class="panel w-full max-w-lg p-6 flex flex-col gap-4 my-8">
         <div class="flex items-center justify-between border-b border-line pb-3 no-print">
           <h2 class="text-base font-bold text-ink">{{ $t('summer.btn_print_pass') }}</h2>
@@ -700,13 +660,10 @@
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- MODAL 4: PRINT RECEIPT MODAL -->
-    <div
-      v-if="selectedRegForReceipt"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
-    >
+    <ModalShell v-if="selectedRegForReceipt" :open="true" @close="selectedRegForReceipt = null">
       <div class="panel w-full max-w-lg p-6 flex flex-col gap-4 my-8">
         <div class="flex items-center justify-between border-b border-line pb-3 no-print">
           <h2 class="text-base font-bold text-ink">{{ $t('summer.btn_print_receipt') }}</h2>
@@ -794,7 +751,7 @@
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   </div>
 </template>
 

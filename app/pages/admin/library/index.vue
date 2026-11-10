@@ -54,30 +54,14 @@
     <!-- Tabs with Action Button on the Right -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex gap-6 overflow-x-auto">
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'terminal' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'terminal'"
-        >
-          {{ $t('library.tab_terminal') }}
-        </button>
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'books' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'books'"
-        >
-          {{ $t('library.tab_catalog') }}
-        </button>
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'loans' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'loans'"
-        >
-          {{ $t('library.tab_loans') }}
-        </button>
+        <TabBar
+          v-model="activeTab"
+          :tabs="[
+            { value: 'terminal', label: $t('library.tab_terminal') },
+            { value: 'books', label: $t('library.tab_catalog') },
+            { value: 'loans', label: $t('library.tab_loans') },
+          ]"
+        />
       </div>
 
       <div class="pb-2.5 sm:pb-2 sm:ml-auto shrink-0 flex items-center gap-2">
@@ -119,15 +103,15 @@
             <h4 class="font-bold text-sm">{{ $t('library.step_borrower') }}</h4>
           </div>
 
-          <div>
-            <label class="block mb-1 text-xs font-semibold">{{ $t('library.step_borrower_card') }}</label>
+          <FormField v-slot="{ id }" :label="$t('library.step_borrower_card')">
             <input
+              :id="id"
               v-model.trim="borrowForm.cardUid"
               type="text"
               class="input-field"
               :placeholder="$t('library.card_ph')"
             >
-          </div>
+          </FormField>
 
           <div class="relative flex py-1 items-center">
             <div class="flex-grow border-t border-slate-200 dark:border-slate-800" />
@@ -148,25 +132,22 @@
             <h4 class="font-bold text-sm">{{ $t('library.step_book') }}</h4>
           </div>
 
-          <div>
-            <label class="block mb-1 text-xs font-semibold">{{ $t('library.select_book') }} *</label>
-            <select v-model="borrowForm.bookId" class="input-field" required>
+          <FormField v-slot="{ id }" :label="$t('library.select_book')" required>
+            <select :id="id" v-model="borrowForm.bookId" class="input-field" required>
               <option :value="undefined">{{ $t('library.select_book_ph') }}</option>
               <option v-for="b in books" :key="b.bookId" :value="b.bookId" :disabled="b.availableCopies <= 0">
                 {{ locale === 'lo' ? b.titleLo : (b.titleEn || b.titleLo) }} [{{ b.isbn || 'No ISBN' }}] ({{ $t('library.remaining_copies', { count: b.availableCopies }) }})
               </option>
             </select>
-          </div>
+          </FormField>
 
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block mb-1 text-xs font-semibold">{{ $t('library.loan_duration') }}</label>
-              <input v-model.number="borrowForm.days" type="number" min="1" max="60" class="input-field" >
-            </div>
-            <div>
-              <label class="block mb-1 text-xs font-semibold">{{ $t('library.notes') }}</label>
-              <input v-model.trim="borrowForm.notes" type="text" class="input-field" :placeholder="$t('library.notes_ph')" >
-            </div>
+            <FormField v-slot="{ id }" :label="$t('library.loan_duration')">
+              <input :id="id" v-model.number="borrowForm.days" type="number" min="1" max="60" class="input-field" >
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('library.notes')">
+              <input :id="id" v-model.trim="borrowForm.notes" type="text" class="input-field" :placeholder="$t('library.notes_ph')" >
+            </FormField>
           </div>
 
           <div v-if="borrowFeedback" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-semibold">
@@ -376,42 +357,35 @@
 
     <AppModal :open="bookModalOpen" :title="editingBookId ? $t('library.modal_edit_book') : $t('library.modal_add_book')" @update:open="bookModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitBook">
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.col_isbn') }}</label>
-          <input v-model.trim="bookForm.isbn" type="text" class="input-field" :placeholder="$t('library.isbn_ph')" >
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.title_lo') }} *</label>
-          <input v-model.trim="bookForm.titleLo" type="text" class="input-field" required >
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.title_en') }} *</label>
-          <input v-model.trim="bookForm.titleEn" type="text" class="input-field" required >
-        </div>
+        <FormField v-slot="{ id }" :label="$t('library.col_isbn')">
+          <input :id="id" v-model.trim="bookForm.isbn" type="text" class="input-field" :placeholder="$t('library.isbn_ph')" >
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('library.title_lo')" required>
+          <input :id="id" v-model.trim="bookForm.titleLo" type="text" class="input-field" required >
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('library.title_en')" required>
+          <input :id="id" v-model.trim="bookForm.titleEn" type="text" class="input-field" required >
+        </FormField>
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.author_label') }} *</label>
-            <input v-model.trim="bookForm.author" type="text" class="input-field" required >
-          </div>
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.col_category') }}</label>
-            <select v-model="bookForm.categoryId" class="input-field">
+          <FormField v-slot="{ id }" :label="$t('library.author_label')" required>
+            <input :id="id" v-model.trim="bookForm.author" type="text" class="input-field" required >
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('library.col_category')">
+            <select :id="id" v-model="bookForm.categoryId" class="input-field">
               <option :value="undefined">{{ $t('library.select_category') }}</option>
               <option v-for="c in categories" :key="c.categoryId" :value="c.categoryId">
                 {{ locale === 'lo' ? c.nameLo : (c.nameEn || c.nameLo) }}
               </option>
             </select>
-          </div>
+          </FormField>
         </div>
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.shelf_label') }}</label>
-            <input v-model.trim="bookForm.shelfLocation" type="text" class="input-field" :placeholder="$t('library.shelf_ph')" >
-          </div>
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('library.total_copies_label') }} *</label>
-            <input v-model.number="bookForm.totalCopies" type="number" min="1" max="1000" class="input-field" required >
-          </div>
+          <FormField v-slot="{ id }" :label="$t('library.shelf_label')">
+            <input :id="id" v-model.trim="bookForm.shelfLocation" type="text" class="input-field" :placeholder="$t('library.shelf_ph')" >
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('library.total_copies_label')" required>
+            <input :id="id" v-model.number="bookForm.totalCopies" type="number" min="1" max="1000" class="input-field" required >
+          </FormField>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <button type="button" class="btn-secondary" @click="bookModalOpen = false">{{ $t('common.cancel') }}</button>

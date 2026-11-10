@@ -37,22 +37,18 @@
       <section v-show="activeTab === 'school'" id="panel-school" role="tabpanel" aria-labelledby="tab-school" class="panel p-6 max-w-3xl">
         <form class="flex flex-col gap-4" @submit.prevent="handleSchoolSave">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1.5">
-              <label for="school-name-lo" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.school_name_lo') }}</label>
+            <FormField class="flex flex-col gap-1.5" :label="$t('settings.school_name_lo')" required for="school-name-lo">
               <input id="school-name-lo" v-model="schoolForm.schoolNameLo" type="text" required maxlength="150" class="input-field">
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label for="school-name-en" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.school_name_en') }}</label>
+            </FormField>
+            <FormField class="flex flex-col gap-1.5" :label="$t('settings.school_name_en')" required for="school-name-en">
               <input id="school-name-en" v-model="schoolForm.schoolNameEn" type="text" required maxlength="150" class="input-field">
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label for="school-email" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.contact_email') }}</label>
+            </FormField>
+            <FormField class="flex flex-col gap-1.5" :label="$t('settings.contact_email')" for="school-email">
               <input id="school-email" v-model="schoolForm.contactEmail" type="email" maxlength="150" class="input-field">
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label for="school-phone" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('settings.contact_phone') }}</label>
+            </FormField>
+            <FormField class="flex flex-col gap-1.5" :label="$t('settings.contact_phone')" for="school-phone">
               <input id="school-phone" v-model="schoolForm.contactPhone" type="text" maxlength="30" class="input-field">
-            </div>
+            </FormField>
           </div>
 
           <p v-if="saveError" role="alert" class="text-sm text-danger">{{ saveError }}</p>
@@ -73,22 +69,18 @@
         <form class="flex flex-col gap-4" @submit.prevent="handlePaymentSave">
           <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_160px] gap-5">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="flex flex-col gap-1.5">
-                <label for="pay-bank" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.bank_name') }}</label>
+              <FormField class="flex flex-col gap-1.5" :label="$t('payment_info.bank_name')" required for="pay-bank">
                 <input id="pay-bank" v-model="paymentForm.bankName" type="text" required maxlength="100" class="input-field" placeholder="BCEL">
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <label for="pay-number" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.account_number') }}</label>
+              </FormField>
+              <FormField class="flex flex-col gap-1.5" :label="$t('payment_info.account_number')" required for="pay-number">
                 <input id="pay-number" v-model="paymentForm.accountNumber" type="text" required maxlength="50" class="input-field tnum">
-              </div>
-              <div class="flex flex-col gap-1.5 sm:col-span-2">
-                <label for="pay-name" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.account_name') }}</label>
+              </FormField>
+              <FormField class="flex flex-col gap-1.5 sm:col-span-2" :label="$t('payment_info.account_name')" required for="pay-name">
                 <input id="pay-name" v-model="paymentForm.accountName" type="text" required maxlength="150" class="input-field">
-              </div>
-              <div class="flex flex-col gap-1.5 sm:col-span-2">
-                <label for="pay-note" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('payment_info.note') }}</label>
+              </FormField>
+              <FormField class="flex flex-col gap-1.5 sm:col-span-2" :label="$t('payment_info.note')" for="pay-note">
                 <input id="pay-note" v-model="paymentForm.note" type="text" maxlength="255" class="input-field" :placeholder="$t('payment_info.note_placeholder')">
-              </div>
+              </FormField>
             </div>
 
             <div class="flex flex-col gap-1.5">
@@ -119,10 +111,9 @@
             <p class="text-xs text-ink-muted mt-0.5">{{ $t('low_balance.subtitle') }}</p>
           </div>
           <div class="flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1.5">
-              <label for="low-balance" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('low_balance.threshold') }}</label>
+            <FormField class="flex flex-col gap-1.5" :label="$t('low_balance.threshold')" for="low-balance">
               <input id="low-balance" v-model.number="lowBalanceInput" type="number" min="0" step="1000" class="input-field tnum w-48" :placeholder="$t('low_balance.off')">
-            </div>
+            </FormField>
             <button type="submit" :disabled="savingLowBalance" class="btn-primary">
               {{ savingLowBalance ? $t('common.saving') : $t('settings.save') }}
             </button>
@@ -209,10 +200,9 @@
               <input id="fr-time" v-model="feeForm.sendTime" type="time" required class="input-field tnum w-40">
               <p class="text-xs text-ink-subtle">{{ $t('auto_absence.cutoff_hint') }}</p>
             </div>
-            <div class="flex flex-col gap-1.5">
-              <label for="fr-repeat" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('fee_reminders.repeat_every') }}</label>
+            <FormField class="flex flex-col gap-1.5" :label="$t('fee_reminders.repeat_every')" required for="fr-repeat">
               <input id="fr-repeat" v-model.number="feeForm.repeatEveryDays" type="number" min="1" max="60" required class="input-field tnum w-32">
-            </div>
+            </FormField>
             <div class="flex flex-col gap-1.5">
               <label for="fr-max" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('fee_reminders.max_overdue') }}</label>
               <input id="fr-max" v-model.number="feeForm.maxOverdue" type="number" min="0" max="12" required class="input-field tnum w-32">

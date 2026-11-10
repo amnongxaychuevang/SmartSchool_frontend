@@ -33,9 +33,7 @@
         </select>
         <input v-model="filterMonth" type="month" class="input-field w-auto" @change="applyFilters">
       </div>
-      <button v-if="canExport" class="btn-secondary ml-auto"  :disabled="exporting" @click="exportGrades">
-        {{ $t('common.export_excel') }}
-      </button>
+      <ExportButton path="/reports/grades/export" permission="reports.export" :filters="{ search: searchInput, published: filterStatus === 'published' ? 'true' : filterStatus === 'unpublished' ? 'false' : '', gradeMonth: filterMonth, }" file-base="grades" class="ml-auto" />
     </div>
 
     <!-- Table -->
@@ -93,9 +91,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAcademicsStore, GRADES_PER_PAGE } from '~/application/stores/academics';
 import PageHeader from '../../../components/PageHeader.vue';
@@ -194,14 +189,6 @@ const averagePassRate = computed(() => {
 });
 
 // Standard export: built by the server from the report's own filters, and audit-logged.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
-const { exporting, download } = useServerExport();
-const exportGrades = () => download('/reports/grades/export', {
-  search: searchInput.value,
-  published: filterStatus.value === 'published' ? 'true' : filterStatus.value === 'unpublished' ? 'false' : '',
-  gradeMonth: filterMonth.value,
-}, 'grades');
 
 const getScoreColor = (score: number, maxScore: number) => {
   const percent = (Number(score) / Number(maxScore)) * 100;

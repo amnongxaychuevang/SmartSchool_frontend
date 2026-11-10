@@ -2,22 +2,13 @@
   <div class="flex flex-col gap-4">
     <!-- Tabs: Calendar vs Agenda -->
     <div class="flex gap-6">
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
-        :class="activeTab === 'calendar' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'calendar'"
-      >
-        {{ $t('calendar.tab_calendar') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
-        :class="activeTab === 'agenda' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'agenda'"
-      >
-        {{ $t('calendar.tab_agenda') }}
-      </button>
+      <TabBar
+        v-model="activeTab"
+        :tabs="[
+          { value: 'calendar', label: $t('calendar.tab_calendar') },
+          { value: 'agenda', label: $t('calendar.tab_agenda') },
+        ]"
+      />
     </div>
 
     <!-- Month navigation & Actions -->
@@ -107,32 +98,27 @@
     <!-- Add / edit (admin) -->
     <AppModal v-if="editable" v-model:open="form.open" :title="form.eventId ? $t('calendar.edit') : $t('calendar.add')" size="md">
       <form id="event-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4" @submit.prevent="save">
-        <div class="flex flex-col gap-1.5">
-          <label for="ev-title-lo" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('calendar.title_lo') }}</label>
+        <FormField class="flex flex-col gap-1.5" :label="$t('calendar.title_lo')" required for="ev-title-lo">
           <input id="ev-title-lo" v-model.trim="form.titleLo" required maxlength="150" class="input-field">
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="ev-title-en" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('calendar.title_en') }}</label>
+        </FormField>
+        <FormField class="flex flex-col gap-1.5" :label="$t('calendar.title_en')" required for="ev-title-en">
           <input id="ev-title-en" v-model.trim="form.titleEn" required maxlength="150" class="input-field">
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="ev-type" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('calendar.type') }}</label>
+        </FormField>
+        <FormField class="flex flex-col gap-1.5" :label="$t('calendar.type')" for="ev-type">
           <select id="ev-type" v-model="form.type" class="input-field" @change="form.schoolClosed = form.type === 'holiday'">
             <option v-for="type in TYPES" :key="type" :value="type">{{ $t(`calendar.types.${type}`) }}</option>
           </select>
-        </div>
+        </FormField>
         <label class="flex items-start gap-3 cursor-pointer sm:pt-6">
           <input v-model="form.schoolClosed" type="checkbox" class="mt-0.5 h-4 w-4 accent-primary">
           <span class="text-sm">{{ $t('calendar.school_closed') }}<span class="block text-xs text-ink-subtle">{{ $t('calendar.school_closed_hint') }}</span></span>
         </label>
-        <div class="flex flex-col gap-1.5">
-          <label for="ev-start" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('calendar.start') }}</label>
+        <FormField class="flex flex-col gap-1.5" :label="$t('calendar.start')" required for="ev-start">
           <input id="ev-start" v-model="form.startDate" type="date" required class="input-field tnum" @change="keepEndAfterStart">
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="ev-end" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('calendar.end') }}</label>
+        </FormField>
+        <FormField class="flex flex-col gap-1.5" :label="$t('calendar.end')" required for="ev-end">
           <input id="ev-end" v-model="form.endDate" type="date" required :min="form.startDate" class="input-field tnum">
-        </div>
+        </FormField>
         <div class="flex flex-col gap-1.5">
           <label for="ev-desc-lo" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('calendar.description_lo') }}</label>
           <textarea id="ev-desc-lo" v-model.trim="form.descriptionLo" rows="3" maxlength="2000" class="input-field" />

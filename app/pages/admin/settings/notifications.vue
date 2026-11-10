@@ -35,10 +35,9 @@
           <span :class="['shrink-0', isConfigured('whatsapp') ? 'badge-success' : 'badge-slate']">{{ statusText('whatsapp') }}</span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex flex-col gap-1.5">
-            <label for="wa-phone-id" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.phone_number_id") }}</label>
+          <FormField class="flex flex-col gap-1.5" :label="$t('notification_settings.phone_number_id')" required for="wa-phone-id">
             <input id="wa-phone-id" v-model="waForm.phoneNumberId" type="text" required maxlength="50" class="input-field" placeholder="123456789012345">
-          </div>
+          </FormField>
           <div class="flex flex-col gap-1.5">
             <label for="wa-token" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.access_token") }}</label>
             <div class="relative">
@@ -66,18 +65,15 @@
           <span :class="['shrink-0', isConfigured('email') ? 'badge-success' : 'badge-slate']">{{ statusText('email') }}</span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex flex-col gap-1.5">
-            <label for="smtp-host" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.smtp_host") }}</label>
+          <FormField class="flex flex-col gap-1.5" :label="$t('notification_settings.smtp_host')" required for="smtp-host">
             <input id="smtp-host" v-model="emailForm.host" type="text" required maxlength="255" class="input-field" placeholder="smtp.gmail.com">
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="smtp-port" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.smtp_port") }}</label>
+          </FormField>
+          <FormField class="flex flex-col gap-1.5" :label="$t('notification_settings.smtp_port')" for="smtp-port">
             <input id="smtp-port" v-model.number="emailForm.port" type="number" min="1" max="65535" class="input-field" placeholder="587">
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="smtp-user" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.smtp_username") }}</label>
+          </FormField>
+          <FormField class="flex flex-col gap-1.5" :label="$t('notification_settings.smtp_username')" required for="smtp-user">
             <input id="smtp-user" v-model="emailForm.user" type="text" required maxlength="255" class="input-field" placeholder="noreply@school.com">
-          </div>
+          </FormField>
           <div class="flex flex-col gap-1.5">
             <label for="smtp-pass" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.smtp_password") }}</label>
             <div class="relative">
@@ -95,17 +91,15 @@
               </button>
             </div>
           </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="smtp-from" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.smtp_from") }}</label>
+          <FormField class="flex flex-col gap-1.5" :label="$t('notification_settings.smtp_from')" required for="smtp-from">
             <input id="smtp-from" v-model="emailForm.from" type="text" required maxlength="255" class="input-field" placeholder="noreply@school.com">
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="smtp-secure" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t("notification_settings.smtp_secure") }}</label>
+          </FormField>
+          <FormField class="flex flex-col gap-1.5" :label="$t('notification_settings.smtp_secure')" for="smtp-secure">
             <select id="smtp-secure" v-model="emailForm.secure" class="input-field">
               <option :value="false">{{ $t("notification_settings.smtp_secure_no") }}</option>
               <option :value="true">{{ $t("notification_settings.smtp_secure_yes") }}</option>
             </select>
-          </div>
+          </FormField>
         </div>
       </section>
 

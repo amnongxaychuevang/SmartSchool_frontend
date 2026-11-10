@@ -54,46 +54,16 @@
     <!-- Tabs with Action Button on the Right -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex gap-6 overflow-x-auto">
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'manifest' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'manifest'"
-        >
-          {{ $t('transport.tab_manifest') }}
-        </button>
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'map' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'map'"
-        >
-          {{ $t('transport.tab_map') }}
-        </button>
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'vehicles' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'vehicles'"
-        >
-          {{ $t('transport.tab_vehicles') }}
-        </button>
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'students' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'students'"
-        >
-          {{ $t('transport.tab_students') }}
-        </button>
-        <button
-          type="button"
-          class="pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap"
-          :class="activeTab === 'logs' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = 'logs'"
-        >
-          {{ $t('transport.tab_logs') }}
-        </button>
+        <TabBar
+          v-model="activeTab"
+          :tabs="[
+            { value: 'manifest', label: $t('transport.tab_manifest') },
+            { value: 'map', label: $t('transport.tab_map') },
+            { value: 'vehicles', label: $t('transport.tab_vehicles') },
+            { value: 'students', label: $t('transport.tab_students') },
+            { value: 'logs', label: $t('transport.tab_logs') },
+          ]"
+        />
       </div>
 
       <div class="pb-2.5 sm:pb-2 sm:ml-auto shrink-0 flex items-center gap-2">
@@ -397,47 +367,43 @@
           💡 {{ $t('transport.simulator_tip') }}
         </div>
 
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.select_vehicle') }} *</label>
-          <select v-model="scanForm.vehicleId" class="input-field" required>
+        <FormField v-slot="{ id }" :label="$t('transport.select_vehicle')" required>
+          <select :id="id" v-model="scanForm.vehicleId" class="input-field" required>
             <option v-for="v in vehicles" :key="v.vehicleId" :value="v.vehicleId">
               {{ v.plateNumber }} ({{ v.model }}) - {{ $t('transport.driver') }}: {{ v.driverName }}
             </option>
           </select>
-        </div>
+        </FormField>
 
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.card_uid') }} *</label>
+        <FormField v-slot="{ id }" :label="$t('transport.card_uid')" required>
           <input
+            :id="id"
             v-model.trim="scanForm.cardUid"
             type="text"
             class="input-field"
             required
             :placeholder="$t('transport.card_uid_ph')"
           >
-        </div>
+        </FormField>
 
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.col_action') }} *</label>
-            <select v-model="scanForm.logType" class="input-field" required>
+          <FormField v-slot="{ id }" :label="$t('transport.col_action')" required>
+            <select :id="id" v-model="scanForm.logType" class="input-field" required>
               <option value="board">{{ $t('transport.board_action') }}</option>
               <option value="alight">{{ $t('transport.alight_action') }}</option>
             </select>
-          </div>
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.col_direction') }} *</label>
-            <select v-model="scanForm.direction" class="input-field" required>
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('transport.col_direction')" required>
+            <select :id="id" v-model="scanForm.direction" class="input-field" required>
               <option value="to_school">{{ $t('transport.to_school') }}</option>
               <option value="to_home">{{ $t('transport.to_home') }}</option>
             </select>
-          </div>
+          </FormField>
         </div>
 
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.location') }}</label>
-          <input v-model.trim="scanForm.location" type="text" class="input-field" :placeholder="$t('transport.location_ph')" >
-        </div>
+        <FormField v-slot="{ id }" :label="$t('transport.location')">
+          <input :id="id" v-model.trim="scanForm.location" type="text" class="input-field" :placeholder="$t('transport.location_ph')" >
+        </FormField>
 
         <div v-if="scanFeedback" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-semibold">
           {{ scanFeedback }}
@@ -455,35 +421,29 @@
     <!-- Modal: Add Vehicle -->
     <AppModal :open="vehicleModalOpen" :title="editingVehicleId ? $t('transport.modal_edit_vehicle') : $t('transport.modal_add_vehicle')" @update:open="vehicleModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitVehicle">
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.plate_number') }} *</label>
-          <input v-model.trim="vehicleForm.plateNumber" type="text" class="input-field" required :placeholder="$t('transport.plate_ph')" >
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.model') }}</label>
-          <input v-model.trim="vehicleForm.model" type="text" class="input-field" :placeholder="$t('transport.model_ph')" >
-        </div>
+        <FormField v-slot="{ id }" :label="$t('transport.plate_number')" required>
+          <input :id="id" v-model.trim="vehicleForm.plateNumber" type="text" class="input-field" required :placeholder="$t('transport.plate_ph')" >
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('transport.model')">
+          <input :id="id" v-model.trim="vehicleForm.model" type="text" class="input-field" :placeholder="$t('transport.model_ph')" >
+        </FormField>
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.capacity') }} *</label>
-            <input v-model.number="vehicleForm.capacity" type="number" min="5" max="60" class="input-field" required >
-          </div>
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.col_status') }} *</label>
-            <select v-model="vehicleForm.status" class="input-field" required>
+          <FormField v-slot="{ id }" :label="$t('transport.capacity')" required>
+            <input :id="id" v-model.number="vehicleForm.capacity" type="number" min="5" max="60" class="input-field" required >
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('transport.col_status')" required>
+            <select :id="id" v-model="vehicleForm.status" class="input-field" required>
               <option value="active">{{ $t('transport.status_active') }}</option>
               <option value="maintenance">{{ $t('transport.status_maintenance') }}</option>
             </select>
-          </div>
+          </FormField>
         </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.driver_name') }} *</label>
-          <input v-model.trim="vehicleForm.driverName" type="text" class="input-field" required :placeholder="$t('transport.driver_name_ph')" >
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.driver_phone') }} *</label>
-          <input v-model.trim="vehicleForm.driverPhone" type="text" class="input-field" required :placeholder="$t('transport.driver_phone_ph')" >
-        </div>
+        <FormField v-slot="{ id }" :label="$t('transport.driver_name')" required>
+          <input :id="id" v-model.trim="vehicleForm.driverName" type="text" class="input-field" required :placeholder="$t('transport.driver_name_ph')" >
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('transport.driver_phone')" required>
+          <input :id="id" v-model.trim="vehicleForm.driverPhone" type="text" class="input-field" required :placeholder="$t('transport.driver_phone_ph')" >
+        </FormField>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <button type="button" class="btn-secondary" @click="vehicleModalOpen = false">{{ $t('common.cancel') }}</button>
           <button type="submit" class="btn-primary">{{ $t('common.save') }}</button>
@@ -494,23 +454,20 @@
     <!-- Modal: Add Route -->
     <AppModal :open="routeModalOpen" :title="editingRouteId ? $t('transport.modal_edit_route') : $t('transport.modal_add_route')" @update:open="routeModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitRoute">
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.route_name_lo') }} *</label>
-          <input v-model.trim="routeForm.routeNameLo" type="text" class="input-field" required :placeholder="$t('transport.route_name_lo_ph')" >
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.route_name_en') }} *</label>
-          <input v-model.trim="routeForm.routeNameEn" type="text" class="input-field" required :placeholder="$t('transport.route_name_en_ph')" >
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.assigned_vehicle') }}</label>
-          <select v-model="routeForm.vehicleId" class="input-field">
+        <FormField v-slot="{ id }" :label="$t('transport.route_name_lo')" required>
+          <input :id="id" v-model.trim="routeForm.routeNameLo" type="text" class="input-field" required :placeholder="$t('transport.route_name_lo_ph')" >
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('transport.route_name_en')" required>
+          <input :id="id" v-model.trim="routeForm.routeNameEn" type="text" class="input-field" required :placeholder="$t('transport.route_name_en_ph')" >
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('transport.assigned_vehicle')">
+          <select :id="id" v-model="routeForm.vehicleId" class="input-field">
             <option :value="undefined">{{ $t('transport.select_vehicle_ph') }}</option>
             <option v-for="v in vehicles" :key="v.vehicleId" :value="v.vehicleId">
               {{ v.plateNumber }} ({{ v.model }})
             </option>
           </select>
-        </div>
+        </FormField>
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.route_desc') }}</label>
           <textarea v-model.trim="routeForm.description" class="input-field" rows="2" />
@@ -529,23 +486,20 @@
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.col_student') }} *</label>
           <StudentPicker v-model="assignForm.studentId" input-id="bus-student" />
         </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.col_route') }} *</label>
-          <select v-model="assignForm.routeId" class="input-field" required>
+        <FormField v-slot="{ id }" :label="$t('transport.col_route')" required>
+          <select :id="id" v-model="assignForm.routeId" class="input-field" required>
             <option v-for="r in routes" :key="r.routeId" :value="r.routeId">
               {{ locale === 'lo' ? r.routeNameLo : (r.routeNameEn || r.routeNameLo) }}
             </option>
           </select>
-        </div>
+        </FormField>
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.pickup_stop') }}</label>
-            <input v-model.trim="assignForm.pickupStop" type="text" class="input-field" >
-          </div>
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('transport.dropoff_stop') }}</label>
-            <input v-model.trim="assignForm.dropoffStop" type="text" class="input-field" >
-          </div>
+          <FormField v-slot="{ id }" :label="$t('transport.pickup_stop')">
+            <input :id="id" v-model.trim="assignForm.pickupStop" type="text" class="input-field" >
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('transport.dropoff_stop')">
+            <input :id="id" v-model.trim="assignForm.dropoffStop" type="text" class="input-field" >
+          </FormField>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <button type="button" class="btn-secondary" @click="assignModalOpen = false">{{ $t('common.cancel') }}</button>

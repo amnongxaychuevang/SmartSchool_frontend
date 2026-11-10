@@ -1,19 +1,17 @@
 <template>
   <AppModal :open="open" :title="$t('password.change_title')" size="sm" @update:open="emit('update:open', $event)">
     <form id="change-password-form" class="flex flex-col gap-4" novalidate @submit.prevent="submit">
-      <div class="flex flex-col gap-1.5">
-        <label for="cp-current" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('password.current') }}</label>
+      <FormField class="flex flex-col gap-1.5" :label="$t('password.current')" required for="cp-current">
         <input id="cp-current" v-model="form.current" type="password" required autocomplete="current-password" class="input-field">
-      </div>
+      </FormField>
       <div class="flex flex-col gap-1.5">
         <label for="cp-new" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('password.new') }}</label>
         <input id="cp-new" v-model="form.next" type="password" required minlength="6" autocomplete="new-password" class="input-field">
         <p class="text-xs text-ink-subtle">{{ $t('password.min_length') }}</p>
       </div>
-      <div class="flex flex-col gap-1.5">
-        <label for="cp-confirm" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('password.confirm') }}</label>
+      <FormField class="flex flex-col gap-1.5" :label="$t('password.confirm')" required for="cp-confirm">
         <input id="cp-confirm" v-model="form.confirm" type="password" required autocomplete="new-password" class="input-field">
-      </div>
+      </FormField>
       <p v-if="error" role="alert" class="rounded border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">{{ error }}</p>
     </form>
     <template #footer>

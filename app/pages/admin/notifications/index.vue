@@ -79,18 +79,16 @@
           <label for="n-recipient" class="block mb-1.5 text-sm font-semibold">{{ $t('notifications_admin.recipient') }}</label>
           <UserPicker v-model="modal.form.recipientUserId" input-id="n-recipient" />
         </div>
-        <div>
-          <label for="n-type" class="block mb-1.5 text-sm font-semibold">{{ $t('notifications_admin.type') }}</label>
+        <FormField :label="$t('notifications_admin.type')" for="n-type">
           <select id="n-type" v-model="modal.form.type" class="input-field">
             <option v-for="ty in types" :key="ty" :value="ty">{{ $t(`notifications_admin.types.${ty}`) }}</option>
           </select>
-        </div>
-        <div>
-          <label for="n-channel" class="block mb-1.5 text-sm font-semibold">{{ $t('notifications_admin.channel') }}</label>
+        </FormField>
+        <FormField :label="$t('notifications_admin.channel')" for="n-channel">
           <select id="n-channel" v-model="modal.form.channel" class="input-field">
             <option v-for="c in channels" :key="c" :value="c">{{ $t(`notifications_admin.channels.${c}`) }}</option>
           </select>
-        </div>
+        </FormField>
         <div class="col-span-2">
           <label for="n-lo" class="block mb-1.5 text-sm font-semibold">{{ $t('notifications_admin.message_lo') }}</label>
           <textarea id="n-lo" v-model.trim="modal.form.messageLo" required rows="3" lang="lo" class="input-field" />

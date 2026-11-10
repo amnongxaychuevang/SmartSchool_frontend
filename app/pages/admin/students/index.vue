@@ -74,9 +74,7 @@ class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center 
         </div>
         <div v-if="genderDropdownOpen" class="fixed inset-0 z-40" @click="genderDropdownOpen = false"/>
 
-        <button v-if="canExport" type="button" class="btn-secondary ml-auto" :disabled="exporting || !adminStore.studentsTotal" @click="exportList">
-          {{ exporting ? $t('common.loading') : $t('common.export_excel') }}
-        </button>
+        <ExportButton path="/students/export" permission="students.export" :filters="{ search: searchInput, status: statusFilter, gender: genderFilter }" file-base="students" class="ml-auto" :disabled="!adminStore.studentsTotal" />
         <button v-if="canManage" type="button" class="btn-secondary flex items-center gap-1.5" @click="importModalOpen = true">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -215,7 +213,6 @@ import { getErrorMessage } from '../../../utils/errors';
 import type { Student } from '../../../domain/models/Student';
 import { useAuthStore } from '../../../application/stores/auth';
 import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 
 definePageMeta({ layout: 'admin' });
 useHead({ title: 'Students — EduSmart Admin' });
@@ -276,11 +273,8 @@ const studentAddress = (student: Student) => {
 
 // Standard export: the server builds the file from the same filters (and audit-logs it).
 const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'students.export'));
 const canManage = computed(() => hasPermission(authStore.permissions, 'students.manage'));
 const importModalOpen = ref(false);
-const { exporting, download } = useServerExport();
-const exportList = () => download('/students/export', { search: searchInput.value, status: statusFilter.value, gender: genderFilter.value }, 'students');
 
 const pageSize = ref(STUDENTS_PER_PAGE);
 const totalPages = computed(() => Math.ceil(adminStore.studentsTotal / pageSize.value));

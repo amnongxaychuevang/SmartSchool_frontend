@@ -72,10 +72,9 @@
           </div>
         </fieldset>
 
-        <div class="sm:col-span-2">
-          <label for="l-notes" class="block mb-1.5 text-sm font-semibold">{{ $t('limits_admin.notes') }}</label>
+        <FormField class="sm:col-span-2" :label="$t('limits_admin.notes')" for="l-notes">
           <input id="l-notes" v-model.trim="modal.form.notes" maxlength="255" class="input-field" :placeholder="$t('limits_admin.notes_placeholder')">
-        </div>
+        </FormField>
         <p v-if="modal.error" role="alert" class="sm:col-span-2 rounded border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">{{ modal.error }}</p>
       </form>
       <template #footer>

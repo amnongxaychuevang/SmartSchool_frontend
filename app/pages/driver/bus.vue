@@ -71,25 +71,23 @@
           </h2>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">{{ $t('driver_console.vehicle') }}</label>
-              <select v-model="selectedVehicleId" :disabled="isRunActive" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-hidden focus:border-amber-500">
+            <FormField v-slot="{ id }" :label="$t('driver_console.vehicle')">
+              <select :id="id" v-model="selectedVehicleId" :disabled="isRunActive" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-hidden focus:border-amber-500">
                 <option :value="null">{{ $t('driver_console.choose_vehicle') }}</option>
                 <option v-for="v in vehicles" :key="v.vehicleId" :value="v.vehicleId">
                   {{ v.plateNumber }} ({{ v.model || 'Bus' }})
                 </option>
               </select>
-            </div>
+            </FormField>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1">{{ $t('driver_console.route') }}</label>
-              <select v-model="selectedRouteId" :disabled="isRunActive" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-hidden focus:border-amber-500" @change="loadStudents">
+            <FormField v-slot="{ id }" :label="$t('driver_console.route')">
+              <select :id="id" v-model="selectedRouteId" :disabled="isRunActive" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-hidden focus:border-amber-500" @change="loadStudents">
                 <option :value="null">{{ $t('driver_console.choose_route') }}</option>
                 <option v-for="r in routes" :key="r.routeId" :value="r.routeId">
                   {{ pick(r.routeNameLo, r.routeNameEn) }}
                 </option>
               </select>
-            </div>
+            </FormField>
           </div>
 
           <!-- Direction Toggle -->

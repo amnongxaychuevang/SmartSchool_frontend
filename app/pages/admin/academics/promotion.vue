@@ -1,8 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader :title="$t('promotion.title')" :subtitle="$t('promotion.subtitle')">
-      <div class="flex items-center gap-2">
-        <label for="from-year" class="sr-only">{{ $t('promotion.from_year') }}</label>
+      <FormField class="flex items-center gap-2" :label="$t('promotion.from_year')" for="from-year">
         <select id="from-year" v-model="fromYear" class="input-field w-auto tnum" @change="onFromYearChange">
           <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
         </select>
@@ -11,7 +10,7 @@
         <select id="to-year" v-model="toYear" class="input-field w-auto tnum" @change="load">
           <option v-for="y in toYearOptions" :key="y" :value="y">{{ y }}</option>
         </select>
-      </div>
+      </FormField>
     </PageHeader>
 
     <p v-if="loadError" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ loadError }}</p>

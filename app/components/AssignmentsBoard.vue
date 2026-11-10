@@ -82,33 +82,29 @@
     <AppModal :open="formOpen" :title="editingId ? $t('assignments.edit') : $t('assignments.add')" @update:open="formOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="save">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="as-class" class="block mb-1.5 text-sm font-semibold">{{ $t('assignments.col_class') }} *</label>
+          <FormField :label="$t('assignments.col_class')" required for="as-class">
             <select id="as-class" v-model="form.classId" class="input-field" required @change="loadSubjects">
               <option :value="null" disabled>{{ $t('assignments.select_class') }}</option>
               <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ className(c) }} · {{ c.academicYear }}</option>
             </select>
-          </div>
-          <div>
-            <label for="as-subject" class="block mb-1.5 text-sm font-semibold">{{ $t('assignments.col_subject') }}</label>
+          </FormField>
+          <FormField :label="$t('assignments.col_subject')" for="as-subject">
             <select id="as-subject" v-model="form.subjectId" class="input-field" :disabled="!form.classId">
               <option :value="null">—</option>
               <option v-for="s in subjects" :key="s.subjectId" :value="s.subjectId">{{ pick(s.subjectNameLo, s.subjectNameEn) }}</option>
             </select>
-          </div>
+          </FormField>
         </div>
-        <div>
-          <label for="as-title" class="block mb-1.5 text-sm font-semibold">{{ $t('assignments.col_title') }} *</label>
+        <FormField :label="$t('assignments.col_title')" required for="as-title">
           <input id="as-title" v-model.trim="form.title" type="text" class="input-field" required maxlength="200">
-        </div>
+        </FormField>
         <div>
           <label for="as-desc" class="block mb-1.5 text-sm font-semibold">{{ $t('assignments.description') }}</label>
           <textarea id="as-desc" v-model.trim="form.description" class="input-field" rows="4" maxlength="5000" />
         </div>
-        <div class="sm:max-w-xs">
-          <label for="as-due" class="block mb-1.5 text-sm font-semibold">{{ $t('assignments.col_due') }} *</label>
+        <FormField class="sm:max-w-xs" :label="$t('assignments.col_due')" required for="as-due">
           <input id="as-due" v-model="form.dueDate" type="date" class="input-field" required>
-        </div>
+        </FormField>
         <p v-if="!editingId" class="text-xs text-ink-muted">{{ $t('assignments.notify_hint') }}</p>
         <div class="flex justify-end gap-3 pt-4 border-t border-line">
           <button type="button" class="btn-secondary" @click="formOpen = false">{{ $t('common.cancel') }}</button>
@@ -184,9 +180,9 @@
             <!-- Grade Form / Feedback for submitted students -->
             <div v-if="item.submission" class="ml-9 p-3 rounded-lg bg-surface-subtle border border-line flex flex-col gap-2">
               <div class="flex flex-wrap items-center gap-3">
-                <div class="w-28">
-                  <label class="block text-xs font-semibold mb-1">{{ $t('assignments.score') }}</label>
+                <FormField v-slot="{ id }" class="w-28" :label="$t('assignments.score')">
                   <input
+                    :id="id"
                     v-model.number="gradeForms[item.submission.submissionId]!.score"
                     type="number"
                     min="0"
@@ -195,16 +191,16 @@
                     class="input-field text-sm py-1"
                     placeholder="0-100"
                   >
-                </div>
-                <div class="flex-1 min-w-[160px]">
-                  <label class="block text-xs font-semibold mb-1">{{ $t('assignments.feedback') }}</label>
+                </FormField>
+                <FormField v-slot="{ id }" class="flex-1 min-w-[160px]" :label="$t('assignments.feedback')">
                   <input
+                    :id="id"
                     v-model.trim="gradeForms[item.submission.submissionId]!.feedback"
                     type="text"
                     class="input-field text-sm py-1"
                     :placeholder="$t('assignments.feedback_ph')"
                   >
-                </div>
+                </FormField>
                 <div class="self-end">
                   <button
                     type="button"

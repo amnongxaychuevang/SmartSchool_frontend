@@ -126,10 +126,7 @@
     </section>
 
     <!-- Printable Payslip Modal -->
-    <div
-      v-if="selectedPayslip"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
+    <ModalShell v-if="selectedPayslip" :open="true" @close="selectedPayslip = null">
       <div class="panel max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto print:max-w-none print:shadow-none print:border-none print:p-0">
         <!-- Close & Print buttons -->
         <div class="flex items-center justify-between pb-4 border-b border-line mb-6 print:hidden">
@@ -286,14 +283,10 @@
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- Slip Lightbox Modal -->
-    <div
-      v-if="viewingSlip"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-      @click.self="viewingSlip = null"
-    >
+    <ModalShell v-if="viewingSlip" :open="true" backdrop="dark" @close="viewingSlip = null">
       <div class="panel max-w-lg w-full p-5 shadow-2xl relative flex flex-col gap-4">
         <div class="flex items-center justify-between pb-3 border-b border-line">
           <div>
@@ -345,7 +338,7 @@
           </a>
         </div>
       </div>
-    </div>
+    </ModalShell>
   </div>
 </template>
 

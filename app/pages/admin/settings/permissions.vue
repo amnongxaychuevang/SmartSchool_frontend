@@ -74,14 +74,12 @@
     <!-- New staff role -->
     <AppModal v-model:open="createOpen" :title="$t('permissions_ui.new_role')" :subtitle="$t('permissions_ui.new_role_hint')" size="sm">
       <form id="role-create-form" class="flex flex-col gap-4" @submit.prevent="createRole">
-        <div class="flex flex-col gap-1.5">
-          <label for="role-name-lo" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('permissions_ui.name_lo') }}</label>
+        <FormField class="flex flex-col gap-1.5" :label="$t('permissions_ui.name_lo')" required for="role-name-lo">
           <input id="role-name-lo" v-model="createForm.nameLo" type="text" required maxlength="100" class="input-field">
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="role-name-en" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('permissions_ui.name_en') }}</label>
+        </FormField>
+        <FormField class="flex flex-col gap-1.5" :label="$t('permissions_ui.name_en')" required for="role-name-en">
           <input id="role-name-en" v-model="createForm.nameEn" type="text" required maxlength="100" class="input-field">
-        </div>
+        </FormField>
         <p v-if="createError" role="alert" class="text-sm text-danger">{{ createError }}</p>
       </form>
       <template #footer>

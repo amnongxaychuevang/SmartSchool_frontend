@@ -162,10 +162,7 @@
     </section>
 
     <!-- Generate Period Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
+    <ModalShell :open="showModal" @close="showModal = false">
       <div class="panel max-w-md w-full p-4 sm:p-5 shadow-2xl relative">
         <div class="flex items-center justify-between pb-2.5 border-b border-line mb-3">
           <h3 class="font-bold text-base text-ink">{{ $t('payroll.generate_period') }}</h3>
@@ -179,25 +176,25 @@
         <p class="text-xs text-ink-muted mb-3 leading-relaxed">{{ $t('payroll.generate_desc') }}</p>
 
         <form class="flex flex-col gap-3" @submit.prevent="handleGenerate">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ $t('payroll.select_month') }}</label>
+          <FormField v-slot="{ id }" :label="$t('payroll.select_month')" required>
             <input
+              :id="id"
               v-model="newMonth"
               type="month"
               required
               class="input-field w-full"
             >
-          </div>
+          </FormField>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ $t('payroll.notes') }}</label>
+          <FormField v-slot="{ id }" :label="$t('payroll.notes')">
             <input
+              :id="id"
               v-model.trim="newNotes"
               type="text"
               class="input-field w-full text-sm"
               :placeholder="$t('payroll.notes_placeholder')"
             >
-          </div>
+          </FormField>
 
           <div v-if="genError" class="p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500">
             {{ genError }}
@@ -214,7 +211,7 @@
           </div>
         </form>
       </div>
-    </div>
+    </ModalShell>
   </div>
 </template>
 

@@ -68,18 +68,15 @@
         </div>
 
         <form class="grid grid-cols-1 sm:grid-cols-4 gap-3" @submit.prevent="handleAddPeriod">
-          <div>
-            <label class="block text-xs font-semibold mb-1">{{ $t('shops_admin.academic_year') }}</label>
-            <input v-model.trim="newPeriod.academicYear" required placeholder="2026-2027" class="input-field text-xs">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold mb-1">{{ $t('shops_admin.period_label') }}</label>
-            <input v-model.trim="newPeriod.periodLabel" required placeholder="ສົກຮຽນ 2026-2027 / ເດືອນ 10" class="input-field text-xs">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold mb-1">{{ $t('shops_admin.due_date') }}</label>
-            <input v-model="newPeriod.dueDate" type="date" required class="input-field text-xs">
-          </div>
+          <FormField v-slot="{ id }" :label="$t('shops_admin.academic_year')" required>
+            <input :id="id" v-model.trim="newPeriod.academicYear" required placeholder="2026-2027" class="input-field text-xs">
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('shops_admin.period_label')" required>
+            <input :id="id" v-model.trim="newPeriod.periodLabel" required placeholder="ສົກຮຽນ 2026-2027 / ເດືອນ 10" class="input-field text-xs">
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('shops_admin.due_date')" required>
+            <input :id="id" v-model="newPeriod.dueDate" type="date" required class="input-field text-xs">
+          </FormField>
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="block text-xs font-semibold">{{ $t('shops_admin.rental_amount') }} (LAK)</label>
@@ -99,10 +96,9 @@
               >
             </div>
           </div>
-          <div class="sm:col-span-3">
-            <label class="block text-xs font-semibold mb-1">{{ $t('shops_admin.rental_notes') }}</label>
-            <input v-model.trim="newPeriod.notes" placeholder="ໝາຍເຫດເພີ່ມເຕີມ..." class="input-field text-xs">
-          </div>
+          <FormField v-slot="{ id }" class="sm:col-span-3" :label="$t('shops_admin.rental_notes')">
+            <input :id="id" v-model.trim="newPeriod.notes" placeholder="ໝາຍເຫດເພີ່ມເຕີມ..." class="input-field text-xs">
+          </FormField>
           <div class="flex items-end">
             <button type="submit" class="w-full h-9 bg-teal-500 hover:bg-teal-600 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1" :disabled="addingPeriod">
               {{ addingPeriod ? $t('common.saving') : $t('common.save') }}
@@ -264,10 +260,9 @@
           </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold mb-1.5">{{ $t('shops_admin.payment_date') }}</label>
-          <input v-model="payForm.paidAt" type="date" class="input-field">
-        </div>
+        <FormField v-slot="{ id }" :label="$t('shops_admin.payment_date')">
+          <input :id="id" v-model="payForm.paidAt" type="date" class="input-field">
+        </FormField>
 
         <div>
           <label class="block text-xs font-semibold mb-1.5">{{ $t('shops_admin.rental_notes') }}</label>

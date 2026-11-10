@@ -273,26 +273,25 @@
           {{ $t('at_risk.create_intervention_desc') }}
         </p>
 
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('at_risk.intervention_title_label') }} *</label>
+        <FormField v-slot="{ id }" :label="$t('at_risk.intervention_title_label')" required>
           <input
+            :id="id"
             v-model.trim="interventionForm.title"
             type="text"
             class="input-field"
             required
             :placeholder="$t('at_risk.intervention_title_ph')"
           >
-        </div>
+        </FormField>
 
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('at_risk.intervention_type_label') }} *</label>
-          <select v-model="interventionForm.type" class="input-field" required>
+        <FormField v-slot="{ id }" :label="$t('at_risk.intervention_type_label')" required>
+          <select :id="id" v-model="interventionForm.type" class="input-field" required>
             <option value="academic">{{ $t('at_risk.type_academic') }}</option>
             <option value="behavioral">{{ $t('at_risk.type_behavioral') }}</option>
             <option value="attendance">{{ $t('at_risk.type_attendance') }}</option>
             <option value="parent">{{ $t('at_risk.type_parent') }}</option>
           </select>
-        </div>
+        </FormField>
 
         <div>
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('at_risk.description_label') }}</label>

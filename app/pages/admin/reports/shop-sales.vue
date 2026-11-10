@@ -9,9 +9,7 @@
           <option value="custom">{{ $t('shop_sales.custom') }}</option>
         </select>
         <template v-if="rangePreset === 'custom'">
-          <input v-model="dateFrom" type="date" class="input-field w-auto" @change="load">
-          <span class="text-ink-subtle">—</span>
-          <input v-model="dateTo" type="date" class="input-field w-auto" @change="load">
+          <DateRangeFilter v-model:from="dateFrom" v-model:to="dateTo" @change="load" />
         </template>
       </div>
     </PageHeader>

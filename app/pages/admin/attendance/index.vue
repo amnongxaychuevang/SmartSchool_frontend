@@ -1,31 +1,14 @@
 <template>
   <div class="flex flex-col gap-6">
     <!-- Mode Tabs -->
-    <div role="tablist" class="flex max-w-full overflow-x-auto gap-6">
-      <button
-        type="button"
-        role="tab"
-        :aria-selected="activeTab === 'kiosk'"
-        :class="[
-          'flex items-center gap-2 pb-2 text-sm font-semibold whitespace-nowrap transition-colors border-b-2',
-          activeTab === 'kiosk' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white',
+    <div class="flex max-w-full items-end gap-6 overflow-x-auto">
+      <TabBar
+        v-model="activeTab"
+        :tabs="[
+          { value: 'kiosk', label: $t('attendance_simulator.tab_kiosk') },
+          { value: 'simulator', label: $t('attendance_simulator.tab_simulator') },
         ]"
-        @click="activeTab = 'kiosk'"
-      >
-        {{ $t('attendance_simulator.tab_kiosk') }}
-      </button>
-      <button
-        type="button"
-        role="tab"
-        :aria-selected="activeTab === 'simulator'"
-        :class="[
-          'flex items-center gap-2 pb-2 text-sm font-semibold whitespace-nowrap transition-colors border-b-2',
-          activeTab === 'simulator' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white',
-        ]"
-        @click="activeTab = 'simulator'"
-      >
-        {{ $t('attendance_simulator.tab_simulator') }}
-      </button>
+      />
 
       <NuxtLink
         to="/admin/attendance/kiosk"
@@ -329,10 +312,7 @@
           </select>
         </div>
 
-        <div>
-          <label for="gate" class="block mb-1.5 text-xs font-semibold">{{
-            $t("attendance_simulator.gate_optional")
-          }}</label>
+        <FormField :label="$t('attendance_simulator.gate_optional')" for="gate">
           <input
             id="gate"
             v-model.trim="gate"
@@ -341,7 +321,7 @@
             class="input-field text-xs"
             :placeholder="$t('attendance_simulator.gate_placeholder')"
           >
-        </div>
+        </FormField>
 
         <p class="text-[11px] text-ink-subtle">
           {{ $t("attendance_simulator.auto_direction") }}

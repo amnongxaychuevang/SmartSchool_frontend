@@ -152,9 +152,7 @@
           @click="genderDropdownOpen = false"
         />
 
-        <button v-if="canExport" type="button" class="btn-secondary ml-auto" :disabled="exporting || !adminStore.teachersTotal" @click="exportList">
-          {{ exporting ? $t("common.loading") : $t("common.export_excel") }}
-        </button>
+        <ExportButton path="/teachers/export" permission="teachers.export" :filters="filters()" file-base="teachers" class="ml-auto" :disabled="!adminStore.teachersTotal" />
         <button v-if="canManage" type="button" class="btn-secondary flex items-center gap-1.5" @click="importModalOpen = true">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -402,7 +400,6 @@ import {
 import type { Teacher } from "../../../domain/models/Teacher";
 import { useAuthStore } from "../../../application/stores/auth";
 import { hasPermission } from "../../../components/layout/adminNav";
-import { useServerExport } from "../../../composables/useServerExport";
 import { GENDERS } from "../../../domain/models/Gender";
 
 definePageMeta({ layout: "admin" });
@@ -452,11 +449,8 @@ const formatDate = (dateStr?: string | null) =>
 
 // Standard export: the server builds the file from the same filters (and audit-logs it).
 const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, "teachers.export"));
 const canManage = computed(() => hasPermission(authStore.permissions, "teachers.manage"));
 const importModalOpen = ref(false);
-const { exporting, download } = useServerExport();
-const exportList = () => download("/teachers/export", filters(), "teachers");
 
 const pageSize = ref(TEACHERS_PER_PAGE);
 const totalPages = computed(() =>

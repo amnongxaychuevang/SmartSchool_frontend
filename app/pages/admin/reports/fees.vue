@@ -4,7 +4,7 @@
       <select v-model="year" class="input-field w-auto" :aria-label="$t('fee_report.year')" @change="load">
         <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
       </select>
-      <button v-if="canExport" type="button" class="btn-secondary" :disabled="exporting || !report"  @click="exportReport">{{ $t('common.export_excel') }}</button>
+      <ExportButton path="/reports/fees/export" permission="reports.export" :filters="{ academicYear: year }" :file-base="`fees-${year}`" :disabled="!report" />
     </PageHeader>
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
@@ -282,9 +282,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted } from 'vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
@@ -464,8 +461,4 @@ onMounted(async () => {
 });
 
 // Standard export: built by the server from the report's own filters, and audit-logged.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
-const { exporting, download } = useServerExport();
-const exportReport = () => download('/reports/fees/export', { academicYear: year.value }, `fees-${year.value}`);
 </script>

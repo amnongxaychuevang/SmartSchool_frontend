@@ -122,13 +122,12 @@
     <!-- Top-up request -->
     <AppModal v-model:open="topUp.open" :title="$t('parentPortal.request_top_up')" :subtitle="selectedChildName">
       <form id="topup-form" class="flex flex-col gap-4" @submit.prevent="submitTopUp">
-        <div class="flex flex-col gap-1.5">
-          <label for="topup-method" class="text-xs font-semibold text-ink-muted uppercase tracking-wider">{{ $t('parentPortal.top_up_method') }}</label>
+        <FormField class="flex flex-col gap-1.5" :label="$t('parentPortal.top_up_method')" for="topup-method">
           <select id="topup-method" v-model="topUp.method" class="input-field">
             <option value="mobile_banking">{{ $t('parentPortal.method_mobile_banking') }}</option>
             <option value="cash">{{ $t('parentPortal.method_cash') }}</option>
           </select>
-        </div>
+        </FormField>
 
         <!-- Where to transfer -->
         <template v-if="topUp.method === 'mobile_banking'">

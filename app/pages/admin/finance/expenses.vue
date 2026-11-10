@@ -71,23 +71,7 @@
         </select>
 
         <!-- Date Range Filter -->
-        <div class="flex items-center gap-1.5 text-xs text-ink-muted">
-          <input
-            v-model="filters.startDate"
-            type="date"
-            class="input-field w-auto text-xs"
-            :aria-label="$t('expenses.date')"
-            @change="applyFilters"
-          >
-          <span>-</span>
-          <input
-            v-model="filters.endDate"
-            type="date"
-            class="input-field w-auto text-xs"
-            :aria-label="$t('expenses.date')"
-            @change="applyFilters"
-          >
-        </div>
+        <DateRangeFilter v-model:from="filters.startDate" v-model:to="filters.endDate" @change="applyFilters" />
 
         <!-- Clear Filters Button -->
         <button
@@ -223,7 +207,7 @@
     </section>
 
     <!-- Modal 1: Add / Edit Expense -->
-    <div v-if="showFormModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-sm">
+    <ModalShell :open="showFormModal" @close="showFormModal = false">
       <div class="panel max-w-lg w-full p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
         <h3 class="text-lg font-bold text-ink mb-1">
           {{ isEditing ? $t('expenses.edit_expense') : $t('expenses.add_expense') }}
@@ -251,33 +235,25 @@
 
           <!-- Academic Year & Date -->
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
-                {{ $t('expenses.academic_year') }} *
-              </label>
-              <input v-model="form.academicYear" required type="text" placeholder="2026-2027" class="input-field w-full" >
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
-                {{ $t('expenses.date') }} *
-              </label>
-              <input v-model="form.expenseDate" required type="date" class="input-field w-full" >
-            </div>
+            <FormField v-slot="{ id }" :label="$t('expenses.academic_year')" required>
+              <input :id="id" v-model="form.academicYear" required type="text" placeholder="2026-2027" class="input-field w-full" >
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('expenses.date')" required>
+              <input :id="id" v-model="form.expenseDate" required type="date" class="input-field w-full" >
+            </FormField>
           </div>
 
           <!-- Title -->
-          <div>
-            <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
-              {{ $t('expenses.title_col') }} *
-            </label>
+          <FormField v-slot="{ id }" :label="$t('expenses.title_col')" required>
             <input
+              :id="id"
               v-model="form.title"
               required
               type="text"
               :placeholder="$t('expenses.title_placeholder')"
               class="input-field w-full"
             >
-          </div>
+          </FormField>
 
           <!-- Amount & Payment Method -->
           <div class="grid grid-cols-2 gap-3">
@@ -302,41 +278,34 @@
                 >
               </div>
             </div>
-            <div>
-              <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
-                {{ $t('expenses.payment_method') }} *
-              </label>
-              <select v-model="form.paymentMethod" class="input-field w-full">
+            <FormField v-slot="{ id }" :label="$t('expenses.payment_method')" required>
+              <select :id="id" v-model="form.paymentMethod" class="input-field w-full">
                 <option value="cash">{{ $t('expenses.cash') }}</option>
                 <option value="bank_transfer">{{ $t('expenses.bank_transfer') }}</option>
               </select>
-            </div>
+            </FormField>
           </div>
 
           <!-- Paid To & Reference No -->
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
-                {{ $t('expenses.paid_to') }}
-              </label>
+            <FormField v-slot="{ id }" :label="$t('expenses.paid_to')">
               <input
+                :id="id"
                 v-model="form.paidTo"
                 type="text"
                 :placeholder="$t('expenses.paid_to_placeholder')"
                 class="input-field w-full"
               >
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-ink uppercase tracking-wider block mb-1">
-                {{ $t('expenses.reference_no') }}
-              </label>
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('expenses.reference_no')">
               <input
+                :id="id"
                 v-model="form.referenceNo"
                 type="text"
                 :placeholder="$t('expenses.ref_placeholder')"
                 class="input-field w-full font-mono"
               >
-            </div>
+            </FormField>
           </div>
 
           <!-- Description / Notes -->
@@ -382,10 +351,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- Modal 2: Create Category Modal -->
-    <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-sm">
+    <ModalShell :open="showCategoryModal" @close="showCategoryModal = false">
       <div class="panel max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-line">
           <h3 class="text-base font-bold text-ink">{{ $t('expenses.add_category_quick') }}</h3>
@@ -401,11 +370,9 @@
         </ul>
 
         <form class="space-y-4" @submit.prevent="addCategory">
-          <div>
-            <label class="block text-xs font-semibold text-ink mb-1.5">
-              {{ $t('expenses.category_name_lo') }} <span class="text-rose-500">*</span>
-            </label>
+          <FormField v-slot="{ id }" :label="$t('expenses.category_name_lo')" required>
             <input
+              :id="id"
               v-model="newCategory.nameLo"
               type="text"
               required
@@ -413,20 +380,18 @@
               class="input-field w-full text-sm"
               autofocus
             >
-          </div>
+          </FormField>
 
-          <div>
-            <label class="block text-xs font-semibold text-ink mb-1.5">
-              {{ $t('expenses.category_name_en') }} <span class="text-rose-500">*</span>
-            </label>
+          <FormField v-slot="{ id }" :label="$t('expenses.category_name_en')" required>
             <input
+              :id="id"
               v-model="newCategory.nameEn"
               type="text"
               required
               :placeholder="$t('expenses.category_name_en')"
               class="input-field w-full text-sm"
             >
-          </div>
+          </FormField>
 
           <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
             <button
@@ -446,10 +411,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- Modal 3: Receipt Viewer Modal -->
-    <div v-if="viewingReceiptExpense" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/70 backdrop-blur-sm">
+    <ModalShell v-if="viewingReceiptExpense" :open="true" @close="viewingReceiptExpense = null">
       <div class="panel max-w-2xl w-full p-4 shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]">
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-line">
           <div>
@@ -500,7 +465,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
   </div>
 </template>
 

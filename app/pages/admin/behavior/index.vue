@@ -53,30 +53,14 @@
 
     <!-- Navigation Tabs -->
     <div class="flex gap-6">
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'records' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'records'"
-      >
-        {{ $t('behavior.tab_records') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'scores' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'scores'"
-      >
-        {{ $t('behavior.tab_scores') }}
-      </button>
-      <button
-        type="button"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'categories' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-        @click="activeTab = 'categories'"
-      >
-        {{ $t('behavior.tab_categories') }}
-      </button>
+      <TabBar
+        v-model="activeTab"
+        :tabs="[
+          { value: 'records', label: $t('behavior.tab_records') },
+          { value: 'scores', label: $t('behavior.tab_scores') },
+          { value: 'categories', label: $t('behavior.tab_categories') },
+        ]"
+      />
     </div>
 
     <!-- TAB 1: RECORDS -->
@@ -324,52 +308,45 @@
             </p>
             <StudentPicker v-else v-model="form.studentId" input-id="behavior-student" />
           </div>
-          <div>
-            <label for="behavior-date" class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_date') }} *</label>
+          <FormField :label="$t('behavior.col_date')" required for="behavior-date">
             <input id="behavior-date" v-model="form.incidentDate" type="date" class="input-field" required :max="todayStr" >
-          </div>
+          </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_type') }} *</label>
-            <select v-model="form.type" class="input-field" required @change="onTypeChange">
+          <FormField v-slot="{ id }" :label="$t('behavior.col_type')" required>
+            <select :id="id" v-model="form.type" class="input-field" required @change="onTypeChange">
               <option value="merit">{{ $t('behavior.type_merit') }}</option>
               <option value="demerit">{{ $t('behavior.type_demerit') }}</option>
             </select>
-          </div>
+          </FormField>
 
-          <div>
-            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.tab_categories') }}</label>
-            <select v-model="form.categoryId" class="input-field" @change="onCategorySelect">
+          <FormField v-slot="{ id }" :label="$t('behavior.tab_categories')">
+            <select :id="id" v-model="form.categoryId" class="input-field" @change="onCategorySelect">
               <option :value="undefined">---</option>
               <option v-for="c in filteredCategories" :key="c.categoryId" :value="c.categoryId">
                 {{ locale === 'lo' ? c.nameLo : c.nameEn }} ({{ c.defaultPoints }} {{ $t('behavior.points_unit') }})
               </option>
             </select>
-          </div>
+          </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.title_lo') }} *</label>
-            <input v-model.trim="form.titleLo" type="text" class="input-field" required >
-          </div>
-          <div>
-            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.title_en') }} *</label>
-            <input v-model.trim="form.titleEn" type="text" class="input-field" required >
-          </div>
+          <FormField v-slot="{ id }" :label="$t('behavior.title_lo')" required>
+            <input :id="id" v-model.trim="form.titleLo" type="text" class="input-field" required >
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('behavior.title_en')" required>
+            <input :id="id" v-model.trim="form.titleEn" type="text" class="input-field" required >
+          </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_points') }} *</label>
-            <input v-model.number="form.points" type="number" min="1" max="50" class="input-field" required >
-          </div>
-          <div>
-            <label class="block mb-1 text-xs font-semibold text-ink-muted">{{ $t('behavior.col_action') }}</label>
-            <input v-model.trim="form.actionTaken" type="text" class="input-field" >
-          </div>
+          <FormField v-slot="{ id }" :label="$t('behavior.col_points')" required>
+            <input :id="id" v-model.number="form.points" type="number" min="1" max="50" class="input-field" required >
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('behavior.col_action')">
+            <input :id="id" v-model.trim="form.actionTaken" type="text" class="input-field" >
+          </FormField>
         </div>
 
         <div>
@@ -395,26 +372,22 @@
     <!-- Modal: Add Category -->
     <AppModal :open="categoryModalOpen" :title="editingCategoryId ? $t('behavior.modal_cat_edit_title') : $t('behavior.modal_cat_title')" @update:open="categoryModalOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submitCategory">
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.name_lo') }} *</label>
-          <input v-model.trim="categoryForm.nameLo" type="text" class="input-field" required >
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.name_en') }} *</label>
-          <input v-model.trim="categoryForm.nameEn" type="text" class="input-field" required >
-        </div>
+        <FormField v-slot="{ id }" :label="$t('behavior.name_lo')" required>
+          <input :id="id" v-model.trim="categoryForm.nameLo" type="text" class="input-field" required >
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('behavior.name_en')" required>
+          <input :id="id" v-model.trim="categoryForm.nameEn" type="text" class="input-field" required >
+        </FormField>
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_type') }} *</label>
-            <select v-model="categoryForm.type" class="input-field" required>
+          <FormField v-slot="{ id }" :label="$t('behavior.col_type')" required>
+            <select :id="id" v-model="categoryForm.type" class="input-field" required>
               <option value="merit">{{ $t('behavior.type_merit') }}</option>
               <option value="demerit">{{ $t('behavior.type_demerit') }}</option>
             </select>
-          </div>
-          <div>
-            <label class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_points') }} *</label>
-            <input v-model.number="categoryForm.defaultPoints" type="number" min="1" max="50" class="input-field" required >
-          </div>
+          </FormField>
+          <FormField v-slot="{ id }" :label="$t('behavior.col_points')" required>
+            <input :id="id" v-model.number="categoryForm.defaultPoints" type="number" min="1" max="50" class="input-field" required >
+          </FormField>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <button type="button" class="btn-secondary" @click="categoryModalOpen = false">{{ $t('common.cancel') }}</button>

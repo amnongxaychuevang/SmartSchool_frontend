@@ -11,7 +11,7 @@
         <option :value="null" disabled>{{ $t('assignments.select_class') }}</option>
         <option v-for="c in termClasses" :key="c.classId" :value="c.classId">{{ pick(c.classNameLo, c.classNameEn) }}</option>
       </select>
-      <button v-if="canExport" type="button" class="btn-secondary print:hidden" :disabled="exporting || !data?.students.length"  @click="exportRows">{{ $t('common.export_excel') }}</button>
+      <ExportButton path="/reports/class-results/export" permission="reports.export" :filters="{ classId: classId, termId: termId }" file-base="class-results" class="print:hidden" :disabled="!data?.students.length" />
       <button type="button" class="btn-primary print:hidden" :disabled="!data" @click="print">{{ $t('report_cash.print') }}</button>
     </PageHeader>
 
@@ -96,9 +96,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted } from 'vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import { academicsRepository, type AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
@@ -162,10 +159,6 @@ const onTermChange = () => {
 const print = () => window.print();
 
 // Standard export: built by the server from the report's own filters, and audit-logged.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
-const { exporting, download } = useServerExport();
-const exportRows = () => download('/reports/class-results/export', { classId: classId.value, termId: termId.value }, 'class-results');
 
 onMounted(async () => {
   try {

@@ -1,10 +1,8 @@
 <template>
-  <Teleport to="body">
-    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="isOpen = false"/>
-      <form class="relative bg-[#0d1626] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-4" @submit.prevent="save">
-        <h2 class="text-xl font-bold text-white">{{ scheduleId ? $t('schedule_admin.edit_slot') : $t('schedule_admin.add_slot') }}</h2>
-        <div v-if="error" class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{{ error }}</div>
+    <ModalShell :open="isOpen" @close="isOpen = false">
+      <form class="relative panel-float w-full max-w-md p-6 flex flex-col gap-4" @submit.prevent="save">
+        <h2 class="text-xl font-bold text-ink">{{ scheduleId ? $t('schedule_admin.edit_slot') : $t('schedule_admin.add_slot') }}</h2>
+        <div v-if="error" role="alert" class="text-sm text-danger bg-danger-soft border border-danger-line rounded px-4 py-2.5">{{ error }}</div>
         
         <label class="field">
           <span>{{ $t('schedule_admin.subject') }} *</span>
@@ -34,16 +32,15 @@
         </label>
         
         <div class="flex items-center gap-3 pt-2">
-          <button v-if="scheduleId" type="button" class="px-4 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10" @click="remove">{{ $t('common.delete') }}</button>
+          <button v-if="scheduleId" type="button" class="btn-ghost text-danger hover:bg-danger-soft" @click="remove">{{ $t('common.delete') }}</button>
           <span class="flex-1" />
-          <button type="button" class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800" @click="isOpen = false">{{ $t('common.cancel') }}</button>
-          <button type="submit" :disabled="saving" class="px-5 py-2 rounded-lg text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-white disabled:opacity-60">
+          <button type="button" class="btn-secondary" @click="isOpen = false">{{ $t('common.cancel') }}</button>
+          <button type="submit" :disabled="saving" class="btn-primary">
             {{ saving ? $t('common.saving') : $t('common.save') }}
           </button>
         </div>
       </form>
-    </div>
-  </Teleport>
+    </ModalShell>
 </template>
 
 <script setup lang="ts">
@@ -147,9 +144,9 @@ const remove = async () => {
   @apply flex flex-col gap-1.5;
 }
 .field > span {
-  @apply text-xs font-semibold text-slate-400 uppercase tracking-wider;
+  @apply text-xs font-semibold text-ink-muted uppercase tracking-wider;
 }
 .modal-input {
-  @apply w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700/60 rounded-xl text-white text-sm focus:outline-none focus:border-teal-500 transition-all;
+  @apply input-field;
 }
 </style>

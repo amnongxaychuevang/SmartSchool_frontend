@@ -17,7 +17,7 @@
           <option :value="null">{{ $t('report_debtors.all_years') }}</option>
           <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
         </select>
-        <button v-if="canExport" type="button" class="btn-secondary ml-auto" :disabled="exporting || !filtered.length"  @click="exportRows">{{ $t('common.export_excel') }}</button>
+        <ExportButton path="/reports/fees/debtors/export" permission="reports.export" :filters="{ academicYear: year, classId: classFilter, search: search }" :file-base="`debtors-${year ?? 'all'}`" class="ml-auto" :disabled="!filtered.length" />
       </div>
 
       <section class="panel overflow-hidden">
@@ -78,9 +78,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 import { ref, computed, onMounted } from 'vue';
 import { useApiClient } from '../../../infrastructure/api/apiClient';
 import type { ApiResponse } from '../../../infrastructure/api/types';
@@ -187,10 +184,6 @@ const load = async () => {
 };
 
 // Standard export: built by the server from the report's own filters, and audit-logged.
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'reports.export'));
-const { exporting, download } = useServerExport();
-const exportRows = () => download('/reports/fees/debtors/export', { academicYear: year.value, classId: classFilter.value, search: search.value }, `debtors-${year.value ?? 'all'}`);
 
 onMounted(load);
 </script>

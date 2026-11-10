@@ -2,14 +2,12 @@
   <AppModal :open="isOpen" :title="isEditMode ? $t('common.edit') : $t('admin.new_announcement')" @update:open="isOpen = $event">
     <form id="announcementForm" class="flex flex-col gap-2" @submit.prevent="emit('save')">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('admin.title_lo') }}</label>
-          <input v-model="form.titleLo" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_lo')">
-        </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('admin.title_en') }}</label>
-          <input v-model="form.titleEn" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_en')">
-        </div>
+        <FormField v-slot="{ id }" :label="$t('admin.title_lo')" required>
+          <input :id="id" v-model="form.titleLo" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_lo')">
+        </FormField>
+        <FormField v-slot="{ id }" :label="$t('admin.title_en')" required>
+          <input :id="id" v-model="form.titleEn" type="text" required class="input-field" :placeholder="$t('announcements_admin.ph_title_en')">
+        </FormField>
       </div>
 
       <div>
@@ -23,15 +21,14 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('admin.audience') }}</label>
-          <select v-model="form.targetAudience" class="input-field cursor-pointer">
+        <FormField v-slot="{ id }" :label="$t('admin.audience')">
+          <select :id="id" v-model="form.targetAudience" class="input-field cursor-pointer">
             <option value="all">{{ $t('admin.everyone') }}</option>
             <option value="teachers">{{ $t('admin.teachers_only') }}</option>
             <option value="parents">{{ $t('admin.parents_only') }}</option>
             <option value="class">{{ $t('admin.class_only') }}</option>
           </select>
-        </div>
+        </FormField>
         <div v-if="form.targetAudience === 'class'">
           <label class="block mb-1.5 text-sm font-semibold">{{ $t('common.class') }} *</label>
           <select v-model="form.classId" required class="input-field cursor-pointer">
@@ -41,10 +38,9 @@
             </option>
           </select>
         </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-semibold">{{ $t('admin.expiry_date') }}</label>
-          <input v-model="form.expiryDate" type="date" class="input-field">
-        </div>
+        <FormField v-slot="{ id }" :label="$t('admin.expiry_date')">
+          <input :id="id" v-model="form.expiryDate" type="date" class="input-field">
+        </FormField>
       </div>
     </form>
 

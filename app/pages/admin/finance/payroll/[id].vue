@@ -275,10 +275,7 @@
     </section>
 
     <!-- Edit Item Modal -->
-    <div
-      v-if="editingItem"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
+    <ModalShell v-if="editingItem" :open="true" @close="editingItem = null">
       <div class="panel max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between pb-4 border-b border-line mb-4">
           <div>
@@ -297,16 +294,16 @@
 
         <form class="flex flex-col gap-4" @submit.prevent="saveItem">
           <!-- Base Salary -->
-          <div>
-            <label class="block text-xs font-semibold text-ink-muted uppercase mb-1">{{ $t('payroll.base_salary') }}</label>
+          <FormField v-slot="{ id }" :label="$t('payroll.base_salary')" required>
             <input
+              :id="id"
               v-model.number="editForm.baseSalary"
               type="number"
               min="0"
               required
               class="input-field w-full font-mono text-sm"
             >
-          </div>
+          </FormField>
 
           <!-- Allowances Section -->
           <div class="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-3">
@@ -314,33 +311,33 @@
               {{ $t('payroll.earnings') }}
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.teaching_allowance') }}</label>
+              <FormField v-slot="{ id }" :label="$t('payroll.teaching_allowance')">
                 <input
+                  :id="id"
                   v-model.number="editForm.teachingAllowance"
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
                 >
-              </div>
-              <div>
-                <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.attendance_bonus') }}</label>
+              </FormField>
+              <FormField v-slot="{ id }" :label="$t('payroll.attendance_bonus')">
                 <input
+                  :id="id"
                   v-model.number="editForm.attendanceBonus"
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
                 >
-              </div>
-              <div>
-                <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.other_allowance') }}</label>
+              </FormField>
+              <FormField v-slot="{ id }" :label="$t('payroll.other_allowance')">
                 <input
+                  :id="id"
                   v-model.number="editForm.otherAllowance"
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
                 >
-              </div>
+              </FormField>
             </div>
           </div>
 
@@ -350,33 +347,33 @@
               {{ $t('payroll.deductions') }}
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.absence_deduction') }}</label>
+              <FormField v-slot="{ id }" :label="$t('payroll.absence_deduction')">
                 <input
+                  :id="id"
                   v-model.number="editForm.absenceDeduction"
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
                 >
-              </div>
-              <div>
-                <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.tax_deduction') }}</label>
+              </FormField>
+              <FormField v-slot="{ id }" :label="$t('payroll.tax_deduction')">
                 <input
+                  :id="id"
                   v-model.number="editForm.taxDeduction"
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
                 >
-              </div>
-              <div>
-                <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.other_deduction') }}</label>
+              </FormField>
+              <FormField v-slot="{ id }" :label="$t('payroll.other_deduction')">
                 <input
+                  :id="id"
                   v-model.number="editForm.otherDeduction"
                   type="number"
                   min="0"
                   class="input-field w-full font-mono text-xs"
                 >
-              </div>
+              </FormField>
             </div>
           </div>
 
@@ -390,30 +387,30 @@
 
           <!-- Bank Account Info -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.bank_name') }}</label>
+            <FormField v-slot="{ id }" :label="$t('payroll.bank_name')">
               <input
+                :id="id"
                 v-model="editForm.bankName"
                 type="text"
                 class="input-field w-full text-xs"
               >
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.bank_account_name') }}</label>
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('payroll.bank_account_name')">
               <input
+                :id="id"
                 v-model="editForm.bankAccountName"
                 type="text"
                 class="input-field w-full text-xs"
               >
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-ink-muted mb-1">{{ $t('payroll.bank_account_number') }}</label>
+            </FormField>
+            <FormField v-slot="{ id }" :label="$t('payroll.bank_account_number')">
               <input
+                :id="id"
                 v-model="editForm.bankAccountNumber"
                 type="text"
                 class="input-field w-full text-xs font-mono"
               >
-            </div>
+            </FormField>
           </div>
 
           <!-- Notes -->
@@ -438,13 +435,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- Printable Payslip Modal -->
-    <div
-      v-if="payslipItem"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
+    <ModalShell v-if="payslipItem" :open="true" @close="payslipItem = null">
       <div class="panel max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto print:max-w-none print:shadow-none print:border-none print:p-0">
         <!-- Close & Print buttons (hidden during print) -->
         <div class="flex items-center justify-between pb-4 border-b border-line mb-6 print:hidden">
@@ -604,14 +598,10 @@
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
 
     <!-- Slip Lightbox Modal -->
-    <div
-      v-if="viewingSlipItem"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-      @click.self="viewingSlipItem = null"
-    >
+    <ModalShell v-if="viewingSlipItem" :open="true" backdrop="dark" @close="viewingSlipItem = null">
       <div class="panel max-w-lg w-full p-5 shadow-2xl relative flex flex-col gap-4">
         <div class="flex items-center justify-between pb-3 border-b border-line">
           <div>
@@ -668,7 +658,7 @@
           </a>
         </div>
       </div>
-    </div>
+    </ModalShell>
   </div>
 </template>
 

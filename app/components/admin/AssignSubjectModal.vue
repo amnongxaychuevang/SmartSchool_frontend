@@ -1,15 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 scale-95 translate-y-4"
-      enter-to-class="opacity-100 scale-100 translate-y-0"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100 scale-100 translate-y-0"
-      leave-to-class="opacity-0 scale-95 translate-y-4"
-    >
-      <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="closeModal"/>
+      <ModalShell :open="modelValue" @close="closeModal">
         <form class="relative glass-panel w-full max-w-md p-6 flex flex-col gap-5 shadow-2xl" @submit.prevent="create">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ $t('classes.assign_subject') }}</h2>
@@ -142,9 +132,7 @@
             </button>
           </div>
         </form>
-      </div>
-    </Transition>
-  </Teleport>
+      </ModalShell>
 </template>
 
 <script setup lang="ts">

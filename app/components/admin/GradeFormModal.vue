@@ -2,47 +2,40 @@
   <AppModal :open="isOpen" :title="gradeId ? $t('grades_admin.edit') : $t('grades_admin.add')" @update:open="isOpen = $event">
     <form id="grade-form" class="grid grid-cols-2 gap-4" @submit.prevent="handleSubmit">
       <template v-if="!gradeId">
-        <div class="col-span-2 sm:col-span-1">
-          <label for="g-class" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.class') }}</label>
+        <FormField class="col-span-2 sm:col-span-1" :label="$t('grades_admin.class')" required for="g-class">
           <select id="g-class" v-model.number="form.classId" required class="input-field" @change="loadClassStudents">
             <option value="" disabled>—</option>
             <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ className(c) }}</option>
           </select>
-        </div>
-        <div class="col-span-2 sm:col-span-1">
-          <label for="g-subject" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.subject') }}</label>
+        </FormField>
+        <FormField class="col-span-2 sm:col-span-1" :label="$t('grades_admin.subject')" required for="g-subject">
           <select id="g-subject" v-model.number="form.subjectId" required class="input-field">
             <option value="" disabled>—</option>
             <option v-for="s in academicsStore.subjects" :key="s.subjectId" :value="s.subjectId">{{ subjectName(s) }}</option>
           </select>
-        </div>
-        <div class="col-span-2">
-          <label for="g-student" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.student') }}</label>
+        </FormField>
+        <FormField class="col-span-2" :label="$t('grades_admin.student')" required for="g-student">
           <select id="g-student" v-model.number="form.studentId" required class="input-field" :disabled="!classStudents.length">
             <option value="" disabled>{{ form.classId ? '—' : $t('grades_admin.choose_class_first') }}</option>
             <option v-for="s in classStudents" :key="s.studentId" :value="s.studentId">{{ personName(s) }} · {{ s.studentCode }}</option>
           </select>
-        </div>
+        </FormField>
       </template>
-      <div class="col-span-2 sm:col-span-1">
-        <label for="g-type" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.type') }}</label>
+      <FormField class="col-span-2 sm:col-span-1" :label="$t('grades_admin.type')" required for="g-type">
         <select id="g-type" v-model.number="form.gradeTypeId" required class="input-field">
           <option value="" disabled>—</option>
           <option v-for="gt in academicsStore.gradeTypes" :key="gt.typeId" :value="gt.typeId">{{ locale === 'lo' ? gt.typeNameLo : gt.typeNameEn }}</option>
         </select>
-      </div>
-      <div class="col-span-2 sm:col-span-1">
-        <label for="g-month" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.month') }}</label>
+      </FormField>
+      <FormField class="col-span-2 sm:col-span-1" :label="$t('grades_admin.month')" for="g-month">
         <input id="g-month" v-model="form.gradeMonth" type="month" class="input-field">
-      </div>
-      <div>
-        <label for="g-score" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.score') }}</label>
+      </FormField>
+      <FormField :label="$t('grades_admin.score')" required for="g-score">
         <input id="g-score" v-model.number="form.score" required type="number" min="0" :max="form.maxScore" step="0.5" class="input-field tnum">
-      </div>
-      <div>
-        <label for="g-max" class="block mb-1.5 text-sm font-semibold">{{ $t('grades_admin.max_score') }}</label>
+      </FormField>
+      <FormField :label="$t('grades_admin.max_score')" required for="g-max">
         <input id="g-max" v-model.number="form.maxScore" required type="number" min="1" step="1" class="input-field tnum">
-      </div>
+      </FormField>
       <label class="col-span-2 flex items-center gap-2 text-sm">
         <input v-model="form.isPublished" type="checkbox" class="h-4 w-4 rounded border-line-strong">
         {{ $t('grades_admin.published') }}

@@ -81,63 +81,54 @@
           <p class="input-field bg-surface-2 text-ink-muted">{{ pick(editing.student.fullNameLo, editing.student.fullNameEn) }}</p>
         </div>
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="tb-class" class="block mb-1.5 text-sm font-semibold">{{ $t('common.class') }} *</label>
+          <FormField :label="$t('common.class')" required for="tb-class">
             <select id="tb-class" v-model="formClassId" class="input-field" required @change="loadStudents">
               <option :value="null" disabled>{{ $t('assignments.select_class') }}</option>
               <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ pick(c.classNameLo, c.classNameEn) }}</option>
             </select>
-          </div>
-          <div>
-            <label for="tb-student" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_student') }} *</label>
+          </FormField>
+          <FormField :label="$t('behavior.col_student')" required for="tb-student">
             <select id="tb-student" v-model="form.studentId" class="input-field" required :disabled="!formClassId">
               <option :value="null" disabled>{{ $t('teacher_behavior.select_student') }}</option>
               <option v-for="s in classStudents" :key="s.studentId" :value="s.studentId">{{ pick(s.fullNameLo, s.fullNameEn) }}</option>
             </select>
-          </div>
+          </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label for="tb-type" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_type') }} *</label>
+          <FormField :label="$t('behavior.col_type')" required for="tb-type">
             <select id="tb-type" v-model="form.type" class="input-field" required @change="form.categoryId = null">
               <option value="merit">{{ $t('behavior.type_merit') }}</option>
               <option value="demerit">{{ $t('behavior.type_demerit') }}</option>
             </select>
-          </div>
-          <div class="sm:col-span-2">
-            <label for="tb-cat" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.tab_categories') }}</label>
+          </FormField>
+          <FormField class="sm:col-span-2" :label="$t('behavior.tab_categories')" for="tb-cat">
             <select id="tb-cat" v-model="form.categoryId" class="input-field" @change="applyCategory">
               <option :value="null">—</option>
               <option v-for="c in typeCategories" :key="c.categoryId" :value="c.categoryId">{{ pick(c.nameLo, c.nameEn) }} ({{ c.defaultPoints }} {{ $t('behavior.points_unit') }})</option>
             </select>
-          </div>
+          </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="tb-title-lo" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.title_lo') }} *</label>
+          <FormField :label="$t('behavior.title_lo')" required for="tb-title-lo">
             <input id="tb-title-lo" v-model.trim="form.titleLo" type="text" class="input-field" required maxlength="150">
-          </div>
-          <div>
-            <label for="tb-title-en" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.title_en') }} *</label>
+          </FormField>
+          <FormField :label="$t('behavior.title_en')" required for="tb-title-en">
             <input id="tb-title-en" v-model.trim="form.titleEn" type="text" class="input-field" required maxlength="150">
-          </div>
+          </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label for="tb-points" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_points') }} *</label>
+          <FormField :label="$t('behavior.col_points')" required for="tb-points">
             <input id="tb-points" v-model.number="form.points" type="number" min="1" max="50" class="input-field" required>
-          </div>
-          <div>
-            <label for="tb-date" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_date') }} *</label>
+          </FormField>
+          <FormField :label="$t('behavior.col_date')" required for="tb-date">
             <input id="tb-date" v-model="form.incidentDate" type="date" class="input-field" required :max="todayStr">
-          </div>
-          <div>
-            <label for="tb-action" class="block mb-1.5 text-sm font-semibold">{{ $t('behavior.col_action') }}</label>
+          </FormField>
+          <FormField :label="$t('behavior.col_action')" for="tb-action">
             <input id="tb-action" v-model.trim="form.actionTaken" type="text" class="input-field" maxlength="255">
-          </div>
+          </FormField>
         </div>
 
         <div>

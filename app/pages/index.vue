@@ -60,29 +60,26 @@
             <p v-if="reset.error" role="alert" class="mt-6 rounded border border-danger-line bg-danger-soft px-3 py-2.5 text-sm text-danger">{{ reset.error }}</p>
 
             <form v-if="mode === 'forgot'" class="mt-6 space-y-4" novalidate @submit.prevent="sendCode">
-              <div>
-                <label for="reset-identifier" class="block mb-1.5 text-sm font-semibold">{{ t('auth.email_label') }}</label>
+              <FormField :label="t('auth.email_label')" required for="reset-identifier">
                 <input id="reset-identifier" v-model.trim="reset.identifier" type="text" required autocomplete="username" class="input-field h-10" :placeholder="t('auth.email_placeholder')">
-              </div>
+              </FormField>
               <button type="submit" class="btn-primary w-full h-10" :disabled="reset.busy || reset.identifier.length < 3">
                 {{ reset.busy ? t('password.sending') : t('password.send_code') }}
               </button>
             </form>
 
             <form v-else class="mt-6 space-y-4" novalidate @submit.prevent="submitReset">
-              <div>
-                <label for="reset-code" class="block mb-1.5 text-sm font-semibold">{{ t('password.code') }}</label>
+              <FormField :label="t('password.code')" required for="reset-code">
                 <input id="reset-code" v-model.trim="reset.code" type="text" inputmode="numeric" maxlength="6" required autocomplete="one-time-code" class="input-field h-10 tnum tracking-[0.4em]">
-              </div>
+              </FormField>
               <div>
                 <label for="reset-new" class="block mb-1.5 text-sm font-semibold">{{ t('password.new') }}</label>
                 <input id="reset-new" v-model="reset.password" type="password" required minlength="6" autocomplete="new-password" class="input-field h-10">
                 <p class="mt-1 text-xs text-ink-subtle">{{ t('password.min_length') }}</p>
               </div>
-              <div>
-                <label for="reset-confirm" class="block mb-1.5 text-sm font-semibold">{{ t('password.confirm') }}</label>
+              <FormField :label="t('password.confirm')" required for="reset-confirm">
                 <input id="reset-confirm" v-model="reset.confirm" type="password" required autocomplete="new-password" class="input-field h-10">
-              </div>
+              </FormField>
               <button type="submit" class="btn-primary w-full h-10" :disabled="reset.busy || reset.code.length !== 6 || !reset.password">
                 {{ reset.busy ? t('common.saving') : t('password.reset_btn') }}
               </button>
@@ -110,8 +107,7 @@
           </div>
 
           <form class="mt-6 space-y-4" novalidate @submit.prevent="handleLogin">
-            <div>
-              <label for="identifier" class="block mb-1.5 text-sm font-semibold">{{ t('auth.email_label') }}</label>
+            <FormField :label="t('auth.email_label')" required for="identifier">
               <input
                 id="identifier"
                 v-model="loginIdentifier"
@@ -121,7 +117,7 @@
                 class="input-field h-10"
                 :placeholder="t('auth.email_placeholder')"
               >
-            </div>
+            </FormField>
 
             <div>
               <div class="flex items-baseline justify-between mb-1.5">

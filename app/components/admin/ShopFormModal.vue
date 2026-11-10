@@ -1,32 +1,26 @@
 <template>
   <AppModal :open="isOpen" :title="shopId ? $t('shops_admin.edit') : $t('shops_admin.add')" size="lg" @update:open="isOpen = $event">
     <form id="shop-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3" @submit.prevent="handleSubmit">
-      <div>
-        <label for="sh-name-lo" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.name_lo') }} <span class="text-rose-500">*</span></label>
+      <FormField :label="$t('shops_admin.name_lo')" required for="sh-name-lo">
         <input id="sh-name-lo" v-model.trim="form.shopNameLo" required maxlength="100" lang="lo" class="input-field">
-      </div>
-      <div>
-        <label for="sh-name-en" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.name_en') }} <span class="text-rose-500">*</span></label>
+      </FormField>
+      <FormField :label="$t('shops_admin.name_en')" required for="sh-name-en">
         <input id="sh-name-en" v-model.trim="form.shopNameEn" required maxlength="100" lang="en" class="input-field">
-      </div>
+      </FormField>
 
-      <div>
-        <label for="sh-loc-lo" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.location_lo') }}</label>
+      <FormField :label="$t('shops_admin.location_lo')" for="sh-loc-lo">
         <input id="sh-loc-lo" v-model.trim="form.locationLo" maxlength="100" lang="lo" class="input-field">
-      </div>
-      <div>
-        <label for="sh-loc-en" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.location_en') }}</label>
+      </FormField>
+      <FormField :label="$t('shops_admin.location_en')" for="sh-loc-en">
         <input id="sh-loc-en" v-model.trim="form.locationEn" maxlength="100" lang="en" class="input-field">
-      </div>
+      </FormField>
 
-      <div>
-        <label for="sh-desc-lo" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.description_lo') }}</label>
+      <FormField :label="$t('shops_admin.description_lo')" for="sh-desc-lo">
         <input id="sh-desc-lo" v-model.trim="form.descriptionLo" lang="lo" class="input-field">
-      </div>
-      <div>
-        <label for="sh-desc-en" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.description_en') }}</label>
+      </FormField>
+      <FormField :label="$t('shops_admin.description_en')" for="sh-desc-en">
         <input id="sh-desc-en" v-model.trim="form.descriptionEn" lang="en" class="input-field">
-      </div>
+      </FormField>
 
       <!-- Vendor & Rental Section -->
       <div class="sm:col-span-2 pt-1 mt-1">
@@ -38,24 +32,21 @@
         </h4>
       </div>
 
-      <div>
-        <label for="sh-vendor-name" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.vendor_name') }}</label>
+      <FormField :label="$t('shops_admin.vendor_name')" for="sh-vendor-name">
         <input id="sh-vendor-name" v-model.trim="form.vendorName" maxlength="150" :placeholder="$t('shops_admin.vendor_name_placeholder')" class="input-field">
-      </div>
-      <div>
-        <label for="sh-vendor-phone" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.vendor_phone') }}</label>
+      </FormField>
+      <FormField :label="$t('shops_admin.vendor_phone')" for="sh-vendor-phone">
         <input id="sh-vendor-phone" v-model.trim="form.vendorPhone" maxlength="50" placeholder="+856 20 ..." class="input-field">
-      </div>
+      </FormField>
 
-      <div>
-        <label for="sh-rental-type" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.rental_type') }}</label>
+      <FormField :label="$t('shops_admin.rental_type')" for="sh-rental-type">
         <select id="sh-rental-type" v-model="form.rentalBillingType" class="input-field">
           <option value="none">{{ $t('shops_admin.rental_type_none') }}</option>
           <option value="annual">{{ $t('shops_admin.rental_type_annual') }}</option>
           <option value="monthly">{{ $t('shops_admin.rental_type_monthly') }}</option>
           <option value="installment">{{ $t('shops_admin.rental_type_installment') }}</option>
         </select>
-      </div>
+      </FormField>
 
       <div>
         <div class="flex items-center justify-between mb-1">
@@ -78,15 +69,14 @@
         </div>
       </div>
 
-      <div class="sm:col-span-2">
-        <label for="sh-rental-notes" class="block mb-1 text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $t('shops_admin.rental_notes') }}</label>
+      <FormField class="sm:col-span-2" :label="$t('shops_admin.rental_notes')" for="sh-rental-notes">
         <input
           id="sh-rental-notes"
           v-model.trim="form.rentalNotes"
           :placeholder="$t('shops_admin.rental_notes_placeholder')"
           class="input-field"
         >
-      </div>
+      </FormField>
 
       <label class="sm:col-span-2 flex items-center gap-2 text-xs font-medium mt-0.5">
         <input v-model="form.isActive" type="checkbox" class="h-4 w-4 rounded border-line-strong">

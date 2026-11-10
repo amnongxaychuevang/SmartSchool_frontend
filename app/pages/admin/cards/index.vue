@@ -14,9 +14,7 @@
           </svg>
           <span>{{ $t('card_print.title') }}</span>
         </NuxtLink>
-        <button v-if="canExport" type="button" class="btn-secondary flex-1 sm:flex-none" :disabled="exporting || !academicsStore.cardsTotal" @click="exportList">
-          {{ exporting ? $t('common.loading') : $t('common.export_excel') }}
-        </button>
+        <ExportButton path="/cards/export" permission="cards.export" :filters="{ search: searchInput, status: statusFilter }" file-base="student-cards" class="flex-1 sm:flex-none" :disabled="!academicsStore.cardsTotal" />
         <button type="button" class="btn-primary flex-1 sm:flex-none" @click="openCreate">{{ $t('cards_admin.issue') }}</button>
       </div>
     </div>
@@ -74,10 +72,9 @@
 
     <AppModal :open="modal.open" :title="modal.cardId ? $t('cards_admin.edit') : $t('cards_admin.issue')" @update:open="modal.open = $event">
       <form id="card-form" class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-        <div>
-          <label for="c-uid" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.uid') }}</label>
+        <FormField :label="$t('cards_admin.uid')" required for="c-uid">
           <input id="c-uid" v-model.trim="modal.form.cardUid" :disabled="!!modal.cardId" required maxlength="50" class="input-field" :placeholder="$t('cards_admin.uid_placeholder')">
-        </div>
+        </FormField>
         <div v-if="!modal.cardId">
           <label for="c-student" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.student') }}</label>
           <StudentPicker v-model="modal.form.studentId" input-id="c-student" />
@@ -93,15 +90,13 @@
               <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
             </select>
           </div>
-          <div>
-            <label for="c-exp" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.expires') }}</label>
+          <FormField :label="$t('cards_admin.expires')" for="c-exp">
             <input id="c-exp" v-model="modal.form.expiredDate" type="date" class="input-field">
-          </div>
+          </FormField>
         </div>
-        <div>
-          <label for="c-notes" class="block mb-1.5 text-sm font-semibold">{{ $t('cards_admin.notes') }}</label>
+        <FormField :label="$t('cards_admin.notes')" for="c-notes">
           <input id="c-notes" v-model.trim="modal.form.notes" maxlength="255" class="input-field">
-        </div>
+        </FormField>
         <p v-if="modal.error" role="alert" class="rounded border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">{{ modal.error }}</p>
       </form>
       <template #footer>
@@ -136,9 +131,6 @@ import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 import StudentPicker from '../../../components/StudentPicker.vue';
 import { useFormat } from '../../../composables/useFormat';
-import { useAuthStore } from '../../../application/stores/auth';
-import { hasPermission } from '../../../components/layout/adminNav';
-import { useServerExport } from '../../../composables/useServerExport';
 
 definePageMeta({ layout: 'admin' });
 
@@ -165,10 +157,6 @@ const handleFilter = () => academicsStore.fetchCards({ status: statusFilter.valu
 const changePage = (page: number) => academicsStore.fetchCards({ page });
 
 // Standard export: the server builds the file from the same filters (and audit-logs it).
-const authStore = useAuthStore();
-const canExport = computed(() => hasPermission(authStore.permissions, 'cards.export'));
-const { exporting, download } = useServerExport();
-const exportList = () => download('/cards/export', { search: searchInput.value, status: statusFilter.value }, 'student-cards');
 
 // ── Issue / edit ──
 const emptyForm = () => ({ cardUid: '', studentId: null as number | null, status: 'active' as Card['status'], expiredDate: '', notes: '' });

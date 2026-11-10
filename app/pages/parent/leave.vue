@@ -80,14 +80,12 @@ class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cap
       
       <form class="flex flex-col gap-4" @submit.prevent="submitLeaveRequest">
         <div class="grid grid-cols-2 gap-4">
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.start_date') }}</label>
-            <input v-model="leaveModal.form.startDate" type="date" required class="input-field focus:border-teal-500" >
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.end_date') }}</label>
-            <input v-model="leaveModal.form.endDate" type="date" required class="input-field focus:border-teal-500" >
-          </div>
+          <FormField v-slot="{ id }" class="flex flex-col gap-1.5" :label="$t('parentPortal.start_date')" required>
+            <input :id="id" v-model="leaveModal.form.startDate" type="date" required class="input-field focus:border-teal-500" >
+          </FormField>
+          <FormField v-slot="{ id }" class="flex flex-col gap-1.5" :label="$t('parentPortal.end_date')" required>
+            <input :id="id" v-model="leaveModal.form.endDate" type="date" required class="input-field focus:border-teal-500" :min="leaveModal.form.startDate || undefined">
+          </FormField>
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -95,10 +93,9 @@ class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cap
           <textarea v-model="leaveModal.form.reason" required rows="3" class="input-field focus:border-teal-500" :placeholder="$t('leave_ui.ph_reason')"/>
         </div>
         
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('parentPortal.document_url') }}</label>
-          <input v-model="leaveModal.form.documentUrl" type="text" class="input-field focus:border-teal-500" :placeholder="$t('leave_ui.ph_document')" >
-        </div>
+        <FormField v-slot="{ id }" class="flex flex-col gap-1.5" :label="$t('parentPortal.document_url')">
+          <input :id="id" v-model="leaveModal.form.documentUrl" type="text" class="input-field focus:border-teal-500" :placeholder="$t('leave_ui.ph_document')" >
+        </FormField>
         
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
           <button type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors" @click="leaveModal.open = false">{{ $t('common.cancel') }}</button>

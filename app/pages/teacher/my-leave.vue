@@ -28,21 +28,18 @@
 
     <AppModal :open="formOpen" :title="$t('teacher_leave.request')" @update:open="formOpen = $event">
       <form class="flex flex-col gap-4" @submit.prevent="submit">
-        <div>
-          <label for="tl-type" class="block mb-1.5 text-sm font-semibold">{{ $t('teacher_leave.type') }} *</label>
+        <FormField :label="$t('teacher_leave.type')" required for="tl-type">
           <select id="tl-type" v-model="form.leaveType" class="input-field" required>
             <option v-for="type in TYPES" :key="type" :value="type">{{ $t(`teacher_leave.type_${type}`) }}</option>
           </select>
-        </div>
+        </FormField>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="tl-start" class="block mb-1.5 text-sm font-semibold">{{ $t('teacher_leave.start') }} *</label>
+          <FormField :label="$t('teacher_leave.start')" required for="tl-start">
             <input id="tl-start" v-model="form.startDate" type="date" class="input-field" required>
-          </div>
-          <div>
-            <label for="tl-end" class="block mb-1.5 text-sm font-semibold">{{ $t('teacher_leave.end') }} *</label>
+          </FormField>
+          <FormField :label="$t('teacher_leave.end')" required for="tl-end">
             <input id="tl-end" v-model="form.endDate" type="date" class="input-field" required :min="form.startDate">
-          </div>
+          </FormField>
         </div>
         <div>
           <label for="tl-reason" class="block mb-1.5 text-sm font-semibold">{{ $t('leave_admin.col_reason') }}</label>
