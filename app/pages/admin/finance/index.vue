@@ -2,17 +2,7 @@
   <div class="flex flex-col gap-6">
     <!-- Header + Search -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input v-model="searchInput" type="text" :placeholder="$t('wallets_admin.search')" class="search-bar" @input="handleSearch">
-        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear')" @click="clearSearch">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+      <SearchInput v-model="searchInput" class="flex-1 max-w-md" :placeholder="$t('wallets_admin.search')" @input="handleSearch" @clear="clearSearch" />
       <div class="flex flex-1 flex-wrap items-center gap-3">
         <select v-model="statusFilter" class="input-field w-auto sm:w-44" :aria-label="$t('common.status')" @change="load(1)">
           <option value="">{{ $t('wallets_admin.all_status') }}</option>
@@ -48,7 +38,7 @@
               <td class="text-right tnum text-ink-muted">
                 {{ w.student && w.student.spendingLimit && w.student.spendingLimit.dailyMax ? f.kip(w.student.spendingLimit.dailyMax) : $t('wallets_admin.no_limit') }}
               </td>
-              <td><span :class="w.status === 'active' ? 'badge-success' : 'badge-danger'">{{ $t(`status.${w.status}`) }}</span></td>
+              <td><StatusBadge :status="w.status" /></td>
               <td class="max-w-xs truncate text-ink-muted" :title="w.notes || undefined">{{ w.notes || '—' }}</td>
               <td class="text-right">
                 <div class="inline-flex gap-2">

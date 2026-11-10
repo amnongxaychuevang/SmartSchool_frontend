@@ -191,12 +191,7 @@
                 {{ (locale === 'lo' ? item.route?.routeNameLo : item.route?.routeNameEn) || item.route?.routeNameLo || $t('transport.no_route') }}
               </p>
             </div>
-            <span
-              class="badge text-xs px-2 py-0.5 rounded font-semibold whitespace-nowrap"
-              :class="statusBadgeClass(item.status)"
-            >
-              {{ statusLabel(item.status) }}
-            </span>
+            <StatusBadge :status="item.status" :label="statusLabel(item.status)" />
           </div>
 
           <div class="text-xs text-ink-muted border-t border-slate-200/50 dark:border-slate-800/50 pt-2 flex items-center justify-between">
@@ -638,14 +633,6 @@ const statusLabel = (st: string) => {
     case 'onboard': return t('transport.status_onboard');
     case 'alighted': return t('transport.status_alighted');
     default: return t('transport.status_not_boarded');
-  }
-};
-
-const statusBadgeClass = (st: string) => {
-  switch (st) {
-    case 'onboard': return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-    case 'alighted': return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-    default: return 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
   }
 };
 

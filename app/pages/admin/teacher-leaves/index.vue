@@ -2,15 +2,7 @@
   <div class="flex flex-col gap-6">
     <!-- Header + Search / Filters -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input v-model="search" type="text" class="search-bar" :placeholder="$t('teacher_leave.search_ph')" :aria-label="$t('teacher_leave.search_ph')" @input="onSearch">
-        <button v-if="search" type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear_search')" @click="search = ''; load(1)">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
-      </div>
+      <SearchInput v-model="search" class="flex-1 max-w-md" :placeholder="$t('teacher_leave.search_ph')" :aria-label="$t('teacher_leave.search_ph')" @input="onSearch" @clear="load(1)" />
       <select v-model="status" class="input-field w-full sm:w-44" :aria-label="$t('leave_admin.col_status')" @change="load(1)">
         <option value="all">{{ $t('leave_admin.tab_all') }}</option>
         <option value="pending">{{ $t('status.pending') }}</option>
@@ -56,7 +48,7 @@
               <td class="max-w-xs"><p class="text-xs line-clamp-1 whitespace-normal leading-tight" :title="l.reason || ''">{{ l.reason || '—' }}</p></td>
               <td class="text-xs text-ink-muted whitespace-nowrap tnum">{{ f.dateTime(l.requestedAt) }}</td>
               <td class="whitespace-nowrap">
-                <span :class="statusBadge(l.status)">{{ $t(`status.${l.status}`) }}</span>
+                <StatusBadge :status="l.status" />
                 <p v-if="l.decider" class="text-[10px] text-ink-subtle mt-0.5">{{ pick(l.decider.fullNameLo, l.decider.fullNameEn) }}</p>
               </td>
               <td class="text-right whitespace-nowrap">
@@ -116,7 +108,6 @@ const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.v
 
 const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) || '';
 const dayCount = (l: LeaveRow) => Math.round((new Date(l.endDate).getTime() - new Date(l.startDate).getTime()) / 86400000) + 1;
-const statusBadge = (s: LeaveRow['status']) => (s === 'approved' ? 'badge-success' : s === 'rejected' ? 'badge-danger' : 'badge-warning');
 
 const load = async (toPage = 1) => {
   loading.value = true;

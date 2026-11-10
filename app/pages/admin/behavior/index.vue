@@ -84,28 +84,7 @@
       <!-- Filters & Action in same row (separated from table) -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[240px]">
-          <div class="relative flex-1 max-w-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="search-bar"
-              :placeholder="$t('behavior.search_placeholder')"
-              @input="debouncedFetch"
-            />
-            <button
-              v-if="searchQuery"
-              type="button"
-              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
-              @click="clearSearch"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+          <SearchInput v-model="searchQuery" class="flex-1 max-w-sm" :placeholder="$t('behavior.search_placeholder')" @input="debouncedFetch" @clear="clearSearch" />
           <select v-model="typeFilter" class="input-field w-full sm:w-auto" :aria-label="$t('behavior.col_type')" @change="onFilterChange">
             <option value="">{{ $t('behavior.all_types') }}</option>
             <option value="merit">{{ $t('behavior.type_merit') }}</option>

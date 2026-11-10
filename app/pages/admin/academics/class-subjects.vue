@@ -1,17 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-      <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input v-model="searchQuery" type="text" :placeholder="$t('classes.search_subjects')" class="search-bar">
-        <button v-if="searchQuery" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="searchQuery = ''">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+      <SearchInput v-model="searchQuery" class="flex-1 max-w-md" :placeholder="$t('classes.search_subjects')" />
       <div
         class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 flex-1"
       >

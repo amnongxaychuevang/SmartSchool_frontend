@@ -120,7 +120,7 @@
               <p class="text-xs text-ink-subtle break-words max-w-full">{{ locale === 'lo' ? student.fullNameEn : student.fullNameLo }}</p>
               <p v-if="student.studentCode" class="mt-1 text-xs font-mono text-ink-muted">{{ student.studentCode }}</p>
               <div class="mt-3 flex flex-wrap justify-center gap-1.5">
-                <span :class="STATUS_BADGE[student.status]">{{ statusLabel(student.status) }}</span>
+                <StatusBadge :status="student.status" :label="statusLabel(student.status)" />
                 <span class="badge-neutral">{{ viewClassName || L('No class', 'ບໍ່ມີຫ້ອງ') }}</span>
                 <span v-if="student.gender" class="badge-neutral">{{ $t(`gender.${student.gender}`) }}</span>
                 <span v-if="student.dateOfBirth" class="badge-neutral">{{ studentAge(student.dateOfBirth) }} {{ $t('common.years_old') }}</span>
@@ -311,7 +311,7 @@
             <p class="text-xs text-ink-subtle break-words max-w-full">{{ form.fullNameEn || dash }}</p>
             <p v-if="form.studentCode" class="mt-1 text-xs font-mono text-ink-muted">{{ form.studentCode }}</p>
             <div class="mt-3 flex flex-wrap justify-center gap-1.5">
-              <span :class="STATUS_BADGE[form.status]">{{ statusLabel(form.status) }}</span>
+              <StatusBadge :status="form.status" :label="statusLabel(form.status)" />
               <span class="badge-neutral">{{ selectedClassName || L('No class', 'ບໍ່ມີຫ້ອງ') }}</span>
               <span v-if="form.gender" class="badge-neutral">{{ $t(`gender.${form.gender}`) }}</span>
             </div>
@@ -460,12 +460,6 @@ const errorMsg = ref('');
 const statusLabel = (s: string) =>
   ({ active: t('common.active'), inactive: t('common.inactive'), graduated: t('students.graduated'), transferred: t('students.transferred') })[s] ?? s;
 
-const STATUS_BADGE: Record<Student['status'], string> = {
-  active: 'badge-success',
-  inactive: 'badge-danger',
-  graduated: 'badge-info',
-  transferred: 'badge-neutral',
-};
 
 const bloodTypes = ref<BloodTypeOption[]>([]);
 const ethnicities = ref<Ethnicity[]>([]);

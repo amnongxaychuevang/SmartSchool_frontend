@@ -2,17 +2,7 @@
   <div class="flex flex-col gap-6">
     <!-- Header + Search -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input v-model="searchInput" type="text" :placeholder="$t('students.search')" class="search-bar" @input="handleSearch">
-        <button v-if="searchInput" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" @click="searchInput = ''; handleSearch()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+      <SearchInput v-model="searchInput" class="flex-1 max-w-md" :placeholder="$t('students.search')" @input="handleSearch" @clear="handleSearch()" />
       <div class="flex flex-1 flex-wrap items-center gap-3">
         <!-- Status Dropdown Menu -->
         <div class="relative z-50">
@@ -160,16 +150,7 @@ v-for="(student, i) in adminStore.students" :key="student.studentId"
             </td>
             <td>
               <div class="flex flex-col items-start gap-1">
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-medium"
-                  :class="{
-                    'bg-teal-500/20 text-teal-400': student.status === 'active',
-                    'bg-blue-500/20 text-blue-400': student.status === 'graduated',
-                    'bg-slate-500/20 text-slate-400': student.status === 'transferred',
-                    'bg-red-500/20 text-red-400': student.status === 'inactive',
-                  }">
-                  {{ statusLabel(student.status) }}
-                </span>
+                <StatusBadge :status="student.status" :label="statusLabel(student.status)" />
                 <!-- Show gender under status on mobile -->
                 <span class="text-[10px] text-slate-500 sm:hidden capitalize">{{ student.gender ? $t(`gender.${student.gender}`) : '' }}</span>
               </div>
@@ -184,15 +165,7 @@ v-for="(student, i) in adminStore.students" :key="student.studentId"
             <td>
               <div class="flex items-center justify-end gap-2">
                 <!-- Edit -->
-                <button
-                  class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all"
-                  :title="$t('common.edit')"
-                  @click="navigateTo(`/admin/students/${student.studentId}`)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
+                <IconButton icon="edit" :label="$t('common.edit')" @click="navigateTo(`/admin/students/${student.studentId}`)" />
                 <!-- Deactivate / reactivate (students are never deleted) -->
                 <button
                   :disabled="togglingId === student.studentId"

@@ -34,7 +34,7 @@
               <p class="text-xs text-ink-muted">{{ loan.book.author }}</p>
             </div>
             <div class="text-right text-sm">
-              <span :class="statusBadge(loan.status)">{{ statusText(loan.status) }}</span>
+              <StatusBadge :status="loan.status" :label="statusText(loan.status)" />
               <p class="mt-1 text-xs text-ink-muted tnum">
                 <template v-if="loan.returnedDate">{{ $t('parent_library.returned_on', { date: fmt.date(loan.returnedDate) }) }}</template>
                 <template v-else>{{ $t('parent_library.due_on', { date: fmt.date(loan.dueDate) }) }}<template v-if="loan.renewCount"> · {{ $t('library.renewed_times', { count: loan.renewCount }) }}</template></template>
@@ -70,7 +70,6 @@ const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' 
 const loans = ref<ChildLoan[]>([]);
 const openLoans = computed(() => loans.value.filter((l) => !l.returnedDate));
 const overdueCount = computed(() => loans.value.filter((l) => l.status === 'overdue').length);
-const statusBadge = (s: ChildLoan['status']) => ({ borrowed: 'badge-info', overdue: 'badge-danger', returned: 'badge-success', lost: 'badge-slate' }[s]);
 const statusText = (s: ChildLoan['status']) => t(`parent_library.status_${s}`);
 
 async function loadChild() {

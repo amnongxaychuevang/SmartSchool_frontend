@@ -23,28 +23,7 @@
     <!-- Search & Filter Row with Action Button on Right Hand Side -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-        <div class="relative flex-1 max-w-md">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="search-bar"
-            :placeholder="activeTab === 'structures' ? $t('fee_structures.search_placeholder') : $t('fee_structures.search_type_placeholder')"
-            @input="onSearchInput"
-          >
-          <button
-            v-if="searchQuery"
-            type="button"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
-            @click="clearSearch"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <SearchInput v-model="searchQuery" class="flex-1 max-w-md" :placeholder="activeTab === 'structures' ? $t('fee_structures.search_placeholder') : $t('fee_structures.search_type_placeholder')" @input="onSearchInput" @clear="clearSearch" />
 
         <select
           v-if="activeTab === 'structures'"
@@ -102,16 +81,12 @@
               <td class="text-center tnum text-ink-subtle text-xs">{{ (typePage - 1) * typePageSize + i + 1 }}</td>
               <td class="font-semibold text-xs whitespace-nowrap">{{ ft.nameEn }}</td>
               <td class="text-xs whitespace-nowrap">{{ ft.nameLo }}</td>
-              <td class="whitespace-nowrap"><span :class="ft.isActive ? 'badge-success' : 'badge-muted'">{{ ft.isActive ? $t('status.active') : $t('status.inactive') }}</span></td>
+              <td class="whitespace-nowrap"><StatusBadge :status="ft.isActive ? 'active' : 'inactive'" /></td>
               <td class="text-ink-muted text-xs whitespace-nowrap">{{ $t('fee_structures.type_used', { count: (ft._count && ft._count.structures) || 0 }) }}</td>
               <td class="text-right whitespace-nowrap">
                 <div class="inline-flex gap-1">
-                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openTypeForm(ft)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  </button>
-                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="openTypeDelete(ft)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
+                  <IconButton icon="edit" :label="$t('common.edit')" @click="openTypeForm(ft)" />
+                  <IconButton icon="delete" :label="$t('common.delete')" @click="openTypeDelete(ft)" />
                 </div>
               </td>
             </tr>
@@ -169,12 +144,8 @@
                   <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('fee_structures.generate')" @click="openGenerate(s)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   </button>
-                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openStructureForm(s)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  </button>
-                  <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="openStructureDelete(s)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
+                  <IconButton icon="edit" :label="$t('common.edit')" @click="openStructureForm(s)" />
+                  <IconButton icon="delete" :label="$t('common.delete')" @click="openStructureDelete(s)" />
                 </div>
               </td>
             </tr>

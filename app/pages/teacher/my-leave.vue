@@ -12,7 +12,7 @@
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
               <span class="font-semibold">{{ $t(`teacher_leave.type_${l.leaveType}`) }}</span>
-              <span :class="statusBadge(l.status)">{{ $t(`status.${l.status}`) }}</span>
+              <StatusBadge :status="l.status" />
             </div>
             <p class="text-sm tnum mt-1">{{ f.date(l.startDate) }} – {{ f.date(l.endDate) }} · {{ $t('leave_admin.days', { count: dayCount(l) }) }}</p>
             <p v-if="l.reason" class="text-sm text-ink-muted mt-1 whitespace-pre-line">{{ l.reason }}</p>
@@ -81,7 +81,6 @@ const leaves = ref<TeacherLeave[]>([]);
 const loading = ref(true);
 const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) || '';
 const dayCount = (l: TeacherLeave) => Math.round((new Date(l.endDate).getTime() - new Date(l.startDate).getTime()) / 86400000) + 1;
-const statusBadge = (s: TeacherLeave['status']) => (s === 'approved' ? 'badge-success' : s === 'rejected' ? 'badge-danger' : 'badge-warning');
 
 const load = async () => {
   loading.value = true;

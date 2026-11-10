@@ -223,16 +223,7 @@
                       </svg>
                     </span>
                   </button>
-                  <button
-                    type="button"
-                    class="text-ink-subtle hover:text-red-500 p-1"
-                    :title="$t('payroll.delete_slip')"
-                    @click="deleteItemSlip(item)"
-                  >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  <IconButton icon="delete" :label="$t('payroll.delete_slip')" @click="deleteItemSlip(item)" />
                 </div>
                 <div v-else class="inline-flex items-center">
                   <label
@@ -697,6 +688,7 @@ definePageMeta({
 
 const route = useRoute();
 const { t, locale } = useI18n();
+const dialog = useDialog();
 const f = useFormat();
 const mediaUrl = useMediaUrl();
 
@@ -781,17 +773,13 @@ const loadPeriod = async () => {
 };
 
 const updateStatus = async (status: PayrollStatus) => {
-  const confirmMsg = status === 'approved' ? t('payroll.approve_confirm') : t('payroll.paid_confirm');
-  if (!confirm(confirmMsg)) return;
-
   statusUpdating.value = true;
   try {
-    const res = await payrollRepository.updatePeriodStatus(periodId.value, status);
-    if (res?.success) {
-      await loadPeriod();
-    }
-  } catch (error) {
-    console.error('Failed to update period status:', error);
+    const ok = await dialog.confirm({
+      message: status === 'approved' ? t('payroll.approve_confirm') : t('payroll.paid_confirm'),
+      onConfirm: () => payrollRepository.updatePeriodStatus(periodId.value, status),
+    });
+    if (ok) await loadPeriod();
   } finally {
     statusUpdating.value = false;
   }
@@ -859,16 +847,14 @@ const handleFileUpload = async (event: Event, item: PayrollItem) => {
 };
 
 const deleteItemSlip = async (item: PayrollItem) => {
-  if (!confirm(t('payroll.delete_slip_confirm'))) return;
-  try {
-    const res = await payrollRepository.deleteSlip(item.itemId);
-    if (res?.success) {
-      item.slipUrl = null;
-      await loadPeriod();
-    }
-  } catch (error) {
-    console.error('Failed to delete slip:', error);
-  }
+  const ok = await dialog.confirm({
+    message: t('payroll.delete_slip_confirm'),
+    tone: 'danger',
+    onConfirm: () => payrollRepository.deleteSlip(item.itemId),
+  });
+  if (!ok) return;
+  item.slipUrl = null;
+  await loadPeriod();
 };
 
 const printPayslip = () => {

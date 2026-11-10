@@ -816,6 +816,7 @@ definePageMeta({
 });
 
 const { t, locale } = useI18n();
+const dialog = useDialog();
 const f = useFormat();
 const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) ?? '—';
 
@@ -958,7 +959,7 @@ const submitRegistration = async () => {
       selectedRegForPass.value = reg;
     }
   } catch (e: any) {
-    alert(e.message || 'Registration failed');
+    dialog.error(getErrorMessage(e, t('common.error')));
   } finally {
     submitting.value = false;
   }
@@ -1007,7 +1008,7 @@ const submitCourse = async () => {
     showCourseModal.value = false;
     await loadCourses();
   } catch (e: any) {
-    alert(e.message || 'Failed to save course');
+    dialog.error(getErrorMessage(e, t('common.error')));
   } finally {
     submittingCourse.value = false;
   }

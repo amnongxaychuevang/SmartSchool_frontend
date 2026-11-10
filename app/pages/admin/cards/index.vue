@@ -2,17 +2,7 @@
   <div class="flex flex-col gap-6">
     <!-- Header + Search / Filters -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="relative flex-1 max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input v-model="searchInput" type="text" class="search-bar" :placeholder="$t('cards_admin.search')" :aria-label="$t('cards_admin.search')" @input="handleSearch">
-        <button v-if="searchInput" type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear_search')" @click="clearSearch">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+      <SearchInput v-model="searchInput" class="flex-1 max-w-md" :placeholder="$t('cards_admin.search')" :aria-label="$t('cards_admin.search')" @input="handleSearch" @clear="clearSearch" />
       <select v-model="statusFilter" class="input-field w-full sm:w-44" :aria-label="$t('common.status')" @change="handleFilter">
         <option value="">{{ $t('cards_admin.all_status') }}</option>
         <option v-for="s in statuses" :key="s" :value="s">{{ $t(`status.${s}`) }}</option>
@@ -53,7 +43,7 @@
               <td class="font-mono text-xs font-semibold text-primary-ink whitespace-nowrap">{{ card.cardUid }}</td>
               <td class="font-mono text-xs text-ink-subtle whitespace-nowrap">{{ (card.student && card.student.studentCode) || '—' }}</td>
               <td class="text-xs font-medium whitespace-nowrap">{{ studentName(card) }}</td>
-              <td class="whitespace-nowrap"><span :class="statusBadge[card.status]">{{ $t(`status.${card.status}`) }}</span></td>
+              <td class="whitespace-nowrap"><StatusBadge :status="card.status" /></td>
               <td class="text-xs tnum whitespace-nowrap">{{ f.date(card.issuedDate) }}</td>
               <td class="text-xs tnum whitespace-nowrap">{{ f.date(card.expiredDate) }}</td>
               <td class="text-xs max-w-xs truncate text-ink-muted whitespace-nowrap" :title="card.notes || undefined">{{ card.notes || '—' }}</td>
@@ -158,7 +148,6 @@ useHead({ title: () => t('cards_admin.title') });
 
 const academicsStore = useAcademicsStore();
 const statuses = ['active', 'lost', 'deactivated'] as const;
-const statusBadge: Record<Card['status'], string> = { active: 'badge-success', lost: 'badge-danger', deactivated: 'badge-neutral' };
 const searchInput = ref('');
 const statusFilter = ref('');
 const totalPages = computed(() => Math.ceil(academicsStore.cardsTotal / CARDS_PER_PAGE));

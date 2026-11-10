@@ -40,7 +40,7 @@
             </p>
           </div>
           <div class="text-right">
-            <span :class="statusBadge(inv)">{{ statusText(inv) }}</span>
+            <StatusBadge :status="inv.overdue ? 'overdue' : inv.status" :label="statusText(inv)" />
             <p class="mt-1 text-sm tnum">
               <template v-if="inv.outstanding > 0">{{ $t('parent_fees.still_owed', { amount: fmt.kip(inv.outstanding) }) }}</template>
               <template v-else>{{ fmt.kip(inv.amountDue) }}</template>
@@ -90,7 +90,6 @@ const feeName = (inv: Invoice) => {
   return (ft && ((locale.value === 'lo' ? ft.nameLo : ft.nameEn) || ft.nameEn)) || inv.invoiceNo;
 };
 const statusText = (inv: Invoice) => (inv.overdue ? t('parent_fees.status_overdue') : t(`parent_fees.status_${inv.status}`));
-const statusBadge = (inv: Invoice) => (inv.overdue ? 'badge-danger' : inv.status === 'paid' ? 'badge-success' : 'badge-warning');
 
 const totals = computed(() => ({
   outstanding: invoices.value.reduce((s, i) => s + i.outstanding, 0),

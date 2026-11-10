@@ -4,15 +4,7 @@
 
     <!-- Filters -->
     <div class="flex flex-wrap items-center gap-2">
-      <div class="relative w-full sm:w-80">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input v-model="search" type="text" class="search-bar" :placeholder="$t('behavior.search_placeholder')" :aria-label="$t('behavior.search_placeholder')" @input="onSearch">
-        <button v-if="search" type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors" :aria-label="$t('common.clear_search')" @click="search = ''; load(1)">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
-      </div>
+      <SearchInput v-model="search" class="w-full sm:w-80" :placeholder="$t('behavior.search_placeholder')" :aria-label="$t('behavior.search_placeholder')" @input="onSearch" @clear="load(1)" />
       <select v-model="classFilter" class="input-field w-full sm:w-48" :aria-label="$t('common.class')" @change="load(1)">
         <option :value="null">{{ $t('assignments.all_classes') }}</option>
         <option v-for="c in classes" :key="c.classId" :value="c.classId">{{ pick(c.classNameLo, c.classNameEn) }}</option>

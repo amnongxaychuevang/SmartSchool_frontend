@@ -35,16 +35,12 @@
               <td class="text-sm text-slate-700 dark:text-slate-300">{{ locale === 'lo' ? term.termNameLo : term.termNameEn }}</td>
               <td class="text-sm text-slate-500 dark:text-slate-400 hidden sm:table-cell">{{ term.startDate.slice(0, 10) }} → {{ term.endDate.slice(0, 10) }}</td>
               <td class="">
-                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="STATUS_CLASS[term.status]">{{ statusLabel(term.status) }}</span>
+                <StatusBadge :status="term.status" :tone="TERM_TONE[term.status]" :label="statusLabel(term.status)" />
               </td>
               <td class="">
                 <div class="flex items-center justify-end gap-1">
-                  <button class="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 transition-all" :title="$t('common.edit')" @click="openModal(term)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  </button>
-                  <button class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all" :title="$t('common.delete')" @click="askDelete(term)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
+                  <IconButton icon="edit" :label="$t('common.edit')" @click="openModal(term)" />
+                  <IconButton icon="delete" :label="$t('common.delete')" @click="askDelete(term)" />
                 </div>
               </td>
             </tr>
@@ -121,6 +117,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { academicsRepository, type AcademicTerm } from '../../../infrastructure/api/AcademicsRepository';
+import type { StatusTone } from '../../../components/StatusBadge.vue';
 import AppModal from '../../../components/AppModal.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
@@ -133,11 +130,7 @@ useHead({ title: () => t('page_titles.academic_terms') });
 const STATUSES = ['active', 'upcoming', 'completed'] as const;
 type Status = (typeof STATUSES)[number];
 
-const STATUS_CLASS: Record<Status, string> = {
-  active: 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-500/20',
-  upcoming: 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20',
-  completed: 'bg-slate-50 dark:bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-500/20',
-};
+const TERM_TONE: Record<Status, StatusTone> = { active: 'success', upcoming: 'info', completed: 'neutral' };
 
 const statusLabel = (s: Status) =>
   ({ active: t('academic_terms_ui.status_active'), upcoming: t('academic_terms_ui.status_upcoming'), completed: t('academic_terms_ui.status_completed') })[s];

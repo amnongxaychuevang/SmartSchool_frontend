@@ -44,29 +44,7 @@
       <!-- Filters Group -->
       <div class="flex flex-wrap items-center gap-3">
         <!-- Search Bar -->
-        <div class="relative w-full sm:w-64">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            v-model="searchInput"
-            type="text"
-            class="search-bar"
-            :placeholder="$t('expenses.search_placeholder')"
-            @input="handleSearch"
-          />
-          <button
-            v-if="searchInput"
-            type="button"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink transition-colors"
-            :aria-label="$t('common.clear')"
-            @click="clearSearch"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <SearchInput v-model="searchInput" class="w-full sm:w-64" :placeholder="$t('expenses.search_placeholder')" @input="handleSearch" @clear="clearSearch" />
 
         <!-- Category Filter -->
         <select
@@ -216,16 +194,7 @@
                   >
                     <img :src="mediaUrl(e.receiptUrl)!" :alt="$t('expenses.receipt_col')" class="h-9 w-9 object-cover group-hover:scale-110 transition-transform" />
                   </button>
-                  <button
-                    type="button"
-                    class="p-1 rounded text-ink-subtle hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                    :title="$t('expenses.remove_receipt')"
-                    @click="confirmRemoveReceipt(e)"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  <IconButton icon="delete" :label="$t('expenses.remove_receipt')" @click="confirmRemoveReceipt(e)" />
                 </div>
                 <div v-else>
                   <label class="cursor-pointer inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline">
@@ -239,26 +208,8 @@
               </td>
               <td class="text-right">
                 <div class="inline-flex items-center gap-1">
-                  <button
-                    type="button"
-                    class="p-1.5 rounded-lg text-ink-muted hover:text-primary hover:bg-primary/10 transition-colors"
-                    :title="$t('expenses.edit_expense')"
-                    @click="openEditModal(e)"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    class="p-1.5 rounded-lg text-ink-muted hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                    :title="$t('common.delete')"
-                    @click="confirmDeleteExpense(e)"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  <IconButton icon="edit" :label="$t('expenses.edit_expense')" @click="openEditModal(e)" />
+                  <IconButton icon="delete" :label="$t('common.delete')" @click="confirmDeleteExpense(e)" />
                 </div>
               </td>
             </tr>
@@ -562,6 +513,7 @@ definePageMeta({
 });
 
 const { t, locale } = useI18n();
+const dialog = useDialog();
 const f = useFormat();
 const mediaUrl = useMediaUrl();
 
@@ -827,13 +779,12 @@ const saveExpense = async () => {
 };
 
 const confirmDeleteExpense = async (expense: Expense) => {
-  if (!confirm(t('expenses.delete_confirm'))) return;
-  try {
-    await financeRepository.deleteExpense(expense.expenseId);
-    await loadExpenses();
-  } catch (error) {
-    console.error('Failed to delete expense:', error);
-  }
+  const ok = await dialog.confirm({
+    message: t('expenses.delete_confirm'),
+    tone: 'danger',
+    onConfirm: () => financeRepository.deleteExpense(expense.expenseId),
+  });
+  if (ok) await loadExpenses();
 };
 
 // Receipt viewer & actions
@@ -856,15 +807,15 @@ const handleRowReceiptUpload = async (expense: Expense, evt: Event) => {
 };
 
 const confirmRemoveReceipt = async (expense: Expense) => {
-  if (!confirm(t('expenses.delete_receipt_confirm'))) return;
-  try {
-    await financeRepository.deleteExpenseReceipt(expense.expenseId);
-    expense.receiptUrl = null;
-    if (viewingReceiptExpense.value?.expenseId === expense.expenseId) {
-      viewingReceiptExpense.value = null;
-    }
-  } catch (error) {
-    console.error('Failed to remove receipt:', error);
+  const ok = await dialog.confirm({
+    message: t('expenses.delete_receipt_confirm'),
+    tone: 'danger',
+    onConfirm: () => financeRepository.deleteExpenseReceipt(expense.expenseId),
+  });
+  if (!ok) return;
+  expense.receiptUrl = null;
+  if (viewingReceiptExpense.value?.expenseId === expense.expenseId) {
+    viewingReceiptExpense.value = null;
   }
 };
 
@@ -898,13 +849,13 @@ const addCategory = async () => {
 };
 
 const deleteCategory = async (cat: ExpenseCategory) => {
-  if (!confirm(t('expenses.delete_category_confirm'))) return;
-  try {
-    await financeRepository.deleteExpenseCategory(cat.categoryId);
-    await loadCategories();
-  } catch (err: any) {
-    alert(err?.data?.message || err.message || 'Cannot delete category');
-  }
+  // A category still used by expenses is refused by the server; the dialog shows why.
+  const ok = await dialog.confirm({
+    message: t('expenses.delete_category_confirm'),
+    tone: 'danger',
+    onConfirm: () => financeRepository.deleteExpenseCategory(cat.categoryId),
+  });
+  if (ok) await loadCategories();
 };
 
 onMounted(async () => {
