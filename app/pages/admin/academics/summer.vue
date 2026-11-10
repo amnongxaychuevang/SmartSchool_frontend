@@ -823,7 +823,7 @@ const { t, locale } = useI18n();
 const f = useFormat();
 const pick = (lo?: string | null, en?: string | null) => (locale.value === 'lo' ? lo || en : en || lo) ?? '—';
 
-useHead({ title: () => `${t('summer.title')} — Smart School` });
+useHead({ title: () => `${t('summer.title')} — EduSmart` });
 
 // State
 const activeTab = ref<'registrations' | 'courses' | 'stats'>('registrations');

@@ -250,7 +250,7 @@ import { hasPermission } from '../../../components/layout/adminNav';
 import { useServerExport } from '../../../composables/useServerExport';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Students — Smart School Admin' });
+useHead({ title: 'Students — EduSmart Admin' });
 
 const adminStore = useAdminStore();
 const { locale, t } = useI18n();

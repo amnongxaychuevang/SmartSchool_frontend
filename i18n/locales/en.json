@@ -1,7 +1,7 @@
 {
   "auth": {
-    "title": "Smart School System",
-    "subtitle": "Smart School System",
+    "title": "EduSmart",
+    "subtitle": "School Management System",
     "tagline": "Login to manage your school",
     "welcome": "Welcome Back",
     "sign_in_desc": "Sign in to continue to your dashboard",
@@ -175,7 +175,7 @@
   "admin": {
     "attendance_status": "Live check-in / check-out",
     "dashboard": "Admin Dashboard",
-    "welcome_message": "Welcome back to the Smart School administration panel.",
+    "welcome_message": "Welcome back to the EduSmart administration panel.",
     "title": "Admin Dashboard",
     "total_students": "Total Students",
     "present_today": "Present Today",
@@ -712,7 +712,7 @@
     "my_child": "My Child"
   },
   "layout": {
-    "brand": "Smart School",
+    "brand": "EduSmart",
     "portal_admin": "Admin Portal",
     "portal_teacher": "Teacher Portal",
     "portal_parent": "Parent Portal",
@@ -1563,7 +1563,7 @@
     "print": "Print Invoice",
     "school_address": "123 Education Road, Vientiane Capital, Lao PDR",
     "school_phone": "Tel: +856 21 XXX XXX",
-    "school_email": "Email: info{'@'}smartschool.la",
+    "school_email": "Email: info{'@'}edusmart.la",
     "invoice_details": "Invoice Details",
     "invoice_no": "Invoice No.",
     "issue_date": "Issue Date",
@@ -1875,7 +1875,7 @@
     "method_cash": "Cash",
     "method_transfer": "Bank transfer",
     "method_office": "School office",
-    "generated": "This receipt was issued by Smart School",
+    "generated": "This receipt was issued by EduSmart",
     "received_by": "Received by"
   },
   "parent_fees": {
@@ -2463,7 +2463,7 @@
     "payslip_title": "Payslip",
     "earnings": "Earnings & Allowances",
     "deductions": "Deductions",
-    "school_name": "Smart School",
+    "school_name": "EduSmart",
     "received_by": "Received By (Signature)",
     "approved_by": "Authorized / Finance Director",
     "generate_success": "Payroll period generated successfully",
@@ -2488,7 +2488,7 @@
     "slip_uploaded": "Slip uploaded"
   },
   "cashflow": {
-    "page_title": "School Income & Expense Report — Smart School Admin",
+    "page_title": "School Income & Expense Report — EduSmart Admin",
     "title": "School Income & Expense Overview",
     "subtitle": "Track total school revenue from student fees & shop rentals against teacher payroll expenditures",
     "all_years": "All Academic Years",
@@ -2523,7 +2523,7 @@
     "manage_expenses": "Manage All Expenses"
   },
   "expenses": {
-    "page_title": "Operating Expenses — Smart School Admin",
+    "page_title": "Operating Expenses — EduSmart Admin",
     "title": "General Operating Expenses",
     "subtitle": "Record and manage administrative and operational costs: utilities, educational supplies, maintenance, and receipts",
     "add_expense": "Add Expense",
@@ -2700,7 +2700,7 @@
     "no_registrations": "No summer registrations found",
     "no_courses": "No summer courses created yet",
     "pass_title": "Summer Class Access Pass",
-    "pass_school": "Smart School Management System",
+    "pass_school": "EduSmart School Management System",
     "pass_notice": "Please keep this pass with you for class attendance verification",
     "receipt_title": "Summer Tuition Receipt",
     "receipt_no": "Receipt No",

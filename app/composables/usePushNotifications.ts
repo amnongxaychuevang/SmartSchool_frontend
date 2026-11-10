@@ -46,7 +46,7 @@ export const usePushNotifications = () => {
       const res = await Notification.requestPermission();
       permission.value = res;
       if (res === 'granted') {
-        showNotification('Smart School Notifications Enabled', {
+        showNotification('EduSmart notifications enabled', {
           body: 'You will receive real-time updates for attendance, bus rides, homework, and chat.',
           icon: '/favicon.ico',
         });
@@ -120,7 +120,7 @@ export const usePushNotifications = () => {
       // 1. General in-app push (attendance, bus board/alight, homework)
       socketInstance.on('new-notification', (notif: any) => {
         lastNotification.value = notif;
-        const title = notif.titleLo || notif.titleEn || 'Smart School Notice';
+        const title = notif.titleLo || notif.titleEn || 'EduSmart notice';
         const body = notif.messageLo || notif.messageEn || '';
         showNotification(title, { body });
       });

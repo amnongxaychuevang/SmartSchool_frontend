@@ -210,7 +210,7 @@ const route = useRoute();
 const f = useFormat();
 const settingsStore = useSettingsStore();
 
-useHead({ title: () => `${t('card_print.title')} — Smart School` });
+useHead({ title: () => `${t('card_print.title')} — EduSmart` });
 
 const loading = ref(true);
 const cards = ref<Card[]>([]);
@@ -218,10 +218,10 @@ const classes = ref<SchoolClass[]>([]);
 const selectedClassId = ref<number>(0);
 const cardSide = ref<'both' | 'front' | 'back'>('both');
 
-const schoolNameLo = computed(() => settingsStore.schoolInfo.schoolNameLo || 'ໂຮງຮຽນ ສະມາດສະກູນ');
-const schoolNameEn = computed(() => settingsStore.schoolInfo.schoolNameEn || 'SMART SCHOOL ACADEMY');
+const schoolNameLo = computed(() => settingsStore.schoolInfo.schoolNameLo || 'EduSmart');
+const schoolNameEn = computed(() => settingsStore.schoolInfo.schoolNameEn || 'EDUSMART');
 const schoolPhone = computed(() => settingsStore.schoolInfo.contactPhone || '+856 20 5555 1234');
-const schoolEmail = computed(() => settingsStore.schoolInfo.contactEmail || 'info@smartschool.la');
+const schoolEmail = computed(() => settingsStore.schoolInfo.contactEmail || 'info@edusmart.la');
 
 onMounted(async () => {
   try {

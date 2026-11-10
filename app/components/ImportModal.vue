@@ -213,7 +213,7 @@ function downloadTemplate() {
         specialization: 'Mathematics',
         qualification: 'Bachelor of Education',
         phoneNumber: '02055551122',
-        email: 'bounmy@smartschool.edu.la',
+        email: 'bounmy@edusmart.edu.la',
       },
       {
         fullNameEn: 'Keomany Phommavong',
@@ -222,7 +222,7 @@ function downloadTemplate() {
         specialization: 'English',
         qualification: 'Master of Arts',
         phoneNumber: '02055553344',
-        email: 'keomany@smartschool.edu.la',
+        email: 'keomany@edusmart.edu.la',
       },
     ];
   } else if (props.type === 'parents') {

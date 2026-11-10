@@ -1,4 +1,4 @@
-// Smart School Service Worker for Web Push Notifications
+// EduSmart Service Worker for Web Push Notifications
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
@@ -8,7 +8,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'Smart School', body: 'New notification received', url: '/' };
+  let data = { title: 'EduSmart', body: 'New notification received', url: '/' };
   try {
     if (event.data) {
       data = event.data.json();

@@ -22,7 +22,7 @@ const props = withDefaults(
     border?: boolean;
   }>(),
   {
-    alt: 'Smart School Logo',
+    alt: 'EduSmart Logo',
     size: 'custom',
     rounded: true,
     border: false,

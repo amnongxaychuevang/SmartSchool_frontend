@@ -161,7 +161,7 @@ definePageMeta({ layout: 'admin' });
 
 const adminStore = useAdminStore();
 const { locale, t } = useI18n();
-useHead({ title: () => `${t('classes.page_title')} — Smart School Admin` });
+useHead({ title: () => `${t('classes.page_title')} — EduSmart Admin` });
 
 const searchInput = ref(adminStore.classesSearch);
 const yearFilter = ref(adminStore.classesYear);

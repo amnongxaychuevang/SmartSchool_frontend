@@ -30,9 +30,9 @@
       <header class="border-b-2 border-teal-600 pb-5 mb-6">
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3.5">
-            <img src="/logo.png" alt="Smart School Logo" class="w-14 h-14 object-contain shrink-0" />
+            <img src="/logo.png" alt="EduSmart Logo" class="w-14 h-14 object-contain shrink-0" />
             <div>
-              <h1 class="text-2xl font-bold text-teal-700 tracking-tight">Smart School</h1>
+              <h1 class="text-2xl font-bold text-teal-700 tracking-tight">EduSmart</h1>
               <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
                 {{ $t('invoice_print.school_address') }}<br>
                 {{ $t('invoice_print.school_phone') }}<br>

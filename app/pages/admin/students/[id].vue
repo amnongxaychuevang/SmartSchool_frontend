@@ -453,7 +453,7 @@ const studentId = computed(() => Number(route.params.id));
 const student = ref<Student | null>(null);
 const loading = ref(true);
 const editing = ref(false);
-useHead({ title: computed(() => `${editing.value ? t('students.edit_title') : t('students.detail_title')} — Smart School Admin`) });
+useHead({ title: computed(() => `${editing.value ? t('students.edit_title') : t('students.detail_title')} — EduSmart Admin`) });
 const isSubmitting = ref(false);
 const errorMsg = ref('');
 

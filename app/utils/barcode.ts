@@ -115,7 +115,7 @@ export function generateQrCodeSvg(text: string, size = 64): string {
 
   // Deterministic hash fill for data area
   let hash = 0;
-  const str = text || 'SMART-SCHOOL';
+  const str = text || 'EDUSMART';
   for (let i = 0; i < str.length; i++) {
     hash = (hash << 5) - hash + str.charCodeAt(i);
     hash |= 0;

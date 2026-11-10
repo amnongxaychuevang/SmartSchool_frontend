@@ -400,7 +400,7 @@ const isEdit = computed(() => editId.value !== null);
 useHead({
   title: computed(
     () =>
-      `${isEdit.value ? t("classes.edit_class") : t("classes.add_class")} — Smart School Admin`,
+      `${isEdit.value ? t("classes.edit_class") : t("classes.add_class")} — EduSmart Admin`,
   ),
 });
 

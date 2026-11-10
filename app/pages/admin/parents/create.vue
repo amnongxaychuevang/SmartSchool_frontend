@@ -177,7 +177,7 @@ const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
 
 const editId = computed(() => (route.query.id ? Number(route.query.id) : null));
 const isEdit = computed(() => editId.value !== null);
-useHead({ title: computed(() => `${isEdit.value ? t('parents.edit_parent') : t('parents.add_parent')} — Smart School Admin`) });
+useHead({ title: computed(() => `${isEdit.value ? t('parents.edit_parent') : t('parents.add_parent')} — EduSmart Admin`) });
 
 const form = reactive({
   fullNameLo: '',

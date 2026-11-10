@@ -22,7 +22,7 @@
         <AppLogo size="sm" class="bg-white dark:bg-slate-900 p-0.5 border border-pink-500/20 shadow-sm" />
         <transition name="fade-slide">
           <div v-if="sidebarOpen" class="overflow-hidden">
-            <p class="text-slate-800 dark:text-white font-bold text-sm leading-tight">Smart School</p>
+            <p class="text-slate-800 dark:text-white font-bold text-sm leading-tight">EduSmart</p>
             <p class="text-pink-400/70 text-[10px] font-medium tracking-widest uppercase">{{ $t('parentPortal.title') }}</p>
           </div>
         </transition>

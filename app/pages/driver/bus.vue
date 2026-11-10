@@ -10,7 +10,7 @@
         </NuxtLink>
         <img
           src="/logo.png"
-          alt="Smart School Logo"
+          alt="EduSmart Logo"
           class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 p-0.5 object-contain shrink-0 shadow-md shadow-amber-500/10"
         />
         <div>

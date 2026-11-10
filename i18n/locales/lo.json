@@ -1,7 +1,7 @@
 {
   "auth": {
-    "title": "Smart School System",
-    "subtitle": "ລະບົບໂຮງຮຽນສະມາດ",
+    "title": "EduSmart",
+    "subtitle": "ລະບົບຈັດການໂຮງຮຽນ",
     "tagline": "ເຂົ້າສູ່ລະບົບເພື່ອຈັດການຂໍ້ມູນ",
     "welcome": "ຍິນດີຕ້ອນຮັບ",
     "sign_in_desc": "ເຂົ້າສູ່ລະບົບເພື່ອດຳເນີນການ",
@@ -175,7 +175,7 @@
   "admin": {
     "attendance_status": "ສະຖານະການເຂົ້າ-ອອກໂຮງຮຽນສົດ",
     "dashboard": "ໜ້າຫຼັກຜູ້ດູແລລະບົບ",
-    "welcome_message": "ຍິນດີຕ້ອນຮັບກັບເຂົ້າສູ່ລະບົບຈັດການ ໂຮງຮຽນອັດສະລິຍະ.",
+    "welcome_message": "ຍິນດີຕ້ອນຮັບກັບເຂົ້າສູ່ລະບົບຈັດການ EduSmart.",
     "title": "ໜ້າຫຼັກຜູ້ດູແລລະບົບ",
     "total_students": "ນັກຮຽນທັງໝົດ",
     "present_today": "ມາຮຽນມື້ນີ້",
@@ -712,7 +712,7 @@
     "my_child": "ລູກຂອງຂ້ອຍ"
   },
   "layout": {
-    "brand": "Smart School",
+    "brand": "EduSmart",
     "portal_admin": "ລະບົບບໍລິຫານ",
     "portal_teacher": "ລະບົບຄູສອນ",
     "portal_parent": "ລະບົບຜູ້ປົກຄອງ",
@@ -1563,7 +1563,7 @@
     "print": "ພິມໃບແຈ້ງໜີ້",
     "school_address": "123 ຖະໜົນການສຶກສາ, ນະຄອນຫຼວງວຽງຈັນ, ສປປ ລາວ",
     "school_phone": "ໂທ: +856 21 XXX XXX",
-    "school_email": "ອີເມວ: info{'@'}smartschool.la",
+    "school_email": "ອີເມວ: info{'@'}edusmart.la",
     "invoice_details": "ລາຍລະອຽດໃບແຈ້ງໜີ້",
     "invoice_no": "ເລກທີໃບແຈ້ງໜີ້",
     "issue_date": "ວັນທີອອກ",
@@ -1875,7 +1875,7 @@
     "method_cash": "ເງິນສົດ",
     "method_transfer": "ເງິນໂອນ",
     "method_office": "ຫ້ອງການໂຮງຮຽນ",
-    "generated": "ໃບຮັບເງິນນີ້ອອກໂດຍລະບົບ Smart School",
+    "generated": "ໃບຮັບເງິນນີ້ອອກໂດຍລະບົບ EduSmart",
     "received_by": "ຜູ້ຮັບເງິນ"
   },
   "parent_fees": {
@@ -2463,7 +2463,7 @@
     "payslip_title": "ໃບແຈ້ງເງິນເດືອນ (Payslip)",
     "earnings": "ລາຍຮັບ / ເງິນອຸດໜູນ",
     "deductions": "ລາຍການຫັກ",
-    "school_name": "ໂຮງຮຽນສະມາດ (Smart School)",
+    "school_name": "EduSmart",
     "received_by": "ລາຍເຊັນຜູ້ຮັບເງິນ",
     "approved_by": "ລາຍເຊັນຜູ້ອຳນວຍການ / ຝ່າຍການເງິນ",
     "generate_success": "ສ້າງງວດເງິນເດືອນສຳເລັດແລ້ວ",
@@ -2488,7 +2488,7 @@
     "slip_uploaded": "ມີສະລິບແລ້ວ"
   },
   "cashflow": {
-    "page_title": "ລາຍງານລາຍຮັບ - ລາຍຈ່າຍໂຮງຮຽນ — Smart School Admin",
+    "page_title": "ລາຍງານລາຍຮັບ - ລາຍຈ່າຍໂຮງຮຽນ — EduSmart Admin",
     "title": "ພາບລວມລາຍຮັບ - ລາຍຈ່າຍໂຮງຮຽນ",
     "subtitle": "ຕິດຕາມລາຍຮັບລວມຈາກຄ່າຮຽນ, ຄ່າລົງທະບຽນ ແລະ ຄ່າເຊົ່າຮ້ານ ທຽບກັບ ລາຍຈ່າຍເງິນເດືອນຄູ-ອາຈານ",
     "all_years": "ທຸກສົກຮຽນ",
@@ -2523,7 +2523,7 @@
     "manage_expenses": "ຈັດການລາຍຈ່າຍທັງໝົດ"
   },
   "expenses": {
-    "page_title": "ບັນທຶກລາຍຈ່າຍບໍລິຫານ & ທົ່ວໄປ — Smart School Admin",
+    "page_title": "ບັນທຶກລາຍຈ່າຍບໍລິຫານ & ທົ່ວໄປ — EduSmart Admin",
     "title": "ລາຍຈ່າຍບໍລິຫານ & ທົ່ວໄປ",
     "subtitle": "ບັນທຶກ ແລະ ຕິດຕາມລາຍຈ່າຍຕ່າງໆ ຂອງໂຮງຮຽນ ເຊັ່ນ: ຄ່ານ້ຳ-ຄ່າໄຟ, ອຸປະກອນການຮຽນ, ຄ່າສ້ອມແປງ ແລະ ໃບຮັບເງິນ",
     "add_expense": "ເພີ່ມລາຍຈ່າຍໃໝ່",
@@ -2700,7 +2700,7 @@
     "no_registrations": "ຍັງບໍ່ມີຂໍ້ມູນການລົງທະບຽນ",
     "no_courses": "ຍັງບໍ່ມີວິຊາຮຽນ Summer",
     "pass_title": "ບັດອະນຸຍາດເຂົ້າຫ້ອງຮຽນ Summer",
-    "pass_school": "ໂຮງຮຽນ ສະມາດສະກູນ (Smart School)",
+    "pass_school": "EduSmart",
     "pass_notice": "ກະລຸນາຖືບັດນີ້ຕິດໂຕມາຫ້ອງຮຽນທຸກຄັ້ງ ເພື່ອສະແດງຕໍ່ຄູປະຈຳວິຊາ",
     "receipt_title": "ໃບຮັບເງິນຄ່າຮຽນ Summer (Tuition Receipt)",
     "receipt_no": "ເລກທີໃບຮັບເງິນ",

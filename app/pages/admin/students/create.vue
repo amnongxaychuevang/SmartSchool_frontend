@@ -306,7 +306,7 @@ const feeStructures = ref<FeeStructure[]>([]);
 
 const editId = computed(() => (route.query.id ? Number(route.query.id) : null));
 const isEdit = computed(() => editId.value !== null);
-useHead({ title: computed(() => `${isEdit.value ? t('students.edit_student') : t('students.add_student')} — Smart School Admin`) });
+useHead({ title: computed(() => `${isEdit.value ? t('students.edit_student') : t('students.add_student')} — EduSmart Admin`) });
 
 const statusLabel = (s: string) =>
   ({ active: t('common.active'), inactive: t('common.inactive'), graduated: t('students.graduated'), transferred: t('students.transferred') })[s] ?? s;

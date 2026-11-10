@@ -119,7 +119,7 @@ import { academicsRepository, type AcademicTerm, type ClassSubject, type Schedul
 import { adminRepository } from '../../../infrastructure/api/AdminRepository';
 
 definePageMeta({ layout: 'admin' });
-useHead({ title: 'Timetable — Smart School Admin' });
+useHead({ title: 'Timetable — EduSmart Admin' });
 
 const { locale, t } = useI18n();
 const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);

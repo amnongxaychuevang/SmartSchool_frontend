@@ -14,5 +14,5 @@ const route = useRoute();
 const { t } = useI18n();
 const studentId = computed(() => Number(route.params.id));
 
-useHead({ title: () => `${t('report_card.document_title')} — Smart School Admin` });
+useHead({ title: () => `${t('report_card.document_title')} — EduSmart Admin` });
 </script>

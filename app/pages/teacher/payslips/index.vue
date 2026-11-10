@@ -287,7 +287,7 @@
             <div>
               <div class="h-16 border-b border-dashed border-slate-400 mx-auto w-3/4 mb-2"></div>
               <p class="font-semibold text-ink">{{ $t('payroll.approved_by') }}</p>
-              <p class="text-[10px] text-ink-muted">Smart School Management</p>
+              <p class="text-[10px] text-ink-muted">EduSmart</p>
             </div>
           </div>
         </div>

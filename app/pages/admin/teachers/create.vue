@@ -260,7 +260,7 @@ const L = (en: string, lo: string) => (locale.value === 'lo' ? lo : en);
 
 const editId = computed(() => (route.query.id ? Number(route.query.id) : null));
 const isEdit = computed(() => editId.value !== null);
-useHead({ title: computed(() => `${isEdit.value ? t('teachers.edit_teacher') : t('teachers.add_teacher')} — Smart School Admin`) });
+useHead({ title: computed(() => `${isEdit.value ? t('teachers.edit_teacher') : t('teachers.add_teacher')} — EduSmart Admin`) });
 
 const form = reactive({
   fullNameLo: '',
