@@ -24,7 +24,7 @@
             ]" 
             @click="classDropdownOpen = !classDropdownOpen; subjectDropdownOpen = false">
             <span class="flex items-center gap-2 truncate">
-              {{ classFilter === '' ? $t('grades_admin.all_classes') : className(classes.find(c => c.classId === classFilter) || { classNameEn: 'Unknown', classNameLo: 'Unknown' }) }}
+              {{ classFilter === '' ? $t('grades_admin.all_classes') : className(classes.find(c => c.classId === classFilter) || { classNameEn: $t('common.unknown'), classNameLo: $t('common.unknown') }) }}
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform ml-2 shrink-0" :class="[classDropdownOpen ? 'rotate-180' : '', classFilter === '' ? 'text-slate-400' : 'text-teal-500 dark:text-teal-400']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
           </button>
@@ -61,7 +61,7 @@
             ]" 
             @click="subjectDropdownOpen = !subjectDropdownOpen; classDropdownOpen = false">
             <span class="flex items-center gap-2 truncate">
-              {{ subjectFilter === '' ? $t('grades_admin.all_subjects') : subjectName(academicsStore.subjects.find(s => s.subjectId === subjectFilter) || { subjectNameEn: 'Unknown', subjectNameLo: 'Unknown' }) }}
+              {{ subjectFilter === '' ? $t('grades_admin.all_subjects') : subjectName(academicsStore.subjects.find(s => s.subjectId === subjectFilter) || { subjectNameEn: $t('common.unknown'), subjectNameLo: $t('common.unknown') }) }}
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform ml-2 shrink-0" :class="[subjectDropdownOpen ? 'rotate-180' : '', subjectFilter === '' ? 'text-slate-400' : 'text-teal-500 dark:text-teal-400']" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
           </button>

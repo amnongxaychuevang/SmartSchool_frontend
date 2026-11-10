@@ -406,6 +406,7 @@ import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 definePageMeta({ layout: 'admin' });
 
 const { locale, t } = useI18n();
+useHead({ title: () => t('nav.library') });
 const dialog = useDialog();
 const apiClient = useApiClient();
 

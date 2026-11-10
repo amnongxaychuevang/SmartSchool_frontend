@@ -115,6 +115,7 @@ definePageMeta({
 });
 
 const { locale, t } = useI18n();
+useHead({ title: () => t('nav.announcements') });
 const apiClient = useApiClient();
 interface Announcement {
   announcementId: string | number;

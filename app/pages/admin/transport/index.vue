@@ -521,6 +521,7 @@ import { API_ENDPOINTS } from '../../../infrastructure/api/endpoints';
 definePageMeta({ layout: 'admin' });
 
 const { locale, t } = useI18n();
+useHead({ title: () => t('nav.transport') });
 const dialog = useDialog();
 const apiClient = useApiClient();
 

@@ -230,6 +230,7 @@ definePageMeta({
 });
 
 const { t, locale } = useI18n();
+useHead({ title: () => t('nav.payroll') });
 const dialog = useDialog();
 const router = useRouter();
 const f = useFormat();

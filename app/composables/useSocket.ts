@@ -1,6 +1,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
+import { socketBaseUrl } from '../infrastructure/websocket/socketClient';
 
 interface FinanceData {
   incomeToday: number;
@@ -31,11 +32,7 @@ export const useSocket = () => {
   const connect = () => {
     if (socket.value) return;
 
-    const backendUrl = window.location.hostname === 'localhost'
-      ? 'http://localhost:5000'
-      : window.location.origin;
-
-    socket.value = io(backendUrl, {
+    socket.value = io(socketBaseUrl(), {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,

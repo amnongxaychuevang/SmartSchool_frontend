@@ -89,6 +89,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
+import { socketBaseUrl } from '../../infrastructure/websocket/socketClient';
 import LoadingSpinner from '../LoadingSpinner.vue';
 import { useApiClient } from '../../infrastructure/api/apiClient';
 
@@ -286,11 +287,7 @@ function centerOnBus() {
 }
 
 function setupSocket() {
-  const backendUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:5000'
-    : (typeof window !== 'undefined' ? window.location.origin : '');
-
-  socketInstance = io(backendUrl);
+  socketInstance = io(socketBaseUrl());
 
   socketInstance.on('connect', () => {
     if (props.routeId) {

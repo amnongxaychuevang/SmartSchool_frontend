@@ -355,7 +355,8 @@ definePageMeta({
   layout: 'teacher',
 });
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
+useHead({ title: () => t('payroll.my_payslips') });
 const f = useFormat();
 const mediaUrl = useMediaUrl();
 

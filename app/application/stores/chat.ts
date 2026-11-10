@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
+import { socketBaseUrl } from '../../infrastructure/websocket/socketClient';
 import { chatRepository, type ChatConversation, type ChatMessage, type ChatUser } from '../../infrastructure/api/ChatRepository';
 import { useAuthStore } from './auth';
 
@@ -27,11 +28,7 @@ export const useChatStore = defineStore('chat', () => {
 
   function getSocket(): Socket {
     if (!socketInstance) {
-      const backendUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-        ? 'http://localhost:5000'
-        : (typeof window !== 'undefined' ? window.location.origin : '');
-
-      socketInstance = io(backendUrl, {
+      socketInstance = io(socketBaseUrl(), {
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,

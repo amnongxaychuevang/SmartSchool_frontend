@@ -152,6 +152,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
+import { socketBaseUrl } from '../../infrastructure/websocket/socketClient';
 import LoadingSpinner from '../LoadingSpinner.vue';
 import { useApiClient } from '../../infrastructure/api/apiClient';
 
@@ -434,7 +435,7 @@ function toggleSimulation() {
 function initSocket() {
   try {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    socketInstance = io(window.location.origin, {
+    socketInstance = io(socketBaseUrl(), {
       auth: { token },
       transports: ['websocket', 'polling'],
     });

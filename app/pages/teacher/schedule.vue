@@ -15,7 +15,7 @@
               <span class="text-sm font-medium text-slate-900 dark:text-white">{{ locale === 'lo' ? s.subject?.subjectNameLo : s.subject?.subjectNameEn }}</span>
               <span class="text-xs text-slate-500 dark:text-slate-400">{{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}</span>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400">{{ locale === 'lo' ? s.class?.classNameLo : s.class?.classNameEn }} • {{ $t('teacherPortal.room') }} {{ s.roomNumber || 'N/A' }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ locale === 'lo' ? s.class?.classNameLo : s.class?.classNameEn }} • {{ $t('teacherPortal.room') }} {{ s.roomNumber || '—' }}</p>
           </div>
           <div v-if="schedulesByDay(day - 1).length === 0" class="text-sm text-slate-500 italic p-2">
             {{ $t('teacherPortal.no_classes') }}

@@ -357,6 +357,7 @@ import { API_ENDPOINTS as endpoints } from '../../infrastructure/api/endpoints';
 definePageMeta({ layout: 'default' });
 
 const { t, locale } = useI18n();
+useHead({ title: () => t('driver_console.title') });
 const api = useApiClient();
 
 interface Vehicle {

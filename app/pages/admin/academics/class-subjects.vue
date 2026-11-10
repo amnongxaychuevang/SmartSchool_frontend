@@ -458,9 +458,9 @@ import { adminRepository } from "../../../infrastructure/api/AdminRepository";
 import type { TeacherOption } from "../../../domain/models/SchoolClass";
 
 definePageMeta({ layout: "admin" });
-useHead({ title: "Class Subjects — EduSmart Admin" });
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
+useHead({ title: () => t('nav.classSubjects') });
 const dialog = useDialog();
 
 type Named = { fullNameEn: string; fullNameLo: string };

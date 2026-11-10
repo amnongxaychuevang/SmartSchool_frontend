@@ -3,12 +3,22 @@ import { io } from 'socket.io-client';
 
 let socket: Socket | null = null;
 
+/**
+ * Where socket.io lives: the API server. Taken from the configured API URL
+ * (http://localhost:5000/api in dev -> http://localhost:5000); a relative API URL
+ * means the same origin as the page (behind nginx in production).
+ * Every socket in the app must use this, not window.location.origin, which in dev
+ * is the Nuxt server and has no socket.io endpoint.
+ */
+export function socketBaseUrl(): string {
+  const api = (tryUseNuxtApp()?.$config.public.apiBaseUrl as string | undefined) || '';
+  if (/^https?:\/\//.test(api)) return api.replace(/\/api\/?$/, '');
+  return typeof window !== 'undefined' ? window.location.origin : '';
+}
+
 export const useSocketClient = () => {
   if (!socket) {
-    const config = useRuntimeConfig();
-    const baseUrl = config.public.apiBaseUrl ? config.public.apiBaseUrl.replace(/\/api$/, '') : 'http://localhost:5000';
-    
-    socket = io(baseUrl, {
+    socket = io(socketBaseUrl(), {
       autoConnect: false,
     });
   }

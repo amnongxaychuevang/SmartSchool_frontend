@@ -38,8 +38,8 @@ v-model="selectedChildId" class="bg-slate-800 border border-slate-700 text-slate
         </thead>
         <tbody class="divide-y divide-slate-800/60">
           <tr v-for="grade in parentStore.childGrades" :key="grade.gradeId" class="hover:bg-slate-800/40 transition-colors">
-            <td class="text-sm text-white font-medium">{{ grade.subject?.subjectNameEn || 'Unknown Subject' }}</td>
-            <td class="text-sm text-slate-400">{{ grade.class?.classNameEn || 'Unknown Class' }}</td>
+            <td class="text-sm text-white font-medium">{{ ($i18n.locale === 'lo' ? grade.subject?.subjectNameLo : grade.subject?.subjectNameEn) || grade.subject?.subjectNameEn || $t('common.unknown') }}</td>
+            <td class="text-sm text-slate-400">{{ ($i18n.locale === 'lo' ? grade.class?.classNameLo : grade.class?.classNameEn) || grade.class?.classNameEn || $t('common.unknown') }}</td>
             <td class="text-sm text-teal-400 font-bold">{{ grade.score }}</td>
           </tr>
         </tbody>
