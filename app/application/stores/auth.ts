@@ -3,7 +3,7 @@ import type { User } from '../../domain/models/User';
 import { LoginUseCase } from '../use-cases/auth/LoginUseCase';
 import { FetchMeUseCase } from '../use-cases/auth/FetchMeUseCase';
 import { authRepository } from '../../infrastructure/api/AuthRepository';
-import { getErrorMessage } from '../../utils/errors';
+import { getErrorMessage, isNetworkError } from '../../utils/errors';
 
 // Wire use cases with the concrete repository implementation.
 // In tests, you can swap authRepository with a mock.
@@ -72,7 +72,9 @@ export const useAuthStore = defineStore('auth', {
 
         return user;
       } catch (err) {
-        this.error = getErrorMessage(err);
+        // Network failures are shown as a popup by the login page, not inline
+        // (the raw "[POST] ...: <no response> Failed to fetch" means nothing to users).
+        this.error = isNetworkError(err) ? null : getErrorMessage(err);
         throw err;
       } finally {
         this.loading = false;
