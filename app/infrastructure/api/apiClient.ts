@@ -11,6 +11,18 @@ import type { ApiResponse } from './types';
 let refreshPromise: Promise<string | null> | null = null;
 let sessionExpiring = false;
 
+/**
+ * Where API calls go. In the browser: the public URL. During server-side rendering
+ * the Nuxt server may sit in a container where that URL isn't reachable (or would
+ * loop out through the public proxy), so it uses apiInternalUrl when one is set,
+ * e.g. http://api:5000/api in docker compose.
+ */
+function apiBaseURL(): string {
+  const config = useRuntimeConfig();
+  if (import.meta.server && config.apiInternalUrl) return config.apiInternalUrl as string;
+  return config.public.apiBaseUrl as string;
+}
+
 /** Returns the new access token, or null if the refresh token is gone or rejected. */
 async function silentRefresh(): Promise<string | null> {
   const refreshCookie = useCookie<string>('refresh_token');
@@ -21,7 +33,7 @@ async function silentRefresh(): Promise<string | null> {
     refreshPromise = (async () => {
       try {
         const res = await $fetch<ApiResponse<{ token: string; refreshToken: string }>>(API_ENDPOINTS.auth.refresh, {
-          baseURL: useRuntimeConfig().public.apiBaseUrl,
+          baseURL: apiBaseURL(),
           method: 'POST',
           body: { refreshToken: rawRefreshToken },
         });
@@ -63,7 +75,7 @@ const AUTH_ENDPOINTS = [API_ENDPOINTS.auth.login, API_ENDPOINTS.auth.refresh, AP
 
 export const useApiClient = () => {
   const base = $fetch.create({
-    baseURL: useRuntimeConfig().public.apiBaseUrl,
+    baseURL: apiBaseURL(),
     onRequest({ options }) {
       const headers = options.headers instanceof Headers
         ? options.headers

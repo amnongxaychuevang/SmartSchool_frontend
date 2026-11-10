@@ -21,6 +21,10 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
+    // Server-only: API address for server-side rendering, when the public URL isn't
+    // reachable from where Nuxt runs (e.g. http://api:5000/api inside docker compose).
+    // Set with NUXT_API_INTERNAL_URL; empty means "use the public URL".
+    apiInternalUrl: "",
     public: {
       apiBaseUrl:
         process.env.NUXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api",
