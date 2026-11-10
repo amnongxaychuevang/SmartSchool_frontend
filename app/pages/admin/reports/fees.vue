@@ -1,10 +1,14 @@
 <template>
   <div class="flex flex-col gap-6 page-enter">
-    <div class="flex flex-wrap items-center justify-end gap-2 print:hidden">
-      <select v-model="year" class="input-field w-auto" :aria-label="$t('fee_report.year')" @change="load">
-        <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
-      </select>
-      <ExportButton path="/reports/fees/export" permission="reports.export" :filters="{ academicYear: year }" :file-base="`fees-${year}`" :disabled="!report" />
+    <!-- One row: view tabs on the left, year + export on the right -->
+    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 print:hidden">
+      <TabBar v-model="activeTab" :tabs="tabs.map((tab) => ({ value: tab.id, label: tab.label }))" />
+      <div class="flex flex-wrap items-center gap-2">
+        <select v-model="year" class="input-field w-auto" :aria-label="$t('fee_report.year')" @change="load">
+          <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
+        </select>
+        <ExportButton path="/reports/fees/export" permission="reports.export" :filters="{ academicYear: year }" :file-base="`fees-${year}`" :disabled="!report" />
+      </div>
     </div>
 
     <p v-if="error" role="alert" class="panel border-danger-line bg-danger-soft text-danger px-4 py-3 text-sm">{{ error }}</p>
@@ -36,20 +40,6 @@
           <p class="text-xl font-bold tnum">{{ report.totals.collectionRate === null ? '—' : f.percent(report.totals.collectionRate) }}</p>
           <p class="text-xs text-ink-subtle">{{ $t('fee_report.rate_sub') }}</p>
         </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="flex gap-6">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          type="button"
-          class="pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2"
-          :class="activeTab === tab.id ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white'"
-          @click="activeTab = tab.id"
-        >
-          {{ tab.label }}
-        </button>
       </div>
 
       <template v-if="activeTab === 'overview'">
